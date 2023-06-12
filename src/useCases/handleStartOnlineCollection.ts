@@ -1,18 +1,16 @@
 import { v4 as uuidv4 } from "uuid";
 import { saveTransactionRequest } from "../persistence/saveTransactionRequest";
-import { buildXml } from "../useCaseHelpers/buildXml";
 import { TransactionRequest } from "../types/Transaction";
 
 export async function handleStartOnlineCollection(
+  appContext: any,
   transaction: TransactionRequest
 ): Promise<string> {
   // build token
   const token = uuidv4();
 
-  console.log(transaction);
-
   // persist token
-  await saveTransactionRequest({
+  await appContext.saveTransactionRequest({
     ...transaction,
     token,
   });
@@ -38,7 +36,6 @@ export async function handleStartOnlineCollection(
     },
   };
 
-  const xml = buildXml(respObj);
-  console.log(xml);
+  const xml = appContext.useCaseHelpers().buildXml(respObj);
   return xml;
 }

@@ -1,10 +1,10 @@
 import { TransactionRequest } from "../types/Transaction";
-import { saveFileToS3 } from "./saveFileToS3";
 
 export async function saveTransactionRequest(
+  appContext: any,
   transactionRequest: TransactionRequest
 ) {
-  await saveFileToS3({
+  await appContext.storageClient().saveFile({
     key: `requests/${transactionRequest.token}.json`,
     data: JSON.stringify(transactionRequest),
   });

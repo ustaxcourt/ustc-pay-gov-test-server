@@ -4,7 +4,7 @@ import {
   PutObjectCommandInput,
 } from "@aws-sdk/client-s3";
 
-export async function saveFileToS3({
+export async function saveFile({
   key,
   data,
 }: {

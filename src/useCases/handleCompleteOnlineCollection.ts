@@ -1,16 +1,19 @@
 import { v4 as uuidv4 } from "uuid";
-import { getTransaction } from "../persistence/getCompletedTransaction";
 import { saveCompletedTransaction } from "../persistence/saveCompletedTransaction";
 import { buildXml } from "../useCaseHelpers/buildXml";
-import { getTransactionRequest } from "../persistence/getTransactionRequest";
 import { CompletedTransaction } from "../types/Transaction";
 
-export async function handleCompleteOnlineCollection({
-  token,
-}: {
+export type CompleteTransactionRequest = {
   token: string;
-}): Promise<string> {
-  const transaction = await getTransactionRequest(token);
+};
+
+export async function handleCompleteOnlineCollection(
+  appContext: any,
+  { token }: CompleteTransactionRequest
+): Promise<string> {
+  const transaction = await appContext
+    .persistenceGateway()
+    .getTransactionRequest(appContext, token);
 
   const completedTransaction: CompletedTransaction = {
     ...transaction,
@@ -18,7 +21,9 @@ export async function handleCompleteOnlineCollection({
     paygov_tracking_id: uuidv4(),
   };
 
-  await saveCompletedTransaction(completedTransaction);
+  await await appContext
+    .persistenceGateway()
+    .saveCompletedTransaction(appContext, completedTransaction);
 
   const respObj = {
     "S:Envelope": {

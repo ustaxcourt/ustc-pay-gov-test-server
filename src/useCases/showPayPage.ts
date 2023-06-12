@@ -1,18 +1,21 @@
-import { getFileFromS3 } from "../persistence/getFileFromS3";
 import { getTransactionRequest } from "../persistence/getTransactionRequest";
-import { CompletedTransaction } from "../types/Transaction";
 
-export async function showPayPage(req: any, res: any) {
-  console.log("handling a pay page", req.query.token);
-  const transactionRequest = await getTransactionRequest(req.query.token);
+export async function showPayPage(
+  appContext: any,
+  { token }: { token?: string }
+) {
+  console.log("handling a pay page", token);
+  if (!token) {
+    throw "Token not found";
+  }
+  const transactionRequest = await appContext
+    .persistenceGateway()
+    .getTransactionRequest(token);
   console.log(transactionRequest);
 
-  const html = await getFileFromS3("html/pay.html");
-  console.log(html);
-  console.log(transactionRequest);
-  res.send(
-    html
-      .replace("%%urlSuccess%%", transactionRequest.url_success)
-      .replace("%%urlCancel%%", transactionRequest.url_cancel)
-  );
+  const html = await appContext.storageClient().getFile("html/pay.html");
+
+  return html
+    .replace("%%urlSuccess%%", transactionRequest.url_success)
+    .replace("%%urlCancel%%", transactionRequest.url_cancel);
 }

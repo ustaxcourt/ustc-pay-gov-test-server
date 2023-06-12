@@ -15,14 +15,13 @@ async function streamToString(stream: Readable): Promise<string> {
   });
 }
 
-export async function getFileFromS3(Key: string): Promise<string> {
+export async function getFile(Key: string): Promise<string> {
   const client = new S3Client({ region: "us-east-1" });
   const params: GetObjectCommandInput = {
     Bucket: process.env.BUCKET_NAME,
     Key,
   };
 
-  console.log(params);
   const command = new GetObjectCommand(params);
   try {
     const result = await client.send(command);

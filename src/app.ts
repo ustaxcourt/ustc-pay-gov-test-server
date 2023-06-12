@@ -1,17 +1,17 @@
 import express, { json } from "express";
-
-import { getFile } from "./useCases/getFile";
-import { handleSoapRequest } from "./useCases/handleSoapRequest";
-import { showPayPage } from "./useCases/showPayPage";
+import { getResourceLambda } from "./lambdas/getResourceLambda";
+import { getPayPageLambda } from "./lambdas/getPayPageLambda";
+import { handleSoapRequestLambda } from "./lambdas/handleSoapRequestLambda";
 
 const app = express();
 app.use(json());
 
-app.get("/wsdl", getFile);
-app.get("/wsdl/:file", getFile);
-app.get("/pay", showPayPage);
-app.get("/:file", getFile);
+app.get("/wsdl", getResourceLambda);
 
-app.post("/wsdl", handleSoapRequest);
+app.get("/wsdl/:file", getResourceLambda);
+app.get("/pay", getPayPageLambda);
+app.get("/:file", getResourceLambda);
+
+app.post("/wsdl", handleSoapRequestLambda);
 
 export { app };
