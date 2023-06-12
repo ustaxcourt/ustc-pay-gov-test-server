@@ -1,0 +1,41 @@
+service: ustc-pay-gov-test-server
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: us-east-1
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - s3:PutObject
+            - s3:GetObject
+          Resource: "arn:aws:s3:::${self:service}-${opt:stage, 'dev'}/*"
+
+package:
+  individually: true
+
+plugins:
+  - serverless-esbuild
+
+functions:
+  app:
+    handler: src/handler.handler
+    events:
+      - http:
+          method: ANY
+          path: /
+      - http:
+          method: ANY
+          path: "{proxy+}"
+    environment:
+      BASE_URL: ${file(./config.${opt:stage, 'dev'}.yml):baseUrl}
+      BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+
+resources:
+  Resources:
+    MyS3Bucket:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: ${self:service}-${opt:stage, 'dev'}
