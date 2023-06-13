@@ -1,5 +1,3 @@
-import { getTransactionRequest } from "../persistence/getTransactionRequest";
-
 export async function showPayPage(
   appContext: any,
   { token }: { token?: string }
@@ -10,8 +8,7 @@ export async function showPayPage(
   }
   const transactionRequest = await appContext
     .persistenceGateway()
-    .getTransactionRequest(token);
-  console.log(transactionRequest);
+    .getTransactionRequest(appContext, token);
 
   const html = await appContext.storageClient().getFile("html/pay.html");
 

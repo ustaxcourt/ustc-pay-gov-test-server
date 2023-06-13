@@ -3,3 +3,4 @@ wsdl/
 .serverless
 config.*.yml
 temp/
+coverage/

@@ -20,15 +20,35 @@ plugins:
   - serverless-esbuild
 
 functions:
-  app:
-    handler: src/handler.handler
+  soap_api:
+    handler: src/lambdas/handleSoapRequestLambda.handler
     events:
       - http:
-          method: ANY
-          path: /
+          method: POST
+          path: /wsdl
+    environment:
+      BASE_URL: ${file(./config.${opt:stage, 'dev'}.yml):baseUrl}
+      BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+
+  soap_resource:
+    handler: src/lambdas/getResourceLambda.handler
+    events:
       - http:
-          method: ANY
-          path: "{proxy+}"
+          method: GET
+          path: /wsdl/{filename}
+      - http:
+          method: GET
+          path: /wsdl
+    environment:
+      BASE_URL: ${file(./config.${opt:stage, 'dev'}.yml):baseUrl}
+      BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+
+  pay_page:
+    handler: src/lambdas/getPayPageLambda.handler
+    events:
+      - http:
+          method: GET
+          path: /pay
     environment:
       BASE_URL: ${file(./config.${opt:stage, 'dev'}.yml):baseUrl}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
@@ -39,3 +59,8 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:service}-${opt:stage, 'dev'}
+        LifecycleConfiguration:
+          Rules:
+            - Id: DeleteObjectsAfter24Hours
+              Status: Enabled
+              ExpirationInDays: 1

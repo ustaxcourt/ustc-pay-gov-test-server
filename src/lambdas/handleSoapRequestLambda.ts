@@ -1,34 +1,31 @@
 import { XMLParser } from "fast-xml-parser";
 import { Request, Response } from "express";
 import { createAppContext } from "../appContext";
-import { TransactionRequest } from "../types/Transaction";
-import { CompleteTransactionRequest } from "../useCases/handleCompleteOnlineCollection";
 import { xmlOptions } from "../xmlOptions";
 const parser = new XMLParser(xmlOptions);
 
 const appContext = createAppContext();
 
-export async function handleSoapRequestLambda(req: Request, res: Response) {
-  const jObj = parser.parse(req.body);
+async function handleSoapRequest(soapRequest: string): Promise<string> {
+  console.log({ soapRequest });
 
+  const jObj = parser.parse(soapRequest);
   const requestData = jObj["soap:Envelope"]["soap:Body"];
   const actionKey = Object.keys(requestData)[0];
-  let result;
 
   switch (actionKey) {
     case "tns:startOnlineCollection":
-      result = appContext
+      return appContext
         .useCases()
         .handleStartOnlineCollection(
           appContext,
           requestData[actionKey]["tns:startOnlineCollectionRequest"]
         );
-      break;
 
     case "tns:completeOnlineCollection":
-      result = appContext
+      return appContext
         .useCases()
-        .handleStartOnlineCollection(
+        .handleCompleteOnlineCollection(
           appContext,
           requestData[actionKey]["tns:completeOnlineCollectionRequest"]
         );
@@ -36,6 +33,34 @@ export async function handleSoapRequestLambda(req: Request, res: Response) {
     default:
       throw "Not found";
   }
+}
 
+export async function handleSoapRequestLambda(req: Request, res: Response) {
+  const result = await handleSoapRequest(req.body);
   res.send(result);
+}
+
+export async function handler(
+  event: AWSLambda.APIGatewayProxyEvent
+): Promise<AWSLambda.APIGatewayProxyResult> {
+  const soapRequest = event.body;
+  if (!soapRequest) {
+    return {
+      statusCode: 400,
+      body: "missing SOAP request",
+    };
+  }
+  try {
+    const result = await handleSoapRequest(soapRequest);
+    return {
+      statusCode: 200,
+      body: result,
+    };
+  } catch (err) {
+    console.log(err);
+    return {
+      statusCode: 500,
+      body: "Unlucky",
+    };
+  }
 }

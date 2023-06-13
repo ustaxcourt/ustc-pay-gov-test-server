@@ -7,6 +7,7 @@ import { buildXml } from "./useCaseHelpers/buildXml";
 import { getCompletedTransaction } from "./persistence/getCompletedTransaction";
 import { getTransactionRequest } from "./persistence/getTransactionRequest";
 import { saveCompletedTransaction } from "./persistence/saveCompletedTransaction";
+import { saveTransactionRequest } from "./persistence/saveTransactionRequest";
 
 export function createAppContext() {
   return {
@@ -23,6 +24,7 @@ export function createAppContext() {
       getCompletedTransaction,
       getTransactionRequest,
       saveCompletedTransaction,
+      saveTransactionRequest,
     }),
     storageClient,
   };

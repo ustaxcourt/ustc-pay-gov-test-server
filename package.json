@@ -4,9 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc && npm run copy-files",
     "copy-files": "aws s3 cp src/static s3://ustc-pay-gov-test-server-dev --recursive",
-    "test": "jest"
+    "test:unit": "jest --config jest-unit.config.ts",
+    "test:integration": "jest --runInBand --config jest-integration.config.ts --bail"
   },
   "keywords": [],
   "author": "",
@@ -31,6 +31,7 @@
     "js-yaml": "^4.1.0",
     "serverless-esbuild": "^1.45.1",
     "ts-jest": "^29.1.0",
+    "ts-node": "^10.9.1",
     "typescript": "^5.1.3"
   }
 }

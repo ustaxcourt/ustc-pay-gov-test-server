@@ -1,5 +1,4 @@
 import { v4 as uuidv4 } from "uuid";
-import { saveTransactionRequest } from "../persistence/saveTransactionRequest";
 import { TransactionRequest } from "../types/Transaction";
 
 export async function handleStartOnlineCollection(
@@ -10,7 +9,7 @@ export async function handleStartOnlineCollection(
   const token = uuidv4();
 
   // persist token
-  await appContext.saveTransactionRequest({
+  await appContext.persistenceGateway().saveTransactionRequest(appContext, {
     ...transaction,
     token,
   });
