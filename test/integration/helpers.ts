@@ -4,11 +4,12 @@ import path from "path";
 
 type YamlConfig = {
   baseUrl: string;
+  apiToken: string;
 };
 
-export const getBaseUrl = () => {
+export const getConfig = () => {
   const doc = yaml.load(
     readFileSync(path.resolve(__dirname, "../../config.dev.yml"), "utf-8")
   ) as YamlConfig;
-  return doc.baseUrl;
+  return doc;
 };

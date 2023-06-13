@@ -1,4 +1,4 @@
-import { getBaseUrl } from "./helpers";
+import { getConfig } from "./helpers";
 import * as soap from "soap";
 
 type StartOnlineCollectionResponse = {
@@ -18,11 +18,22 @@ describe("transaction flow", () => {
   let token: string;
   let trackingId: string;
   let baseUrl: string;
+  let apiToken;
 
   beforeAll(async () => {
-    baseUrl = getBaseUrl();
+    const config = getConfig();
+
+    apiToken = config.apiToken;
+    baseUrl = config.baseUrl;
+
     soapClient = await soap.createClientAsync(`${baseUrl}/wsdl?wsdl`, {
       forceSoap12Headers: true,
+      wsdl_headers: {
+        Authentication: `Bearer ${apiToken}`,
+      },
+    });
+    soapClient.addSoapHeader({
+      Authentication: apiToken,
     });
   });
 
@@ -62,13 +73,16 @@ describe("transaction flow", () => {
         args,
         function (err: Error, response: any) {
           if (err) {
+            console.error(err);
             return reject(err);
           }
           resolve(response);
         }
       );
     })) as StartOnlineCollectionResponse;
+    console.log(result);
     token = result.startOnlineCollectionResponse.token;
+    console.log(token);
     expect(token).toBeTruthy();
   });
 

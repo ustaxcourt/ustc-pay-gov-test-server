@@ -10,6 +10,14 @@ async function handleSoapRequest(soapRequest: string): Promise<string> {
   console.log({ soapRequest });
 
   const jObj = parser.parse(soapRequest);
+  const headers = jObj["soap:Envelope"]["soap:Header"];
+  if (
+    !headers.Authentication ||
+    headers.Authentication !== process.env.ACCESS_TOKEN
+  ) {
+    throw "missing authorization";
+  }
+
   const requestData = jObj["soap:Envelope"]["soap:Body"];
   const actionKey = Object.keys(requestData)[0];
 

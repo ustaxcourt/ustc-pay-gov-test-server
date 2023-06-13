@@ -4,6 +4,7 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-1
+  stage: dev
   iam:
     role:
       statements:
@@ -18,6 +19,15 @@ package:
 
 plugins:
   - serverless-esbuild
+  - serverless-domain-manager
+
+custom:
+  subdomain: pay-gov-dev.ustaxcourt.gov
+  customDomain:
+    domainName: ${self:custom.subdomain}
+    basePath: ""
+    stage: ${self:provider.stage}
+    autoDomain: true
 
 functions:
   soap_api:
@@ -27,8 +37,9 @@ functions:
           method: POST
           path: /wsdl
     environment:
-      BASE_URL: ${file(./config.${opt:stage, 'dev'}.yml):baseUrl}
+      BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+      ACCESS_TOKEN: ${file(./config.dev.yml):apiToken}
 
   soap_resource:
     handler: src/lambdas/getResourceLambda.handler
@@ -40,8 +51,9 @@ functions:
           method: GET
           path: /wsdl
     environment:
-      BASE_URL: ${file(./config.${opt:stage, 'dev'}.yml):baseUrl}
+      BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+      ACCESS_TOKEN: ${file(./config.dev.yml):apiToken}
 
   pay_page:
     handler: src/lambdas/getPayPageLambda.handler
@@ -50,8 +62,9 @@ functions:
           method: GET
           path: /pay
     environment:
-      BASE_URL: ${file(./config.${opt:stage, 'dev'}.yml):baseUrl}
+      BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+      ACCESS_TOKEN: ${file(./config.dev.yml):apiToken}
 
 resources:
   Resources:
@@ -59,8 +72,3 @@ resources:
       Type: AWS::S3::Bucket
       Properties:
         BucketName: ${self:service}-${opt:stage, 'dev'}
-        LifecycleConfiguration:
-          Rules:
-            - Id: DeleteObjectsAfter24Hours
-              Status: Enabled
-              ExpirationInDays: 1

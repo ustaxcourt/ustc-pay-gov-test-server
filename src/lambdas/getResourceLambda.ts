@@ -15,7 +15,16 @@ export async function getResourceLambda(req: Request, res: Response) {
 export async function handler(
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> {
-  console.log(event.pathParameters);
+  if (
+    !event.headers?.Authentication ||
+    event.headers.Authentication !== `Bearer ${process.env.ACCESS_TOKEN}`
+  ) {
+    return {
+      statusCode: 403,
+      body: "Missing Authentication",
+    };
+  }
+
   try {
     const result = await getResource(event.pathParameters?.filename);
     return {
