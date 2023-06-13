@@ -31,6 +31,9 @@ export async function handler(
     return {
       statusCode: 200,
       body: result,
+      headers: {
+        "Content-Type": "text/html; charset=UTF-8",
+      },
     };
   } catch (err) {
     console.log(err);
