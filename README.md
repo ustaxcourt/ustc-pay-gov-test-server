@@ -12,7 +12,7 @@ The development environment of the Payment Portal should be configured point to 
 
 In the following workflow, this USTC Pay.gov Dev Server takes the place of Pay.gov. All transactions are treated as if they will be processed successfully.
 
-1. An application makes a request to initiate a transaction the Development USTC Payment Portal (see separate repo).
+1. An application makes a request to initiate a transaction the Development USTC Payment Portal (see [separate repo](https://github.com/ustaxcourt/ustc-payment-portal)).
 2. The portal then performs a `startOnlineCollection` request to Pay.gov with the transaction information.
 3. Pay.gov responds with a token, which the portal uses to generate a redirect URL to Pay.gov to enter in payment information.
 4. The token and URL are returned to the original App, which stores the token, and forwards the user to the URL, which will be a simple UI hosted by this application.
@@ -28,7 +28,7 @@ Environment variables are located in `./config.dev.yml`, and `dev` is the only s
 | Environment Variable | Value                                | Description                                                                                                                           |
 | -------------------- | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
 | `baseUrl`            | `https://pay-gov-dev.ustaxcourt.gov` | The URL that serves this application. It can be configured to use the execute api URL in case we aren't making use of a custom domain |
-| `apiToken`           |                                      | A random string that that is used to authenticate requests |
+| `apiToken`           |                                      | A random string that that is used to authenticate requests                                                                            |
 
 ## Deployment
 
