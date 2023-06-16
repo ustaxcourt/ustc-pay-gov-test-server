@@ -18,7 +18,7 @@ export async function handleCompleteOnlineCollection(
   const completedTransaction: CompletedTransaction = {
     ...transaction,
     paid: true,
-    paygov_tracking_id: uuidv4(),
+    pay_gov_tracking_id: uuidv4(),
   };
 
   await await appContext
@@ -37,7 +37,7 @@ export async function handleCompleteOnlineCollection(
       "S:Body": {
         "ns2:completeOnlineCollectionResponse": {
           completeOnlineCollectionResponse: {
-            paygov_tracking_id: completedTransaction.paygov_tracking_id,
+            pay_gov_tracking_id: completedTransaction.pay_gov_tracking_id,
           },
           "@xmlns:ns2": "http://fms.treas.gov/services/tcsonline",
         },

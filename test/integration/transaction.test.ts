@@ -9,7 +9,7 @@ type StartOnlineCollectionResponse = {
 
 type CompleteOnlineCollectionResponse = {
   completeOnlineCollectionResponse: {
-    paygov_tracking_id: string;
+    pay_gov_tracking_id: string;
   };
 };
 
@@ -111,7 +111,7 @@ describe("transaction flow", () => {
       );
     })) as CompleteOnlineCollectionResponse;
 
-    trackingId = result.completeOnlineCollectionResponse.paygov_tracking_id;
+    trackingId = result.completeOnlineCollectionResponse.pay_gov_tracking_id;
     expect(trackingId).toBeTruthy();
   });
 });

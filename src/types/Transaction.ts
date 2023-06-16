@@ -15,5 +15,5 @@ export type CompletedTransaction = {
   tcp_appid: string;
   agency_tracking_id: string;
   paid: boolean;
-  paygov_tracking_id?: string;
+  pay_gov_tracking_id?: string;
 };

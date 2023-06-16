@@ -5,7 +5,7 @@ export async function saveCompletedTransaction(
   transaction: CompletedTransaction
 ) {
   await appContext.storageClient().saveFile({
-    key: `transactions/${transaction.paygov_tracking_id}.json`,
+    key: `transactions/${transaction.pay_gov_tracking_id}.json`,
     data: JSON.stringify(transaction),
   });
 }
