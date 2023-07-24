@@ -8,12 +8,14 @@ import { getCompletedTransaction } from "./persistence/getCompletedTransaction";
 import { getTransactionRequest } from "./persistence/getTransactionRequest";
 import { saveCompletedTransaction } from "./persistence/saveCompletedTransaction";
 import { saveTransactionRequest } from "./persistence/saveTransactionRequest";
+import { handleCompleteOnlineCollectionWithDetails } from "./useCases/handleCompleteOnlineCollectionWithDetails";
 
 export function createAppContext() {
   return {
     useCases: () => ({
       getResource,
       handleCompleteOnlineCollection,
+      handleCompleteOnlineCollectionWithDetails,
       handleStartOnlineCollection,
       showPayPage,
     }),

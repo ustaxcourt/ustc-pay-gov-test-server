@@ -1,11 +1,12 @@
-type ResourceRequest = {
-  filename?: string;
-};
+import { AppContext } from "../types/AppContext";
+import { ResourceRequest } from "../types/ResourceRequest";
 
-export async function getResource(
-  appContext: any,
+export type GetResource = (
+  appContext: AppContext,
   { filename }: ResourceRequest
-): Promise<string> {
+) => Promise<string>;
+
+export const getResource: GetResource = async (appContext, { filename }) => {
   const supportedFiles = [
     "TCSOnlineService_3_2.wsdl",
     "TCSOnlineService_3_2.xsd",
@@ -20,5 +21,8 @@ export async function getResource(
 
   const contents = await appContext.storageClient().getFile(`wsdl/${filename}`);
 
-  return contents.replace("%%location%%", `https://${process.env.BASE_URL}/wsdl/`);
-}
+  return contents.replace(
+    "%%location%%",
+    `https://${process.env.BASE_URL}/wsdl/`
+  );
+};

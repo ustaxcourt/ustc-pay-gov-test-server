@@ -1,12 +1,18 @@
-import { CompletedTransaction } from "../types/Transaction";
+import type { AppContext } from "../types/AppContext";
+import type { CompletedTransaction } from "../types/Transaction";
 
-export async function getCompletedTransaction(
-  appContext: any,
+export type GetCompletedTransaction = (
+  appContext: AppContext,
   payGovTrackingId: string
-): Promise<CompletedTransaction> {
+) => Promise<CompletedTransaction>;
+
+export const getCompletedTransaction: GetCompletedTransaction = async (
+  appContext,
+  payGovTrackingId
+) => {
   const contents = await appContext
     .storageClient()
     .getFile(`transactions/${payGovTrackingId}.json`);
   const transaction = JSON.parse(contents) as CompletedTransaction;
   return transaction;
-}
+};
