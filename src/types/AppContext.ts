@@ -8,8 +8,8 @@ import { HandleCompletOnlineCollectionWithDetails } from "../useCases/handleComp
 import { HandleCompleteOnlineCollection } from "../useCases/handleCompleteOnlineCollection";
 import { GetResource } from "../useCases/getResource";
 import { BuildXml } from "../useCaseHelpers/buildXml";
-import { SaveFile } from "../client/s3/saveFile";
-import { GetFile } from "../client/s3/getFile";
+import { GetFile } from "./GetFile";
+import { SaveFile } from "./SaveFile";
 
 export type AppContext = {
   useCases: () => {

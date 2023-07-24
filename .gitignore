@@ -4,3 +4,4 @@ wsdl/
 config.*.yml
 temp/
 coverage/
+dist/

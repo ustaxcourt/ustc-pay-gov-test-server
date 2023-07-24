@@ -2,6 +2,9 @@ import express, { json } from "express";
 import { getResourceLambda } from "./lambdas/getResourceLambda";
 import { getPayPageLambda } from "./lambdas/getPayPageLambda";
 import { handleSoapRequestLambda } from "./lambdas/handleSoapRequestLambda";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 app.use(json());
