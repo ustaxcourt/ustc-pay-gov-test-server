@@ -8,16 +8,16 @@ type StartOnlineCollectionResponse = {
 
 type CompleteOnlineCollectionResponse = {
   completeOnlineCollectionResponse: {
-    pay_gov_tracking_id: string;
+    paygov_tracking_id: string;
   };
 };
 
-describe("transaction flow", () => {
+// skipping until we can get wsdl
+describe.skip("transaction flow", () => {
   let soapClient: soap.Client;
   let token: string;
   let trackingId: string;
   let baseUrl: string;
-  let apiToken;
 
   beforeAll(async () => {
     soapClient = await soap.createClientAsync(
@@ -29,9 +29,6 @@ describe("transaction flow", () => {
         },
       }
     );
-    soapClient.addSoapHeader({
-      Authentication: apiToken,
-    });
   });
 
   it("should generate a description", () => {
@@ -77,9 +74,7 @@ describe("transaction flow", () => {
         }
       );
     })) as StartOnlineCollectionResponse;
-    console.log(result);
     token = result.startOnlineCollectionResponse.token;
-    console.log(token);
     expect(token).toBeTruthy();
   });
 
@@ -108,7 +103,7 @@ describe("transaction flow", () => {
       );
     })) as CompleteOnlineCollectionResponse;
 
-    trackingId = result.completeOnlineCollectionResponse.pay_gov_tracking_id;
+    trackingId = result.completeOnlineCollectionResponse.paygov_tracking_id;
     expect(trackingId).toBeTruthy();
   });
 });

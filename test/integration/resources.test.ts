@@ -10,16 +10,14 @@ describe("test resources", () => {
   it("should not serve the resources without the api token", async () => {
     for (const resource of resourcesToCheck) {
       const url = `${baseUrl}/${resource}`;
-      console.log(url);
       const response = await fetch(url, {});
       expect(response.status).toBe(403);
     }
   });
 
-  it.only("should load all of the expected resources", async () => {
+  it("should load all of the expected resources", async () => {
     for (const resource of resourcesToCheck) {
       const url = `${baseUrl}/${resource}`;
-      console.log(url);
       const response = await fetch(url, {
         headers: {
           Authentication: `Bearer ${process.env.ACCESS_TOKEN}`,

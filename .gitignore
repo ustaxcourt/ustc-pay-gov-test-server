@@ -6,3 +6,4 @@ temp/
 coverage/
 dist/
 .env*
+resources/

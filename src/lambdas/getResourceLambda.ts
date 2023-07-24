@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { createAppContext } from "../appContext";
-import { UnauthorizedError } from "../errors/unauthorized";
 import { handleLambdaError, handleLocalError } from "./handleError";
+import { authenticateRequest } from "./authenticateRequest";
 
 const appContext = createAppContext();
 
@@ -19,12 +19,6 @@ export async function getResourceLocal(req: Request, res: Response) {
     handleLocalError(err, res);
   }
 }
-
-export const authenticateRequest = (token?: string) => {
-  if (!token || token !== `Bearer ${process.env.ACCESS_TOKEN}`) {
-    throw new UnauthorizedError("Missing Authentication");
-  }
-};
 
 export async function handler(
   event: AWSLambda.APIGatewayProxyEvent

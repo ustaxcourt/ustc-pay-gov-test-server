@@ -18,10 +18,10 @@ export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
     const completedTransaction: CompletedTransaction = {
       ...transaction,
       paid: true,
-      pay_gov_tracking_id: uuidv4(),
+      paygov_tracking_id: uuidv4(),
     };
 
-    await await appContext
+    await appContext
       .persistenceGateway()
       .saveCompletedTransaction(appContext, completedTransaction);
 
@@ -37,7 +37,7 @@ export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
         "S:Body": {
           "ns2:completeOnlineCollectionResponse": {
             completeOnlineCollectionResponse: {
-              pay_gov_tracking_id: completedTransaction.pay_gov_tracking_id,
+              paygov_tracking_id: completedTransaction.paygov_tracking_id,
             },
             "@xmlns:ns2": "http://fms.treas.gov/services/tcsonline",
           },
