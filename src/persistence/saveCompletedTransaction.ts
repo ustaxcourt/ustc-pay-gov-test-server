@@ -6,7 +6,7 @@ export type SaveCompletedTransaction = (
   transaction: CompletedTransaction
 ) => Promise<void>;
 
-export const saveCompletedTransactionconst: SaveCompletedTransaction = async (
+export const saveCompletedTransaction: SaveCompletedTransaction = async (
   appContext,
   transaction
 ) => {
