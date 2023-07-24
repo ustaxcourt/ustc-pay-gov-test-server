@@ -38,6 +38,14 @@ async function handleSoapRequest(soapRequest: string): Promise<string> {
           requestData[actionKey]["tns:completeOnlineCollectionRequest"]
         );
 
+    case "tns:completeOnlineCollectionWithDetails":
+      return appContext
+        .useCases()
+        .handleCompleteOnlineCollectionWithDetails(
+          appContext,
+          requestData[actionKey]["tns:completeOnlineCollectionRequest"]
+        );
+
     default:
       throw "Not found";
   }

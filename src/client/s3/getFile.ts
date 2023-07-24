@@ -17,7 +17,9 @@ async function streamToString(stream: Readable): Promise<string> {
   });
 }
 
-export async function getFile(Key: string): Promise<string> {
+export type GetFile = (file: string) => Promise<string>;
+
+export const getFile: GetFile = async (Key) => {
   const params: GetObjectCommandInput = {
     Bucket: process.env.BUCKET_NAME,
     Key,
@@ -33,4 +35,4 @@ export async function getFile(Key: string): Promise<string> {
     console.error("Error retrieving file", err);
     throw err;
   }
-}
+};

@@ -1,10 +1,16 @@
 import { v4 as uuidv4 } from "uuid";
 import { TransactionRequest } from "../types/Transaction";
+import { AppContext } from "../types/AppContext";
 
-export async function handleStartOnlineCollection(
-  appContext: any,
+export type HandleStartOnlineCollection = (
+  appContext: AppContext,
   transaction: TransactionRequest
-): Promise<string> {
+) => Promise<string>;
+
+export const handleStartOnlineCollection: HandleStartOnlineCollection = async (
+  appContext,
+  transaction
+) => {
   // build token
   const token = uuidv4();
 
@@ -37,4 +43,4 @@ export async function handleStartOnlineCollection(
 
   const xml = appContext.useCaseHelpers().buildXml(respObj);
   return xml;
-}
+};

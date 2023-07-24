@@ -1,12 +1,17 @@
-import { TransactionRequest } from "../types/Transaction";
+import type { AppContext } from "../types/AppContext";
+import type { TransactionRequest } from "../types/Transaction";
 
-export async function saveTransactionRequest(
-  appContext: any,
+export type SaveTransactionRequest = (
+  appContext: AppContext,
   transactionRequest: TransactionRequest
-) {
-  const res = await appContext.storageClient().saveFile({
+) => Promise<void>;
+
+export const saveTransactionRequest: SaveTransactionRequest = async (
+  appContext,
+  transactionRequest
+) => {
+  await appContext.storageClient().saveFile({
     key: `requests/${transactionRequest.token}.json`,
     data: JSON.stringify(transactionRequest),
   });
-  return res;
-}
+};

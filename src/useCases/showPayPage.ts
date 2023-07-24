@@ -1,7 +1,11 @@
-export async function showPayPage(
-  appContext: any,
-  { token }: { token?: string }
-) {
+import { AppContext } from "../types/AppContext";
+
+export type ShowPayPage = (
+  appContext: AppContext,
+  { token }: { token: string }
+) => Promise<string>;
+
+export const showPayPage: ShowPayPage = async (appContext, { token }) => {
   console.log("handling a pay page", token);
   if (!token) {
     throw "Token not found";
@@ -15,4 +19,4 @@ export async function showPayPage(
   return html
     .replace("%%urlSuccess%%", transactionRequest.url_success)
     .replace("%%urlCancel%%", transactionRequest.url_cancel);
-}
+};

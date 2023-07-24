@@ -1,17 +1,17 @@
+import { AppContext } from "../types/AppContext";
+import { CompletedTransaction, TransactionRequest } from "../types/Transaction";
 import { v4 as uuidv4 } from "uuid";
 import { buildXml } from "../useCaseHelpers/buildXml";
-import { CompletedTransaction } from "../types/Transaction";
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
-import { AppContext } from "../types/AppContext";
 
-export type HandleCompleteOnlineCollection = (
+export type HandleCompletOnlineCollectionWithDetails = (
   appContext: AppContext,
   { token }: CompleteTransactionRequest
 ) => Promise<string>;
 
-export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
+export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
   async (appContext, { token }) => {
-    const transaction = await appContext
+    const transaction: TransactionRequest = await appContext
       .persistenceGateway()
       .getTransactionRequest(appContext, token);
 
@@ -21,7 +21,7 @@ export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
       pay_gov_tracking_id: uuidv4(),
     };
 
-    await await appContext
+    await appContext
       .persistenceGateway()
       .saveCompletedTransaction(appContext, completedTransaction);
 
@@ -35,9 +35,14 @@ export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
           },
         },
         "S:Body": {
-          "ns2:completeOnlineCollectionResponse": {
-            completeOnlineCollectionResponse: {
+          "ns2:completeOnlineCollectionWithDetailsResponse": {
+            completeOnlineCollectionWithDetailsResponse: {
               pay_gov_tracking_id: completedTransaction.pay_gov_tracking_id,
+              transaction_status: "Success",
+              agency_tracking_id: completedTransaction.agency_tracking_id,
+              transaction_amount: completedTransaction.amount,
+              payment_type: "somethbing",
+              transaction_type: "something-else",
             },
             "@xmlns:ns2": "http://fms.treas.gov/services/tcsonline",
           },
