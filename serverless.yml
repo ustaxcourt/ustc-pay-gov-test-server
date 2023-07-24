@@ -1,4 +1,5 @@
 service: ustc-pay-gov-test-server
+useDotenv: true
 
 provider:
   name: aws
@@ -39,7 +40,8 @@ functions:
     environment:
       BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
-      ACCESS_TOKEN: ${file(./config.dev.yml):apiToken}
+      ACCESS_TOKEN: ${env:ACCESS_TOKEN}
+      NODE_ENV: ${env:NODE_ENV}
 
   soap_resource:
     handler: src/lambdas/getResourceLambda.handler
@@ -53,7 +55,8 @@ functions:
     environment:
       BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
-      ACCESS_TOKEN: ${file(./config.dev.yml):apiToken}
+      ACCESS_TOKEN: ${env:ACCESS_TOKEN}
+      NODE_ENV: ${env:NODE_ENV}
 
   pay_page:
     handler: src/lambdas/getPayPageLambda.handler
@@ -64,7 +67,8 @@ functions:
     environment:
       BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
-      ACCESS_TOKEN: ${file(./config.dev.yml):apiToken}
+      ACCESS_TOKEN: ${env:ACCESS_TOKEN}
+      NODE_ENV: ${env:NODE_ENV}
 
 resources:
   Resources:
