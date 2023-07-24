@@ -5,6 +5,7 @@ declare global {
       BASE_URL: string;
       BUCKET_NAME: string;
       ACCESS_TOKEN: string;
+      PORT: string;
     }
   }
 }

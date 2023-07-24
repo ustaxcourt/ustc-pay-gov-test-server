@@ -1,4 +1,3 @@
-import { getConfig } from "./helpers";
 import * as soap from "soap";
 
 type StartOnlineCollectionResponse = {
@@ -21,17 +20,15 @@ describe("transaction flow", () => {
   let apiToken;
 
   beforeAll(async () => {
-    const config = getConfig();
-
-    apiToken = config.apiToken;
-    baseUrl = config.baseUrl;
-
-    soapClient = await soap.createClientAsync(`${baseUrl}/wsdl?wsdl`, {
-      forceSoap12Headers: true,
-      wsdl_headers: {
-        Authentication: `Bearer ${apiToken}`,
-      },
-    });
+    soapClient = await soap.createClientAsync(
+      `${process.env.BASE_URL}/wsdl?wsdl`,
+      {
+        forceSoap12Headers: true,
+        wsdl_headers: {
+          Authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+      }
+    );
     soapClient.addSoapHeader({
       Authentication: apiToken,
     });

@@ -41,7 +41,7 @@ functions:
       BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
       ACCESS_TOKEN: ${env:ACCESS_TOKEN}
-      NODE_ENV: ${env:NODE_ENV}
+      NODE_ENV: production
 
   soap_resource:
     handler: src/lambdas/getResourceLambda.handler
@@ -56,7 +56,7 @@ functions:
       BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
       ACCESS_TOKEN: ${env:ACCESS_TOKEN}
-      NODE_ENV: ${env:NODE_ENV}
+      NODE_ENV: production
 
   pay_page:
     handler: src/lambdas/getPayPageLambda.handler
@@ -68,7 +68,7 @@ functions:
       BASE_URL: ${self:custom.subdomain}
       BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
       ACCESS_TOKEN: ${env:ACCESS_TOKEN}
-      NODE_ENV: ${env:NODE_ENV}
+      NODE_ENV: production
 
 resources:
   Resources:

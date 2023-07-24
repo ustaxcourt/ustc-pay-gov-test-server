@@ -5,11 +5,11 @@
   "main": "dist/index.js",
   "scripts": {
     "build": "npx tsc",
-    "start": "node dist/index.js",
-    "dev": "concurrently \"npx tsc --watch\" \"nodemon -q ./dist/index.js\"",
+    "dev": "NODE_ENV='local' concurrently \"npx tsc --watch\" \"nodemon -q ./dist/index.js\"",
     "copy-files": "aws s3 cp src/static s3://ustc-pay-gov-test-server-dev --recursive",
     "test": "jest ./src",
-    "test:integration": "jest --verbose ./test/integration --bail"
+    "test:integration": "NODE_ENV='local' jest --verbose ./test/integration --bail",
+    "test:integration:prod": "NODE_ENV='dev' jest --verbose ./test/integration --bail"
   },
   "keywords": [],
   "author": "",

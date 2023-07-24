@@ -5,11 +5,7 @@ import { createIfDoesNotExist } from "./createIfDoesNotExist";
 import type { SaveFile } from "../../types/SaveFile";
 
 export const saveFileLocal: SaveFile = async ({ key, data }) => {
-  const resolvedPath = path.resolve(
-    __dirname,
-    "../../../dist/transactions",
-    key
-  );
+  const resolvedPath = path.resolve(__dirname, "../../../resources", key);
   const pathToTransactions = path.dirname(resolvedPath);
 
   createIfDoesNotExist(pathToTransactions);
