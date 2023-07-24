@@ -9,7 +9,6 @@ const xmlOptions = {
 
 describe("initiate transaction", () => {
   let token: string;
-  let trackingId: string;
   let agencyTrackingId: string;
   const amount = "10.00";
 
@@ -43,6 +42,7 @@ describe("initiate transaction", () => {
     const xmlBody = builder.build(reqObj);
 
     const url = `${process.env.BASE_URL!}/wsdl`;
+    console.log({ url });
     const result = await fetch(url, {
       method: "POST",
       body: xmlBody,
