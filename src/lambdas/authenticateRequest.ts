@@ -1,8 +1,5 @@
 import { UnauthorizedError } from "../errors/UnauthorizedError";
-
-type Headers = {
-  [key: string]: string;
-};
+type Headers = { [key: string]: string | string[] | undefined };
 
 export const authenticateRequest = (headers?: Headers) => {
   console.log(headers);

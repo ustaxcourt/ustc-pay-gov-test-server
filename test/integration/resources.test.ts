@@ -20,7 +20,7 @@ describe("test resources", () => {
       const url = `${baseUrl}/${resource}`;
       const response = await fetch(url, {
         headers: {
-          Authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
         },
       });
       expect(response.status).toBe(200);

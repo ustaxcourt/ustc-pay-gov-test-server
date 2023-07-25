@@ -25,7 +25,7 @@ describe.skip("transaction flow", () => {
       {
         forceSoap12Headers: true,
         wsdl_headers: {
-          Authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
         },
       }
     );

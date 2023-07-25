@@ -47,7 +47,7 @@ async function handleSoapRequest(soapRequest: string): Promise<string> {
 
 export async function handleSoapRequestLocal(req: Request, res: Response) {
   try {
-    authenticateRequest(req.headers?.authentication as string);
+    authenticateRequest(req.headers);
     const result = await handleSoapRequest(req.body);
     res.send(result);
   } catch (err) {
@@ -65,7 +65,7 @@ export const handler = async (
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
   try {
-    authenticateRequest(event.headers?.Authentication);
+    authenticateRequest(event.headers);
     parseRequest(event.body);
 
     const soapRequest = event.body;

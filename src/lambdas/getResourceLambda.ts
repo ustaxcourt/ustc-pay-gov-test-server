@@ -11,7 +11,7 @@ async function getResource(filename?: string) {
 
 export async function getResourceLocal(req: Request, res: Response) {
   try {
-    authenticateRequest(req.headers?.authentication as string);
+    authenticateRequest(req.headers);
 
     const result = await getResource(req.params.file);
     res.send(result);
@@ -24,7 +24,7 @@ export async function handler(
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> {
   try {
-    authenticateRequest(event.headers?.Authentication);
+    authenticateRequest(event.headers);
     const result = await getResource(event.pathParameters?.filename);
     return {
       statusCode: 200,

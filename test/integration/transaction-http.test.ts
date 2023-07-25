@@ -12,6 +12,16 @@ describe("initiate transaction", () => {
   let agencyTrackingId: string;
   const amount = "10.00";
 
+  it("attempts to load the wsdl", async () => {
+    const url = `${process.env.BASE_URL!}/wsdl`;
+    const result = await fetch(url, {
+      headers: {
+        authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+      },
+    });
+    expect(result.status).toBe(200);
+  });
+
   it("calls the server to initiate a transaction", async () => {
     agencyTrackingId = uuidv4();
 
