@@ -1,17 +1,30 @@
 import express, { json } from "express";
-import { getResourceLambda } from "./lambdas/getResourceLambda";
+import { getResourceLocal } from "./lambdas/getResourceLambda";
 import { getPayPageLambda } from "./lambdas/getPayPageLambda";
-import { handleSoapRequestLambda } from "./lambdas/handleSoapRequestLambda";
+import { handleSoapRequestLocal } from "./lambdas/handleSoapRequestLambda";
 
 const app = express();
-app.use(json());
 
-app.get("/wsdl", getResourceLambda);
+// pass raw body to handlers
+app.use((req, _res, next) => {
+  var data = "";
+  req.setEncoding("utf8");
+  req.on("data", function (chunk) {
+    data += chunk;
+  });
 
-app.get("/wsdl/:file", getResourceLambda);
+  req.on("end", function () {
+    req.body = data;
+    next();
+  });
+});
+
+app.get("/wsdl", getResourceLocal);
+
+app.get("/wsdl/:file", getResourceLocal);
 app.get("/pay", getPayPageLambda);
-app.get("/:file", getResourceLambda);
+app.get("/:file", getResourceLocal);
 
-app.post("/wsdl", handleSoapRequestLambda);
+app.post("/wsdl", handleSoapRequestLocal);
 
 export { app };

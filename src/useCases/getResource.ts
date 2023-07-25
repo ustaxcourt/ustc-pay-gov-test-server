@@ -8,13 +8,13 @@ export type GetResource = (
 
 export const getResource: GetResource = async (appContext, { filename }) => {
   const supportedFiles = [
-    "TCSOnlineService_3_2.wsdl",
-    "TCSOnlineService_3_2.xsd",
+    "TCSOnlineService_3_1.wsdl",
+    "TCSOnlineService_3_1.xsd",
     "tcs_common_types.xsd",
   ];
 
   if (!filename) {
-    filename = "TCSOnlineService_3_2.wsdl";
+    filename = "TCSOnlineService_3_1.wsdl";
   } else if (!supportedFiles.includes(filename)) {
     throw "Not found";
   }

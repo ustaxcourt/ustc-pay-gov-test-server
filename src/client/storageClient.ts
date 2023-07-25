@@ -1,9 +1,20 @@
-import { getFile } from "./s3/getFile";
-import { saveFile } from "./s3/saveFile";
+import { getFileS3 } from "./s3/getFile";
+import { saveFileS3 } from "./s3/saveFile";
+
+import { getFileLocal } from "./local/getFile";
+import { saveFileLocal } from "./local/saveFile";
 
 export function storageClient() {
-  return {
-    getFile,
-    saveFile,
-  };
+  switch (process.env.NODE_ENV) {
+    case "local":
+      return {
+        getFile: getFileLocal,
+        saveFile: saveFileLocal,
+      };
+    case "production":
+      return {
+        getFile: getFileS3,
+        saveFile: saveFileS3,
+      };
+  }
 }

@@ -4,3 +4,6 @@ wsdl/
 config.*.yml
 temp/
 coverage/
+dist/
+.env*
+resources/

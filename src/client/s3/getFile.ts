@@ -4,6 +4,7 @@ import {
   GetObjectCommandInput,
 } from "@aws-sdk/client-s3";
 import { Readable } from "stream";
+import { GetFile } from "../../types/GetFile";
 
 const s3Client = new S3Client({ region: "us-east-1" });
 
@@ -17,9 +18,7 @@ async function streamToString(stream: Readable): Promise<string> {
   });
 }
 
-export type GetFile = (file: string) => Promise<string>;
-
-export const getFile: GetFile = async (Key) => {
+export const getFileS3: GetFile = async (Key) => {
   const params: GetObjectCommandInput = {
     Bucket: process.env.BUCKET_NAME,
     Key,
@@ -28,7 +27,7 @@ export const getFile: GetFile = async (Key) => {
   const command = new GetObjectCommand(params);
   try {
     const result = await s3Client.send(command);
-    if (!result.Body) throw "Transaction not found!";
+    if (!result.Body) throw new Error("Transaction not found!");
     const contents = await streamToString(result.Body as Readable);
     return contents;
   } catch (err) {

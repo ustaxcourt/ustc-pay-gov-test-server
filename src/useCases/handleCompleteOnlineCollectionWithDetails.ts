@@ -18,7 +18,7 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
     const completedTransaction: CompletedTransaction = {
       ...transaction,
       paid: true,
-      pay_gov_tracking_id: uuidv4(),
+      paygov_tracking_id: uuidv4(),
     };
 
     await appContext
@@ -37,10 +37,10 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
         "S:Body": {
           "ns2:completeOnlineCollectionWithDetailsResponse": {
             completeOnlineCollectionWithDetailsResponse: {
-              pay_gov_tracking_id: completedTransaction.pay_gov_tracking_id,
+              paygov_tracking_id: completedTransaction.paygov_tracking_id,
               transaction_status: "Success",
               agency_tracking_id: completedTransaction.agency_tracking_id,
-              transaction_amount: completedTransaction.amount,
+              transaction_amount: completedTransaction.transaction_amount,
               payment_type: "somethbing",
               transaction_type: "something-else",
             },

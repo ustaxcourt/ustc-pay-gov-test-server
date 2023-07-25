@@ -1,33 +1,26 @@
-import { getConfig } from "./helpers";
-
 describe("test resources", () => {
-  let baseUrl: string;
-  let apiToken: string;
+  const baseUrl = process.env.BASE_URL;
   const resourcesToCheck = [
-    "wsdl/TCSOnlineService_3_2.wsdl",
-    "wsdl/TCSOnlineService_3_2.xsd",
+    "wsdl/TCSOnlineService_3_1.wsdl",
+    "wsdl/TCSOnlineService_3_1.xsd",
     "wsdl/tcs_common_types.xsd",
     "wsdl",
   ];
 
-  beforeAll(() => {
-    const result = getConfig();
-    baseUrl = result.baseUrl;
-    apiToken = result.apiToken;
-  });
-
   it("should not serve the resources without the api token", async () => {
     for (const resource of resourcesToCheck) {
-      const response = await fetch(`${baseUrl}/${resource}`, {});
+      const url = `${baseUrl}/${resource}`;
+      const response = await fetch(url, {});
       expect(response.status).toBe(403);
     }
   });
 
   it("should load all of the expected resources", async () => {
     for (const resource of resourcesToCheck) {
-      const response = await fetch(`${baseUrl}/${resource}`, {
+      const url = `${baseUrl}/${resource}`;
+      const response = await fetch(url, {
         headers: {
-          Authentication: `Bearer ${apiToken}`,
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
         },
       });
       expect(response.status).toBe(200);
