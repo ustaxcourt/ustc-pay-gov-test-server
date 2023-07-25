@@ -1,7 +1,24 @@
 import { UnauthorizedError } from "../errors/UnauthorizedError";
 
-export const authenticateRequest = (token?: string) => {
-  if (!token || token !== `Bearer ${process.env.ACCESS_TOKEN}`) {
+type Headers = {
+  [key: string]: string;
+};
+
+export const authenticateRequest = (headers?: Headers) => {
+  console.log(headers);
+  if (!headers) {
+    throw new UnauthorizedError("Missing Authentication");
+  }
+
+  let authentication: string = "empty";
+  for (const k of Object.keys(headers)) {
+    if (k.toLowerCase() === "authentication") {
+      authentication = headers[k] as string;
+      break;
+    }
+  }
+
+  if (authentication !== `Bearer ${process.env.ACCESS_TOKEN}`) {
     throw new UnauthorizedError("Missing Authentication");
   }
 };
