@@ -52,7 +52,6 @@ describe("initiate transaction", () => {
     const xmlBody = builder.build(reqObj);
 
     const url = `${process.env.BASE_URL!}/wsdl`;
-    console.log({ url });
     const result = await fetch(url, {
       method: "POST",
       body: xmlBody,

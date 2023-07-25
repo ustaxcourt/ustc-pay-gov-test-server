@@ -5,11 +5,11 @@ import { authenticateRequest } from "./authenticateRequest";
 
 const appContext = createAppContext();
 
-async function getResource(filename?: string) {
+const getResource = async (filename?: string) => {
   return appContext.useCases().getResource(appContext, { filename });
-}
+};
 
-export async function getResourceLocal(req: Request, res: Response) {
+export const getResourceLocal = async (req: Request, res: Response) => {
   try {
     authenticateRequest(req.headers);
 
@@ -18,11 +18,11 @@ export async function getResourceLocal(req: Request, res: Response) {
   } catch (err) {
     handleLocalError(err, res);
   }
-}
+};
 
-export async function handler(
+export const handler = async (
   event: AWSLambda.APIGatewayProxyEvent
-): Promise<AWSLambda.APIGatewayProxyResult> {
+): Promise<AWSLambda.APIGatewayProxyResult> => {
   try {
     authenticateRequest(event.headers);
     const result = await getResource(event.pathParameters?.filename);
@@ -33,4 +33,4 @@ export async function handler(
   } catch (err) {
     return handleLambdaError(err);
   }
-}
+};
