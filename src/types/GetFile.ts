@@ -1,3 +1,7 @@
+import { AppContext } from "./AppContext";
 import { Filename } from "./Filename";
 
-export type GetFile = (file: Filename) => Promise<string>;
+export type GetFile = (
+  appContext: AppContext,
+  file: Filename
+) => Promise<string>;

@@ -12,7 +12,7 @@ export const getTransactionRequest: GetTransactionRequest = async (
 ) => {
   const data = await appContext
     .storageClient()
-    .getFile(`requests/${token}.json`);
+    .getFile(appContext, `requests/${token}.json`);
 
   const transactionRequest = JSON.parse(data) as TransactionRequest;
   return transactionRequest;

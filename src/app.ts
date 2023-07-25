@@ -1,8 +1,10 @@
-import express, { json } from "express";
+import express from "express";
 import { getResourceLocal } from "./lambdas/getResourceLambda";
 import { getPayPageLambda } from "./lambdas/getPayPageLambda";
 import { handleSoapRequestLocal } from "./lambdas/handleSoapRequestLambda";
+import { createAppContext } from "./appContext";
 
+const appContext = createAppContext();
 const app = express();
 
 // pass raw body to handlers
@@ -17,6 +19,11 @@ app.use((req, _res, next) => {
     req.body = data;
     next();
   });
+});
+
+app.use((_req, res, next) => {
+  res.locals.appContext = appContext;
+  next();
 });
 
 app.get("/wsdl", getResourceLocal);

@@ -32,4 +32,5 @@ export type AppContext = {
     getFile: GetFile;
     saveFile: SaveFile;
   };
+  files: { [key: string]: string };
 };

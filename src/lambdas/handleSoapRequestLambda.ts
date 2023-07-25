@@ -5,11 +5,14 @@ import { xmlOptions } from "../xmlOptions";
 import { authenticateRequest } from "./authenticateRequest";
 import { handleLambdaError, handleLocalError } from "./handleError";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
+import { AppContext } from "../types/AppContext";
 
 const parser = new XMLParser(xmlOptions);
-const appContext = createAppContext();
 
-async function handleSoapRequest(soapRequest: string): Promise<string> {
+async function handleSoapRequest(
+  appContext: AppContext,
+  soapRequest: string
+): Promise<string> {
   const jObj = parser.parse(soapRequest);
 
   const requestData = jObj["soapenv:Envelope"]["soapenv:Body"];
@@ -48,7 +51,7 @@ async function handleSoapRequest(soapRequest: string): Promise<string> {
 export async function handleSoapRequestLocal(req: Request, res: Response) {
   try {
     authenticateRequest(req.headers);
-    const result = await handleSoapRequest(req.body);
+    const result = await handleSoapRequest(res.locals.appContext, req.body);
     res.send(result);
   } catch (err) {
     handleLocalError(err, res);
@@ -65,12 +68,13 @@ export const handler = async (
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
   try {
+    const appContext = createAppContext();
     authenticateRequest(event.headers);
     parseRequest(event.body);
 
     const soapRequest = event.body;
 
-    const result = await handleSoapRequest(soapRequest!);
+    const result = await handleSoapRequest(appContext, soapRequest!);
     return {
       statusCode: 200,
       body: result,

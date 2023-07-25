@@ -1,7 +1,12 @@
-export type SaveFile = ({
-  key,
-  data,
-}: {
-  key: string;
-  data: string;
-}) => Promise<void>;
+import { AppContext } from "./AppContext";
+
+export type SaveFile = (
+  appContext: AppContext,
+  {
+    key,
+    data,
+  }: {
+    key: string;
+    data: string;
+  }
+) => Promise<void>;

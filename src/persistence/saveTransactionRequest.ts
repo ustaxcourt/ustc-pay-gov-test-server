@@ -10,7 +10,7 @@ export const saveTransactionRequest: SaveTransactionRequest = async (
   appContext,
   transactionRequest
 ) => {
-  await appContext.storageClient().saveFile({
+  await appContext.storageClient().saveFile(appContext, {
     key: `requests/${transactionRequest.token}.json`,
     data: JSON.stringify(transactionRequest),
   });

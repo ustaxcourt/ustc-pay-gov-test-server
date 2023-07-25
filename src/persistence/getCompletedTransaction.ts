@@ -12,7 +12,7 @@ export const getCompletedTransaction: GetCompletedTransaction = async (
 ) => {
   const contents = await appContext
     .storageClient()
-    .getFile(`transactions/${payGovTrackingId}.json`);
+    .getFile(appContext, `transactions/${payGovTrackingId}.json`);
   const transaction = JSON.parse(contents) as CompletedTransaction;
   return transaction;
 };

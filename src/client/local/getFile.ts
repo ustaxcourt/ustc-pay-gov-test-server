@@ -1,14 +1,25 @@
 import path from "path";
 import { readFileSync } from "fs";
-import { Filename } from "../../types/Filename";
-import { createIfDoesNotExist } from "./createIfDoesNotExist";
+import { NotFoundError } from "../../errors/NotFoundError";
+import { GetFile } from "../../types/GetFile";
 
-export const getFileLocal = async (filename: Filename): Promise<string> => {
-  const resolvedPath = path.resolve(__dirname, "../../../resources", filename);
-  const pathToTransactions = path.dirname(resolvedPath);
+export const getFileLocal: GetFile = async (appContext, filename) => {
+  if (filename.substring(0, 5) === "html/") {
+    const resolvedPath = path.resolve(
+      __dirname,
+      "../../../src/static",
+      filename
+    );
+    return readFileSync(resolvedPath, "utf-8");
+  }
 
-  createIfDoesNotExist(pathToTransactions);
+  if (filename.substring(0, 5) === "wsdl/") {
+    return "todo: we need to make this file in filesystem";
+  }
 
-  const result = readFileSync(resolvedPath, "utf-8");
-  return result;
+  if (appContext.files[filename]) {
+    return appContext.files[filename];
+  }
+
+  throw new NotFoundError("Could not find file");
 };
