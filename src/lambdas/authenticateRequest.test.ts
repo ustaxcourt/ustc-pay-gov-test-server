@@ -6,7 +6,15 @@ describe("authenticateRequest", () => {
     expect(() => authenticateRequest()).toThrowError(UnauthorizedError);
   });
 
-  it("should not throw an error if an authentication header is passed in ", () => {
+  it("throws an error if with the incorrect authentication header", () => {
+    expect(() =>
+      authenticateRequest({
+        authentication: `Bearer ${process.env.ACCESS_TOKEN} random extra stuff`,
+      })
+    ).toThrowError(UnauthorizedError);
+  });
+
+  it("should not throw an error with the correct authentication header", () => {
     expect(() =>
       authenticateRequest({
         authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
@@ -14,7 +22,7 @@ describe("authenticateRequest", () => {
     ).not.toThrow();
   });
 
-  it("should not throw an error if an authentication header is passed in Title Case", () => {
+  it("should not throw an error with the correct authentication header in Title Case", () => {
     expect(() =>
       authenticateRequest({
         Authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
@@ -22,7 +30,7 @@ describe("authenticateRequest", () => {
     ).not.toThrow();
   });
 
-  it("should not throw an error if an authentication header is passed in Upper Case", () => {
+  it("should not throw an error with the correct authentication header in Upper Case", () => {
     expect(() =>
       authenticateRequest({
         AUTHENTICATION: `Bearer ${process.env.ACCESS_TOKEN}`,
