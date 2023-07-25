@@ -19,7 +19,9 @@ export const getResource: GetResource = async (appContext, { filename }) => {
     throw "Not found";
   }
 
-  const contents = await appContext.storageClient().getFile(`wsdl/${filename}`);
+  const contents = await appContext
+    .storageClient()
+    .getFile(appContext, `wsdl/${filename}`);
 
   return contents.replace(
     "%%location%%",

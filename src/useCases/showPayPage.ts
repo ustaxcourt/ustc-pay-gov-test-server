@@ -14,7 +14,9 @@ export const showPayPage: ShowPayPage = async (appContext, { token }) => {
     .persistenceGateway()
     .getTransactionRequest(appContext, token);
 
-  const html = await appContext.storageClient().getFile("html/pay.html");
+  const html = await appContext
+    .storageClient()
+    .getFile(appContext, "html/pay.html");
 
   return html
     .replace("%%urlSuccess%%", transactionRequest.url_success)

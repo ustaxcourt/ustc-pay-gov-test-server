@@ -14,11 +14,13 @@ describe("initiate transaction", () => {
 
   it("attempts to load the wsdl", async () => {
     const url = `${process.env.BASE_URL!}/wsdl`;
+    console.log({ url });
     const result = await fetch(url, {
       headers: {
         authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
       },
     });
+    console.log(result);
     expect(result.status).toBe(200);
   });
 
@@ -52,6 +54,7 @@ describe("initiate transaction", () => {
     const xmlBody = builder.build(reqObj);
 
     const url = `${process.env.BASE_URL!}/wsdl`;
+    console.log({ url });
     const result = await fetch(url, {
       method: "POST",
       body: xmlBody,
@@ -60,6 +63,8 @@ describe("initiate transaction", () => {
         authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
       },
     });
+
+    console.log({ result });
 
     const parser = new XMLParser(xmlOptions);
     const data = await result.text();
@@ -74,7 +79,10 @@ describe("initiate transaction", () => {
 
   it("should call the pay page with the token", async () => {
     const url = `${process.env.BASE_URL}/pay?token=${token}`;
+    console.log({ url });
     const result = await fetch(url);
+    console.log({ result });
+
     expect(result.status).toBe(200);
     expect(result.body).toBeTruthy();
   });

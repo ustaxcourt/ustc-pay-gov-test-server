@@ -18,7 +18,7 @@ async function streamToString(stream: Readable): Promise<string> {
   });
 }
 
-export const getFileS3: GetFile = async (Key) => {
+export const getFileS3: GetFile = async (_appContext, Key) => {
   const params: GetObjectCommandInput = {
     Bucket: process.env.BUCKET_NAME,
     Key,

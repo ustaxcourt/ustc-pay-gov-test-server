@@ -4,4 +4,5 @@ module.exports = {
   testEnvironment: "node",
   setupFiles: ["dotenv/config"],
   bail: true,
+  // silent: true,
 };
