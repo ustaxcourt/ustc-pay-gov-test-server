@@ -2,7 +2,7 @@ import fs from "fs";
 import { getFileLocal } from "./getFile";
 
 describe("getFileLocal", () => {
-  const mockedContents = "dummytext";
+  const mockedContents = "dummy text";
   const mockedReadFileSync = jest
     .spyOn(fs, "readFileSync")
     .mockReturnValue("dummy text");

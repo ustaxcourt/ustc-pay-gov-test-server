@@ -2,7 +2,7 @@ import { UnauthorizedError } from "../errors/UnauthorizedError";
 type Headers = { [key: string]: string | string[] | undefined };
 
 export const authenticateRequest = (headers?: Headers) => {
-  console.log(headers);
+
   if (!headers) {
     throw new UnauthorizedError("Missing Authentication");
   }
