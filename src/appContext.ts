@@ -9,6 +9,7 @@ import { getTransactionRequest } from "./persistence/getTransactionRequest";
 import { saveCompletedTransaction } from "./persistence/saveCompletedTransaction";
 import { saveTransactionRequest } from "./persistence/saveTransactionRequest";
 import { handleCompleteOnlineCollectionWithDetails } from "./useCases/handleCompleteOnlineCollectionWithDetails";
+import { handleGetDetails } from "./useCases/handleGetDetails";
 
 export function createAppContext() {
   return {
@@ -16,6 +17,7 @@ export function createAppContext() {
       getResource,
       handleCompleteOnlineCollection,
       handleCompleteOnlineCollectionWithDetails,
+      handleGetDetails,
       handleStartOnlineCollection,
       showPayPage,
     }),
