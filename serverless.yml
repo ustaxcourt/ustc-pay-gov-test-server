@@ -5,7 +5,7 @@ provider:
   name: aws
   runtime: nodejs18.x
   region: us-east-1
-  stage: dev
+  stage: prod
   iam:
     role:
       statements:
@@ -13,7 +13,7 @@ provider:
           Action:
             - s3:PutObject
             - s3:GetObject
-          Resource: "arn:aws:s3:::${self:service}-${opt:stage, 'dev'}/*"
+          Resource: "arn:aws:s3:::${self:service}-prod/*"
 
 package:
   individually: true
@@ -39,7 +39,7 @@ functions:
           path: /wsdl
     environment:
       BASE_URL: ${self:custom.subdomain}
-      BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+      BUCKET_NAME: ${self:service}-prod
       ACCESS_TOKEN: ${env:ACCESS_TOKEN}
       NODE_ENV: production
 
@@ -54,7 +54,7 @@ functions:
           path: /wsdl
     environment:
       BASE_URL: ${self:custom.subdomain}
-      BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+      BUCKET_NAME: ${self:service}-prod
       ACCESS_TOKEN: ${env:ACCESS_TOKEN}
       NODE_ENV: production
 
@@ -66,7 +66,7 @@ functions:
           path: /pay
     environment:
       BASE_URL: ${self:custom.subdomain}
-      BUCKET_NAME: ${self:service}-${opt:stage, 'dev'}
+      BUCKET_NAME: ${self:service}-prod
       ACCESS_TOKEN: ${env:ACCESS_TOKEN}
       NODE_ENV: production
 
@@ -75,4 +75,4 @@ resources:
     MyS3Bucket:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: ${self:service}-${opt:stage, 'dev'}
+        BucketName: ${self:service}-prod

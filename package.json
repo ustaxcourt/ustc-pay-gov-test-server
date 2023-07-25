@@ -9,7 +9,7 @@
     "copy-files": "aws s3 cp src/static s3://ustc-pay-gov-test-server-dev --recursive",
     "test": "jest ./src",
     "test:integration": "NODE_ENV='local' jest --verbose --bail ./test/integration",
-    "test:integration:prod": "DOTENV_CONFIG_PATH=.env.dev NODE_ENV='dev' jest --bail ./test/integration"
+    "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod NODE_ENV='prod' jest --bail ./test/integration"
   },
   "keywords": [],
   "author": "",
