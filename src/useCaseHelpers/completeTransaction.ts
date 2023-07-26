@@ -12,7 +12,7 @@ export const completeTransaction: CompleteTransaction = (transaction) => {
     ...transaction,
     paid: true,
     paygov_tracking_id: uuidv4(),
-    payment_date: DateTime.now().toFormat("yyyy-MM-DD"),
+    payment_date: DateTime.now().toFormat("yyyy-MM-dd"),
     payment_type: "PLASTIC_CARD",
     transaction_date: now.toJSDate().toISOString(),
     transaction_status: "Success",

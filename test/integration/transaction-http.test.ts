@@ -14,7 +14,7 @@ describe("initiate transaction", () => {
   let payGovTrackingId: string;
   const amount = "10.00";
   const tcsAppId = "ustc-test-pay-gov-app";
-  const today = DateTime.now().toFormat("yyyy-MM-DD");
+  const today = DateTime.now().toFormat("yyyy-MM-dd");
 
   it("attempts to load the wsdl", async () => {
     const url = `${process.env.BASE_URL!}/wsdl`;
@@ -206,5 +206,6 @@ describe("initiate transaction", () => {
     expect(trackingResponse.transaction_status).toBe("Success");
     expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
     expect(trackingResponse.payment_date).toBe(today);
+    expect(trackingResponse.payment_date).toMatch(/\d{4}-\d{2}-\d{2}/);
   });
 });
