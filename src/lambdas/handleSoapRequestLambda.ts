@@ -43,6 +43,14 @@ async function handleSoapRequest(
           requestData[actionKey]["completeOnlineCollectionWithDetailsRequest"]
         );
 
+    case "tcs:getDetails":
+      return appContext
+        .useCases()
+        .handleGetDetails(
+          appContext,
+          requestData[actionKey]["getDetailsRequest"]
+        );
+
     default:
       throw new InvalidRequestError("Could not find correct API");
   }

@@ -10,17 +10,21 @@ import { GetResource } from "../useCases/getResource";
 import { BuildXml } from "../useCaseHelpers/buildXml";
 import { GetFile } from "./GetFile";
 import { SaveFile } from "./SaveFile";
+import { HandleGetDetails } from "../useCases/handleGetDetails";
+import { CompleteTransaction } from "../useCaseHelpers/completeTransaction";
 
 export type AppContext = {
   useCases: () => {
     getResource: GetResource;
     handleCompleteOnlineCollection: HandleCompleteOnlineCollection;
     handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails;
+    handleGetDetails: HandleGetDetails;
     handleStartOnlineCollection: HandleStartOnlineCollection;
     showPayPage: ShowPayPage;
   };
   useCaseHelpers: () => {
     buildXml: BuildXml;
+    completeTransaction: CompleteTransaction;
   };
   persistenceGateway: () => {
     getCompletedTransaction: GetCompletedTransaction;
