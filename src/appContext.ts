@@ -10,6 +10,7 @@ import { saveCompletedTransaction } from "./persistence/saveCompletedTransaction
 import { saveTransactionRequest } from "./persistence/saveTransactionRequest";
 import { handleCompleteOnlineCollectionWithDetails } from "./useCases/handleCompleteOnlineCollectionWithDetails";
 import { handleGetDetails } from "./useCases/handleGetDetails";
+import { completeTransaction } from "./useCaseHelpers/completeTransaction";
 
 export function createAppContext() {
   return {
@@ -23,6 +24,7 @@ export function createAppContext() {
     }),
     useCaseHelpers: () => ({
       buildXml,
+      completeTransaction,
     }),
     persistenceGateway: () => ({
       getCompletedTransaction,

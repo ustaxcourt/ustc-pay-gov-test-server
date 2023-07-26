@@ -1,8 +1,23 @@
 import { AppContext } from "../types/AppContext";
-import { CompletedTransaction, TransactionRequest } from "../types/Transaction";
-import { v4 as uuidv4 } from "uuid";
-import { buildXml } from "../useCaseHelpers/buildXml";
+import { pick } from "lodash";
+import {
+  PaymentType,
+  TransactionRequest,
+  TransactionType,
+} from "../types/Transaction";
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
+import { TransactionStatus } from "../types/TransactionStatus";
+
+export type CompleteOnlineCollectionWithDetailsResponse = {
+  paygov_tracking_id: string;
+  agency_tracking_id: string;
+  transaction_amount: string;
+  transaction_type: TransactionType;
+  transaction_date: string;
+  payment_date: string;
+  transaction_status: TransactionStatus;
+  payment_type: PaymentType;
+};
 
 export type HandleCompletOnlineCollectionWithDetails = (
   appContext: AppContext,
@@ -15,41 +30,30 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
       .persistenceGateway()
       .getTransactionRequest(appContext, token);
 
-    const completedTransaction: CompletedTransaction = {
-      ...transaction,
-      paid: true,
-      paygov_tracking_id: uuidv4(),
-    };
+    const completedTransaction = appContext
+      .useCaseHelpers()
+      .completeTransaction(transaction);
 
     await appContext
       .persistenceGateway()
       .saveCompletedTransaction(appContext, completedTransaction);
 
-    const respObj = {
-      "S:Envelope": {
-        "S:Header": {
-          "work:WorkContext": {
-            "#text":
-              "rO0ABXd5ACl3ZWJsb2dpYy5hcHAudGNzb25saW5lLWF wcC02LjAuMC1TTkFQU0hPVAAAANYAAAAjd2VibG9naWMud29ya2FyZWEuU3RyaW5nV29ya0NvbnRleHQAH3Y2LjAuMC1TTkFQU 0hPVF8yMDE1XzEwXzE0XzIyMzgAAA==",
-            "@xmlns:work": "http://oracle.com/weblogic/soap/workarea/",
-          },
-        },
-        "S:Body": {
-          "ns2:completeOnlineCollectionWithDetailsResponse": {
-            completeOnlineCollectionWithDetailsResponse: {
-              paygov_tracking_id: completedTransaction.paygov_tracking_id,
-              transaction_status: "Success",
-              agency_tracking_id: completedTransaction.agency_tracking_id,
-              transaction_amount: completedTransaction.transaction_amount,
-              payment_type: "somethbing",
-              transaction_type: "something-else",
-            },
-            "@xmlns:ns2": "http://fms.treas.gov/services/tcsonline",
-          },
-        },
-        "@xmlns:S": "http://schemas.xmlsoap.org/soap/envelope/",
-      },
-    };
+    const response: CompleteOnlineCollectionWithDetailsResponse = pick(
+      completedTransaction,
+      [
+        "paygov_tracking_id",
+        "agency_tracking_id",
+        "transaction_amount",
+        "transaction_type",
+        "transaction_date",
+        "payment_date",
+        "transaction_status",
+        "payment_type",
+      ]
+    );
 
-    return buildXml(respObj);
+    return appContext.useCaseHelpers().buildXml({
+      response,
+      responseType: "completeOnlineCollectionWithDetailsResponse",
+    });
   };

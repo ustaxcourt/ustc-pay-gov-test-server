@@ -11,6 +11,7 @@ import { BuildXml } from "../useCaseHelpers/buildXml";
 import { GetFile } from "./GetFile";
 import { SaveFile } from "./SaveFile";
 import { HandleGetDetails } from "../useCases/handleGetDetails";
+import { CompleteTransaction } from "../useCaseHelpers/completeTransaction";
 
 export type AppContext = {
   useCases: () => {
@@ -23,6 +24,7 @@ export type AppContext = {
   };
   useCaseHelpers: () => {
     buildXml: BuildXml;
+    completeTransaction: CompleteTransaction;
   };
   persistenceGateway: () => {
     getCompletedTransaction: GetCompletedTransaction;

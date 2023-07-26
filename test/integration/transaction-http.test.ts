@@ -1,5 +1,6 @@
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { v4 as uuidv4 } from "uuid";
+import { DateTime } from "luxon";
 
 const xmlOptions = {
   ignoreAttributes: false,
@@ -13,6 +14,7 @@ describe("initiate transaction", () => {
   let payGovTrackingId: string;
   const amount = "10.00";
   const tcsAppId = "ustc-test-pay-gov-app";
+  const today = DateTime.now().toFormat("yyyy-MM-DD");
 
   it("attempts to load the wsdl", async () => {
     const url = `${process.env.BASE_URL!}/wsdl`;
@@ -137,6 +139,9 @@ describe("initiate transaction", () => {
     expect(Number(String(trackingResponse.transaction_amount))).toBe(
       Number(amount)
     );
+    expect(trackingResponse.transaction_status).toBe("Success");
+    expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+    expect(trackingResponse.payment_date).toBe(today);
   });
 
   it("should find the details of the transaction via getDetails api", async () => {
@@ -175,10 +180,22 @@ describe("initiate transaction", () => {
 
     const parser = new XMLParser(xmlOptions);
     const data = await result.text();
+
+    console.log(data);
     const response = parser.parse(data);
-    const trackingResponse =
+
+    const detailsResponse =
       response["S:Envelope"]["S:Body"]["ns2:getDetailsResponse"]
         .getDetailsResponse;
+
+    console.log({ length: detailsResponse.transactions.length });
+    let trackingResponse;
+
+    if (detailsResponse.transactions.length) {
+      trackingResponse = detailsResponse.transactions[0].transaction;
+    } else {
+      trackingResponse = detailsResponse.transactions.transaction;
+    }
 
     expect(trackingResponse.paygov_tracking_id).toBeTruthy();
     expect(trackingResponse.transaction_status).toBe("Success");
@@ -186,5 +203,8 @@ describe("initiate transaction", () => {
     expect(Number(String(trackingResponse.transaction_amount))).toBe(
       Number(amount)
     );
+    expect(trackingResponse.transaction_status).toBe("Success");
+    expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+    expect(trackingResponse.payment_date).toBe(today);
   });
 });
