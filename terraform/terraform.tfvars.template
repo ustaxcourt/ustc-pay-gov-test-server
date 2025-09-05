@@ -1,0 +1,41 @@
+# Terraform Variables Template
+# Copy this file to terraform.tfvars and customize per environment
+
+# Basic Configuration
+environment    = "dev"
+project_name   = "ustc-pay-gov-test-server"
+aws_region     = "us-east-1"
+
+# Domain Configuration
+custom_domain = "pay-gov-dev.ustaxcourt.gov"
+base_url      = "pay-gov-dev.ustaxcourt.gov"
+
+# Lambda Configuration
+lambda_runtime     = "nodejs18.x"
+lambda_timeout     = 30
+lambda_memory_size = 512
+
+# Application Configuration
+node_env = "development"
+
+# S3 Configuration
+s3_force_destroy = true
+
+# API Gateway Configuration
+api_gateway_stage_name = "dev"
+
+# SSL Certificate Configuration
+# Uncomment and provide the ARN of your SSL certificate
+# certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/12345678-1234-1234-1234-123456789012"
+
+# Route53 Configuration
+# Uncomment and provide your Route53 hosted zone ID
+# route53_zone_id = "Z1234567890ABC"
+
+# Secrets Configuration
+# IMPORTANT: Do not store sensitive values in this file
+# Set the access_token via:
+# 1. Environment variable: export TF_VAR_access_token="your-token"
+# 2. AWS Secrets Manager (recommended for production)
+# 3. Terraform Cloud/Enterprise variables
+access_token = "CHANGE_ME_OR_SET_VIA_ENV_VAR"

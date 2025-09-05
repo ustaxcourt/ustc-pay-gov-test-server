@@ -6,7 +6,7 @@
   "scripts": {
     "build": "npx tsc",
     "dev": "NODE_ENV='local' concurrently \"npx tsc --watch\" \"nodemon -q ./dist/index.js\"",
-    "copy-files": "aws s3 cp src/static s3://ustc-pay-gov-test-server-dev --recursive",
+    "copy-files": "aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive",
     "test": "jest ./src",
     "start": "node .",
     "test:integration": "NODE_ENV='local' jest --verbose --bail ./test/integration",
