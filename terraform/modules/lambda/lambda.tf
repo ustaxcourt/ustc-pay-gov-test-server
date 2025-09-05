@@ -1,34 +1,34 @@
-# Lambda deployment packages - each contains only the specific handler file
+# Lambda deployment packages - bundled with esbuild (matching serverless-esbuild behavior)
 
-# SOAP API Lambda - only handleSoapRequestLambda.js
+# SOAP API Lambda - bundled with dependencies
 data "archive_file" "lambda_soap_api_zip" {
   type        = "zip"
   output_path = "${path.root}/lambda-soap-api-deployment.zip"
-  
+
   source {
-    content  = file("${path.root}/../dist/lambdas/handleSoapRequestLambda.js")
+    content  = file("${path.root}/lambda-soap-api-bundled.js")
     filename = "src/lambdas/handleSoapRequestLambda.js"
   }
 }
 
-# Resource Lambda - only getResourceLambda.js
+# Resource Lambda - bundled with dependencies
 data "archive_file" "lambda_resource_zip" {
   type        = "zip"
   output_path = "${path.root}/lambda-resource-deployment.zip"
-  
+
   source {
-    content  = file("${path.root}/../dist/lambdas/getResourceLambda.js")
+    content  = file("${path.root}/lambda-resource-bundled.js")
     filename = "src/lambdas/getResourceLambda.js"
   }
 }
 
-# Pay Page Lambda - only getPayPageLambda.js
+# Pay Page Lambda - bundled with dependencies
 data "archive_file" "lambda_pay_page_zip" {
   type        = "zip"
   output_path = "${path.root}/lambda-pay-page-deployment.zip"
-  
+
   source {
-    content  = file("${path.root}/../dist/lambdas/getPayPageLambda.js")
+    content  = file("${path.root}/lambda-pay-page-bundled.js")
     filename = "src/lambdas/getPayPageLambda.js"
   }
 }
