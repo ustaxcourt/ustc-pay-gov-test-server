@@ -90,12 +90,7 @@ Create S3 bucket and DynamoDB table for Terraform state management:
 cd terraform/
 
 # Initialize with backend configuration
-terraform init \
-    -backend-config="bucket=ustc-pay-gov-terraform-state" \
-    -backend-config="key=ustc-pay-gov-test-server/terraform.tfstate" \
-    -backend-config="region=us-east-1" \
-    -backend-config="dynamodb_table=ustc-pay-gov-terraform-locks" \
-    -backend-config="encrypt=true"
+terraform init -backend-config=backend.hcl
 ```
 
 ### 3. Configure Variables
