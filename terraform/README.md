@@ -2,9 +2,9 @@
 
 This directory contains complete Terraform configurations to manage the infrastructure for the USTC Pay Gov Test Server, migrated from the Serverless Framework.
 
-## 🚀 Migration Status: Complete
+## Migration Status: Complete
 
-✅ **Serverless Framework → Terraform migration complete with simplified single-environment structure!**
+**Serverless Framework → Terraform migration complete with simplified single-environment structure!**
 
 ## Directory Structure
 
@@ -71,7 +71,7 @@ brew tap hashicorp/tap
 brew install hashicorp/tap/terraform
 ```
 
-## Quick Start 🚀
+## Quick Start
 
 ### 1. Backend State Management (Recommended)
 
