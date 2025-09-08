@@ -13,11 +13,9 @@ terraform/
 ├── main.tf                    # Main Terraform configuration and providers
 ├── variables.tf               # Variable definitions with validation
 ├── outputs.tf                 # Output definitions for API endpoints
-├── backend.tf                 # Backend configuration documentation
 ├── terraform.tfvars           # Configuration variables
 ├── terraform.tfvars.template  # Variable template
 ├── iam.tf                     # Lambda execution roles and policies
-├── domain.tf                  # Custom domain and SSL certificate configuration
 ├── build.sh                   # Lambda build script (replaces serverless-esbuild)
 ├── deploy.sh                  # Automated deployment script (replaces serverless deploy)
 ├── create-terraform-backend.sh # Backend setup automation script
