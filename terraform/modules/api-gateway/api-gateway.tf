@@ -145,11 +145,26 @@ resource "aws_api_gateway_deployment" "main" {
 
   # Force new deployment when Lambda functions change
   triggers = {
-    redeployment = sha1(jsonencode([
-      var.soap_api_function_name,
-      var.soap_resource_function_name,
-      var.pay_page_function_name,
-    ]))
+    redeployment = sha256(jsonencode({
+      methods = [
+        aws_api_gateway_method.soap_api_post.id,
+        aws_api_gateway_method.soap_resource_get_wsdl.id,
+        aws_api_gateway_method.soap_resource_get_filename.id,
+        aws_api_gateway_method.pay_page_get.id,
+      ]
+      integrations = [
+        aws_api_gateway_integration.soap_api_post.id,
+        aws_api_gateway_integration.soap_resource_get_wsdl.id,
+        aws_api_gateway_integration.soap_resource_get_filename.id,
+        aws_api_gateway_integration.pay_page_get.id,
+      ]
+      function_names = [
+        var.soap_api_function_name,
+        var.soap_resource_function_name,
+        var.pay_page_function_name,
+      ]
+      stage = var.api_gateway_stage_name
+    }))
   }
 
   lifecycle {
