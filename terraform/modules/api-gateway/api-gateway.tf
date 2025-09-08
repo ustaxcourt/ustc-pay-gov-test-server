@@ -109,7 +109,7 @@ resource "aws_lambda_permission" "soap_api" {
   action        = "lambda:InvokeFunction"
   function_name = var.soap_api_function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/${aws_api_gateway_stage.main.stage_name}/*/*"
 }
 
 resource "aws_lambda_permission" "soap_resource" {
@@ -117,7 +117,7 @@ resource "aws_lambda_permission" "soap_resource" {
   action        = "lambda:InvokeFunction"
   function_name = var.soap_resource_function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/${aws_api_gateway_stage.main.stage_name}/*/*"
 }
 
 resource "aws_lambda_permission" "pay_page" {
@@ -125,7 +125,7 @@ resource "aws_lambda_permission" "pay_page" {
   action        = "lambda:InvokeFunction"
   function_name = var.pay_page_function_name
   principal     = "apigateway.amazonaws.com"
-  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/*/*"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/${aws_api_gateway_stage.main.stage_name}/*/*"
 }
 
 # API Gateway Deployment
