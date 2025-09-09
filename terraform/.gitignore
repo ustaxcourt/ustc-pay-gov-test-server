@@ -37,5 +37,10 @@ terraform.rc
 *.backup
 *~
 
+
+#Ignore js and zip files
+*.js
+*.zip
+
 # Ignore lock files (optional, some teams prefer to commit these)
 # .terraform.lock.hcl
