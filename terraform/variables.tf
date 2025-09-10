@@ -89,3 +89,48 @@ variable "route53_zone_id" {
   type        = string
   default     = ""
 }
+
+variable "github_org" {
+  description = "GitHub organization name"
+  type        = string
+  default     = "ustaxcourt"
+}
+
+
+variable "github_repo" {
+  description = "GitHub repository name"
+  type        = string
+  default     = ""
+}
+
+
+variable "github_ref" {
+  description = "Git reference that can assume the role (e.g., refs/heads/main)"
+  type        = string
+  default     = ""
+}
+
+
+variable "deploy_role_name" {
+  description = "Name of Iam role assumed by Github actions"
+  type        = string
+  default     = "ustc-github-actions-oidc-deployer-role"
+}
+
+variable "github_oidc_provider_arn" {
+  type        = string
+  description = "ARN of IdP created for Github in AWS IAM"
+  default     = ""
+}
+
+variable "tf_state_bucket_name" {
+  description = "Name of the S3 bucket that stores Terraform state for this environment"
+  type        = string
+  default     = ""
+}
+
+variable "tf_lock_table_name" {
+  description = "Name of the DynamoDB table used for Terraform state locking for this environment"
+  type        = string
+  default     = ""
+}

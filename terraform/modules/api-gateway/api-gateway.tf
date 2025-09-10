@@ -46,8 +46,8 @@ resource "aws_api_gateway_integration" "soap_api_post" {
   http_method = aws_api_gateway_method.soap_api_post.http_method
 
   integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = var.soap_api_invoke_arn
+  type                    = "AWS_PROXY"
+  uri                     = var.soap_api_invoke_arn
 }
 
 # Methods and Integrations for soap_resource (GET /wsdl and GET /wsdl/{filename})
@@ -64,8 +64,8 @@ resource "aws_api_gateway_integration" "soap_resource_get_wsdl" {
   http_method = aws_api_gateway_method.soap_resource_get_wsdl.http_method
 
   integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = var.soap_resource_invoke_arn
+  type                    = "AWS_PROXY"
+  uri                     = var.soap_resource_invoke_arn
 }
 
 resource "aws_api_gateway_method" "soap_resource_get_filename" {
@@ -81,8 +81,8 @@ resource "aws_api_gateway_integration" "soap_resource_get_filename" {
   http_method = aws_api_gateway_method.soap_resource_get_filename.http_method
 
   integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = var.soap_resource_invoke_arn
+  type                    = "AWS_PROXY"
+  uri                     = var.soap_resource_invoke_arn
 }
 
 # Methods and Integrations for pay_page (GET /pay)
@@ -99,8 +99,8 @@ resource "aws_api_gateway_integration" "pay_page_get" {
   http_method = aws_api_gateway_method.pay_page_get.http_method
 
   integration_http_method = "POST"
-  type                   = "AWS_PROXY"
-  uri                    = var.pay_page_invoke_arn
+  type                    = "AWS_PROXY"
+  uri                     = var.pay_page_invoke_arn
 }
 
 # Lambda permissions for API Gateway

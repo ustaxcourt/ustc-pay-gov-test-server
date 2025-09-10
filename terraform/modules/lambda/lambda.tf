@@ -47,12 +47,12 @@ locals {
 resource "aws_lambda_function" "soap_api" {
   filename         = data.archive_file.lambda_soap_api_zip.output_path
   function_name    = "${var.project_name}-${var.environment}-soap-api"
-  role            = var.lambda_execution_role_arn
-  handler         = "src/lambdas/handleSoapRequestLambda.handler"
+  role             = var.lambda_execution_role_arn
+  handler          = "src/lambdas/handleSoapRequestLambda.handler"
   source_code_hash = data.archive_file.lambda_soap_api_zip.output_base64sha256
-  runtime         = var.lambda_runtime
-  timeout         = var.lambda_timeout
-  memory_size     = var.lambda_memory_size
+  runtime          = var.lambda_runtime
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory_size
 
   environment {
     variables = local.lambda_environment
@@ -69,12 +69,12 @@ resource "aws_lambda_function" "soap_api" {
 resource "aws_lambda_function" "soap_resource" {
   filename         = data.archive_file.lambda_resource_zip.output_path
   function_name    = "${var.project_name}-${var.environment}-soap-resource"
-  role            = var.lambda_execution_role_arn
-  handler         = "src/lambdas/getResourceLambda.handler"
+  role             = var.lambda_execution_role_arn
+  handler          = "src/lambdas/getResourceLambda.handler"
   source_code_hash = data.archive_file.lambda_resource_zip.output_base64sha256
-  runtime         = var.lambda_runtime
-  timeout         = var.lambda_timeout
-  memory_size     = var.lambda_memory_size
+  runtime          = var.lambda_runtime
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory_size
 
   environment {
     variables = local.lambda_environment
@@ -91,12 +91,12 @@ resource "aws_lambda_function" "soap_resource" {
 resource "aws_lambda_function" "pay_page" {
   filename         = data.archive_file.lambda_pay_page_zip.output_path
   function_name    = "${var.project_name}-${var.environment}-pay-page"
-  role            = var.lambda_execution_role_arn
-  handler         = "src/lambdas/getPayPageLambda.handler"
+  role             = var.lambda_execution_role_arn
+  handler          = "src/lambdas/getPayPageLambda.handler"
   source_code_hash = data.archive_file.lambda_pay_page_zip.output_base64sha256
-  runtime         = var.lambda_runtime
-  timeout         = var.lambda_timeout
-  memory_size     = var.lambda_memory_size
+  runtime          = var.lambda_runtime
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory_size
 
   environment {
     variables = local.lambda_environment

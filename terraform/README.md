@@ -89,9 +89,9 @@ Create S3 bucket and DynamoDB table for Terraform state management:
 ```bash
 cd terraform/
 
-# Initialize with backend configuration
-terraform init -backend-config=backend.hcl
-```
+# Initialize with backend configuration (We'll make this environment agnostic in future. eg. backend-stag.hcl, backend-prod.hcl)
+terraform init -backend-config=backend-dev.hcl
+ ```
 
 ### 3. Configure Variables
 
@@ -103,7 +103,7 @@ cp terraform.tfvars.template terraform.tfvars  # if needed
 # Edit terraform.tfvars with your specific values
 
 # Plan deployment with configured variables
-terraform plan
+terraform plan -var-file=terraform-dev.tfvars
 ```
 
 ### 4. Set Sensitive Variables
@@ -131,11 +131,11 @@ export TF_VAR_access_token="your-actual-access-token"
 # Build Lambda functions
 ./build.sh
 
-# Plan deployment
-terraform plan
+# Plan deployment (will make this env agnostic in future, eg: stag.tfvars, prod.tfvars)
+terraform plan -var-file=dev.tfvars
 
 # Apply changes
-terraform apply
+terraform apply -var-file=dev.tfvars (replace dev with environment you are deploying to)
 
 # Destroy resources (use with caution)
 terraform destroy
