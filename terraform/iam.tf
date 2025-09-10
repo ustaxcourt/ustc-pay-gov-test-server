@@ -24,7 +24,7 @@ resource "aws_iam_role_policy_attachment" "lambda_basic_execution" {
   role       = aws_iam_role.lambda_execution_role.name
 }
 
-# Custom policy for S3 access (matching serverless.yml permissions)
+# Custom policy for S3 access
 resource "aws_iam_role_policy" "lambda_s3_access" {
   name = "${var.project_name}-${var.environment}-s3-access"
   role = aws_iam_role.lambda_execution_role.id
