@@ -50,6 +50,22 @@ resource "aws_s3_bucket_policy" "main" {
           "s3:PutObject"
         ]
         Resource = "${aws_s3_bucket.main.arn}/*"
+      },
+      {
+        Sid     = "AllowLambdaListBucket"
+        Effect  = "Allow"
+        Principal = {
+          AWS = var.lambda_execution_role_arn
+        }
+        Action = ["s3:ListBucket"]
+        Resource = aws_s3_bucket.main.arn
+        Condition = {
+          StringLike = {
+            "s3:prefix" = [
+              "wsdl/*"
+            ]
+          }
+        }
       }
     ]
   })

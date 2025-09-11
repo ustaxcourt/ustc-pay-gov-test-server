@@ -11,7 +11,7 @@ export function storageClient() {
         getFile: getFileLocal,
         saveFile: saveFileLocal,
       };
-    case "production":
+    case "development":
       return {
         getFile: getFileS3,
         saveFile: saveFileS3,
