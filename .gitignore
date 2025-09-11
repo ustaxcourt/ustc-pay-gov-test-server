@@ -1,6 +1,5 @@
 node_modules/
 wsdl/
-.serverless
 config.*.yml
 temp/
 coverage/

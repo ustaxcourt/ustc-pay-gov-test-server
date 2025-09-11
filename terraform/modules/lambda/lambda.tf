@@ -1,4 +1,4 @@
-# Lambda deployment packages - bundled with esbuild (matching serverless-esbuild behavior)
+# Lambda deployment packages - bundled with esbuild
 
 # SOAP API Lambda - bundled with dependencies
 data "archive_file" "lambda_soap_api_zip" {

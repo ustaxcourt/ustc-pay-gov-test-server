@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Build script for Lambda deployment
-# This script replaces the serverless-esbuild functionality
 
 set -e
 

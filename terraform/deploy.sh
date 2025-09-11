@@ -1,7 +1,6 @@
 #!/bin/bash
 
 # Deployment script for Terraform infrastructure
-# This script replaces 'serverless deploy'
 
 set -e
 

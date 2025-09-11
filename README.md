@@ -8,7 +8,7 @@ The application mocks a SOAP server that handles the same requests that we make 
 
 It also serves up a crude UI that directs users to either the Success or Cancel URL, which are specified on the initial API request that initiates the transaction.
 
-The development environment of the Payment Portal should be configured point to this application's REST API. Configurd by the [serverless.yml](./serverless.yml) file, the custom domain name is `https://pay-gov-dev.ustaxcourt.gov`. The token that is used to authenticate requests is located in the `.env.prod` file with the key of `ACCESS_TOKEN`. When the application is deployed, this `ACCESS_TOKEN` becomes an environment variable for the application, and SOAP requests made to the deployed server must include that token.
+The development environment of the Payment Portal should be configured to point to this application's REST API. Configured by [terraform](terraform/README.md), the custom domain name is `https://pay-gov-dev.ustaxcourt.gov`. The token that is used to authenticate requests is located in the `.env.prod` file with the key of `ACCESS_TOKEN`. When the application is deployed, this `ACCESS_TOKEN` becomes an environment variable for the application, and SOAP requests made to the deployed server must include that token.
 
 ## Transaction Workflow
 
@@ -39,11 +39,9 @@ Environment variables are located in `.env` and `.env.prod`.
 
 ## Deployment
 
-This gets deployed to the USTC Website AWS Account. You will need credentials loaded in order to perform this operation. And you will need the above environment variables specified.
+This gets deployed to the ent-apps-pay-gov-workloads-dev AWS Account via terraform. The IaC documentation is found [here](terraform/README.md)
 
-```bash
-sls deploy
-```
+
 
 Additional files are needed to support the application. These need to be put into the S3 bucket to facilitate the application. They consist of:
 

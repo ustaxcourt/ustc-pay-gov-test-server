@@ -1,10 +1,7 @@
 # Terraform Infrastructure for USTC Pay Gov Test Server
 
-This directory contains complete Terraform configurations to manage the infrastructure for the USTC Pay Gov Test Server, migrated from the Serverless Framework.
-
 ## Migration Status: Complete
 
-**Serverless Framework → Terraform migration complete with simplified single-environment structure!**
 
 ## Directory Structure
 
@@ -16,8 +13,8 @@ terraform/
 ├── terraform.tfvars           # Configuration variables
 ├── terraform.tfvars.template  # Variable template
 ├── iam.tf                     # Lambda execution roles and policies
-├── build.sh                   # Lambda build script (replaces serverless-esbuild)
-├── deploy.sh                  # Automated deployment script (replaces serverless deploy)
+├── build.sh                   # Lambda build script
+├── deploy.sh                  # Automated deployment script
 ├── create-terraform-backend.sh # Backend setup automation script
 └── modules/                   # Reusable infrastructure modules
     ├── s3/
@@ -36,18 +33,17 @@ terraform/
 
 ## Infrastructure Overview
 
-This Terraform configuration provides a complete 1:1 replacement for the existing `serverless.yml`:
 
-| Component | Serverless Framework | Terraform Resource | Status |
-|-----------|---------------------|-------------------|---------|
-| **Lambda Functions** | `functions: soap_api, soap_resource, pay_page` | `aws_lambda_function` × 3 (optimized packaging) | Complete |
-| **API Gateway** | `events: http` | `aws_api_gateway_*` | Complete |
-| **S3 Bucket** | `resources: MyS3Bucket` | `aws_s3_bucket` | Complete |
-| **IAM Roles** | `provider.iam.role` | `aws_iam_role` | Complete |
-| **Custom Domain** | `custom.customDomain` | `aws_api_gateway_domain_name` | Complete |
-| **Environment Variables** | `environment:` | `aws_lambda_function.environment` | Complete |
-| **Build Process** | `serverless-esbuild` | `build.sh` script | Complete |
-| **Deployment** | `serverless deploy` | `deploy.sh` script | Complete |
+| Component  | Terraform Resource |
+|-----------|-------------------|
+| **Lambda Functions**  | `aws_lambda_function` × 3 (optimized packaging) |
+| **API Gateway** | `aws_api_gateway_*` |
+| **S3 Bucket** | `aws_s3_bucket` |
+| **IAM Roles** | `aws_iam_role` |
+| **Custom Domain** | `aws_api_gateway_domain_name` |
+| **Environment Variables** | `aws_lambda_function.environment` |
+| **Build Process** | `build.sh` script |
+| **Deployment** | `deploy.sh` script |
 
 ## Prerequisites
 
@@ -153,15 +149,15 @@ terraform destroy
 
 ## Resource Mapping
 
-| Serverless Framework | Terraform Equivalent | File |
-|---------------------|---------------------|------|
-| `functions.soap_api` | `module.lambda.soap_api` | modules/lambda/lambda.tf |
-| `functions.soap_resource` | `module.lambda.soap_resource` | modules/lambda/lambda.tf |
-| `functions.pay_page` | `module.lambda.pay_page` | modules/lambda/lambda.tf |
-| `resources.MyS3Bucket` | `module.s3.main` | modules/s3/s3.tf |
-| `provider.iam.role` | `aws_iam_role.lambda_execution_role` | iam.tf |
-| `events.http` | `module.api_gateway.*` resources | modules/api-gateway/api-gateway.tf |
-| `custom.customDomain` | `aws_api_gateway_domain_name.main` | domain.tf |
+| Terraform Equivalent | File |
+|---------------------|------|
+| `module.lambda.soap_api` | modules/lambda/lambda.tf |
+| `module.lambda.soap_resource` | modules/lambda/lambda.tf |
+| `module.lambda.pay_page` | modules/lambda/lambda.tf |
+| `module.s3.main` | modules/s3/s3.tf |
+| `aws_iam_role.lambda_execution_role` | iam.tf |
+| `module.api_gateway.*` resources | modules/api-gateway/api-gateway.tf |
+
 
 ## Command Reference
 
@@ -257,10 +253,10 @@ The AWS credentials used must have permissions for:
 - **Lambda Functions**: All 3 functions with optimized single-file packaging and environment variables
 - **API Gateway**: Complete REST API with all endpoints (`POST /wsdl`, `GET /wsdl`, `GET /wsdl/{filename}`, `GET /pay`)
 - **S3 Bucket**: Storage with encryption, versioning, and proper IAM policies
-- **IAM Roles**: Lambda execution role with S3 permissions matching serverless config
+- **IAM Roles**: Lambda execution role with S3 permissions
 - **Custom Domain**: SSL certificate and Route53 configuration
-- **Build Automation**: `build.sh` replaces `serverless-esbuild` 
-- **Deployment Automation**: `deploy.sh` replaces `serverless deploy`
+- **Build Automation**: `build.sh`
+- **Deployment Automation**: `deploy.sh`
 
 ## Next Steps
 
