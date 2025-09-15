@@ -2,8 +2,6 @@ locals {
   github_sub = "repo:${var.github_org}/${var.github_repo}/*"
 }
 
-data "aws_caller_identity" "current" {}
-
 resource "aws_iam_role" "github_actions_deployer" {
   name = var.deploy_role_name
 
