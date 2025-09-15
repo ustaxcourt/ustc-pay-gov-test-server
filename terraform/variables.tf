@@ -48,7 +48,7 @@ variable "node_env" {
 variable "lambda_runtime" {
   description = "Runtime for Lambda functions"
   type        = string
-  default     = "nodejs18.x"
+  default     = "nodejs22.x"
 }
 
 variable "lambda_timeout" {
