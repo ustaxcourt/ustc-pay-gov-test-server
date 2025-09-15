@@ -10,9 +10,9 @@ const s3Client = new S3Client({ region: "us-east-1" });
 
 // Helper function to convert a readable stream to a string
 async function streamToString(stream: Readable): Promise<string> {
-  const chunks: Buffer[] = [];
+  const chunks: Uint8Array[] = [];
   return new Promise<string>((resolve, reject) => {
-    stream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    stream.on("data", (chunk: Buffer) => chunks.push(new Uint8Array(chunk)));
     stream.on("error", reject);
     stream.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
   });

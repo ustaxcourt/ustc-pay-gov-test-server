@@ -79,6 +79,7 @@ describe.skip("transaction flow", () => {
   });
 
   it("should call the pay page with the token", async () => {
+    const baseUrl = process.env.BASE_URL;
     const url = `${baseUrl}/pay?token=${token}`;
     const result = await fetch(url);
     expect(result.status).toBe(200);
