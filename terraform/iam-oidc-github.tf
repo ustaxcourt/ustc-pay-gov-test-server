@@ -1,5 +1,5 @@
 locals {
-  github_sub = "repo:${var.github_org}/${var.github_repo}/*"
+  github_sub = "repo:${var.github_org}/${var.github_repo}:*"
 }
 
 resource "aws_iam_role" "github_actions_deployer" {
