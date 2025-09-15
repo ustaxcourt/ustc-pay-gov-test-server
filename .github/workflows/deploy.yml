@@ -54,7 +54,7 @@ jobs:
         
       - name: Build Lambda functions (Only if Lambda changed)
         if: steps.changes.outputs.lambda_code == 'true'
-        run: ./build.sh
+        run: bash terraform/build.sh
       
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
@@ -64,4 +64,4 @@ jobs:
       - name: Terraform init
         working-directory: terraform
         run: terraform init -backend-config=backend-dev.hcl
-        
+
