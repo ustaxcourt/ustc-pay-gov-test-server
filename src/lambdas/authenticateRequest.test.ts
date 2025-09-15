@@ -38,5 +38,3 @@ describe("authenticateRequest", () => {
     ).not.toThrow();
   });
 });
-
-// Testing github actions workflow. To be deleted after test
