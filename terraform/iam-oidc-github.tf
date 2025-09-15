@@ -2,6 +2,8 @@ locals {
   github_sub = "repo:${var.github_org}/${var.github_repo}/*"
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_iam_role" "github_actions_deployer" {
   name = var.deploy_role_name
 
@@ -84,6 +86,15 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Effect   = "Allow",
         Action   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"],
         Resource = "${module.s3.bucket_arn}/*"
+      },
+
+      # Read-only access to the access token secret (used to set Lambda env ACCESS_TOKEN)
+      {
+        Effect = "Allow",
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ],
+        Resource = aws_secretsmanager_secret.access_token.arn
       },
 
 
