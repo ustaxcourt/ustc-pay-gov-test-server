@@ -135,3 +135,9 @@ variable "tf_lock_table_name" {
   default     = ""
 }
 
+variable "access_token_secret_name" {
+  description = "Name of the Secrets Manager secret that holds the application bearer token for this environment"
+  type        = string
+}
+
+

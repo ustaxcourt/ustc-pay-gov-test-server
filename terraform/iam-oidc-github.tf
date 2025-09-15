@@ -86,6 +86,15 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = "${module.s3.bucket_arn}/*"
       },
 
+      # Read-only access to the access token secret (used to set Lambda env ACCESS_TOKEN)
+      {
+        Effect = "Allow",
+        Action = [
+          "secretsmanager:GetSecretValue"
+        ],
+        Resource = aws_secretsmanager_secret.access_token.arn
+      },
+
 
       #Backend state access (s3 and dynamodb)
       {
