@@ -95,7 +95,6 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = aws_secretsmanager_secret.access_token.arn
       },
 
-
       #Backend state access (s3 and dynamodb)
       {
         Effect = "Allow",
@@ -118,5 +117,6 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
     ]
   })
 }
+
 
 
