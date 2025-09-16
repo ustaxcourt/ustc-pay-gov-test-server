@@ -1,9 +1,8 @@
-name: Deploy Code
+name: PR Validate
 
 on:
-  push:
-    branches: [main]
-  workflow_dispatch:
+  pull_request:
+    branches: [ main ]
 
 env:
   AWS_REGION: us-east-1
@@ -17,9 +16,9 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -31,7 +30,7 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-              
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -42,21 +41,21 @@ jobs:
 
       - name: Run tests
         run: npm test
-        
+
       - name: Build Lambda functions
         run: bash terraform/build.sh
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: ${{ secrets.DEV_AWS_DEPLOYER_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.7.5
-          
+
       - name: Cache Terraform
         uses: actions/cache@v4
         with:
@@ -66,24 +65,27 @@ jobs:
           key: ${{ runner.os }}-terraform-${{ hashFiles('terraform/.terraform.lock.hcl') }}
           restore-keys: |
             ${{ runner.os }}-terraform-
-      
+
       - name: Terraform init
         working-directory: terraform
         run: terraform init -backend-config=backend-dev.hcl
-        
-      - name: Terraform plan
+
+      - name: Terraform plan (no apply)
         id: plan
         working-directory: terraform
         run: |
-          terraform plan -input=false -lock-timeout=2m -detailed-exitcode
+          terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out || true
           echo "exitcode=$?" >> $GITHUB_OUTPUT
-        continue-on-error: true
-        
-      - name: Terraform apply
-        if: steps.plan.outputs.exitcode == '2'
-        working-directory: terraform
-        run: terraform apply -input=false -auto-approve -lock-timeout=2m
-        
-  
 
+      - name: Upload plan artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: terraform-plan
+          path: terraform/plan.out
 
+      - name: Post plan summary
+        if: always()
+        run: |
+          echo '### Terraform Plan Summary' >> $GITHUB_STEP_SUMMARY
+          tail -n 200 terraform/plan.out >> $GITHUB_STEP_SUMMARY || true
+          
