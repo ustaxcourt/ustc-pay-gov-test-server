@@ -68,5 +68,9 @@ jobs:
       - name: Terraform plan
         working-directory: terraform
         run: terraform plan -input=false -lock-timeout=2m
+        
+      - name: Terraform apply
+        working-directory: terraform
+        run: terraform apply -input=false -auto-approve -lock-timeout=2m
 
 
