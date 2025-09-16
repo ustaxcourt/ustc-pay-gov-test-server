@@ -11,6 +11,10 @@ permissions:
   id-token: write
   contents: read
 
+concurrency:
+  group: terraform-dev-state
+  cancel-in-progress: true
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -65,13 +69,9 @@ jobs:
         working-directory: terraform
         run: terraform init -backend-config=backend-dev.hcl
         
-      - name: Terraform force-unlock (to-be-deleted)
-        working-directory: terraform
-        run: terraform force-unlock -force 610b7eb5-9269-4ca3-651a-d26af78637c8
-
       - name: Terraform plan
         working-directory: terraform
-        run: terraform plan -input=false
+        run: terraform plan -input=false -lock-timeout=2m
 
 
 

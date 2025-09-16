@@ -13,7 +13,7 @@ resource "aws_iam_role" "github_actions_deployer" {
         Effect = "Allow"
         Sid    = "GithubOIDCAssumeRole"
         Principal = {
-          Federated = var.github_oidc_provider_arn
+          Federated = local.github_oidc_provider_arn
         }
         Condition = {
           StringEquals = {
@@ -100,8 +100,8 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Effect = "Allow",
         Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket"],
         Resource = [
-          "arn:aws:s3:::${var.tf_state_bucket_name}",
-          "arn:aws:s3:::${var.tf_state_bucket_name}/*"
+          "arn:aws:s3:::${local.tf_state_bucket_name}",
+          "arn:aws:s3:::${local.tf_state_bucket_name}/*"
         ]
       },
       {
@@ -113,7 +113,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "dynamodb:UpdateItem",
           "dynamodb:DeleteItem"
         ],
-        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${var.tf_lock_table_name}"
+        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.tf_lock_table_name}"
       },
     ]
   })
