@@ -54,7 +54,8 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Effect = "Allow",
         Action = [
           "iam:GetRole",
-          "iam:ListRolePolicies"
+          "iam:ListRolePolicies",
+          "iam:GetRolePolicy"
         ],
         Resource = [
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.deploy_role_name}",
@@ -129,6 +130,21 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "dynamodb:DeleteItem"
         ],
         Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.tf_lock_table_name}"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+            "logs:DescribeLogGroups"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+            "s3:GetBucketPolicy"
+        ],
+        Resource = "arn:aws:s3:::${local.bucket_name}"           
+        
       }
     ]
   })
