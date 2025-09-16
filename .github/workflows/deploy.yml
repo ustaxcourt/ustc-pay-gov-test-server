@@ -36,22 +36,18 @@ jobs:
               - 'package-lock.json'
               - 'terraform/modules/lambda/**'
               
-      - name: Setup Node.js (Only if Lambda changed)
-        if: steps.changes.outputs.lambda_code == 'true'
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: '22'
 
-      - name: Install dependencies (Only if Lambda changed)
-        if: steps.changes.outputs.lambda_code == 'true'
+      - name: Install dependencies
         run: npm ci
 
-      - name: Run tests (Only if Lambda changed)
-        if: steps.changes.outputs.lambda_code == 'true'
+      - name: Run tests
         run: npm test
         
-      - name: Build Lambda functions (Only if Lambda changed)
-        if: steps.changes.outputs.lambda_code == 'true'
+      - name: Build Lambda functions
         run: bash terraform/build.sh
       
       - name: Configure AWS credentials
@@ -71,7 +67,7 @@ jobs:
         
       - name: Terraform plan
         working-directory: terraform
-        run: terraform plan -input=false -lock-timeout=2m
+        run: terraform plan -input=false
 
 
 
