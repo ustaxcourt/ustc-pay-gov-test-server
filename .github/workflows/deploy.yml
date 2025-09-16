@@ -80,5 +80,6 @@ jobs:
         if: steps.plan.outputs.exitcode == 2
         working-directory: terraform
         run: terraform apply -input=false -auto-approve -lock-timeout=2m
+  
 
 
