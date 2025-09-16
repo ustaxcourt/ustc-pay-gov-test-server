@@ -55,7 +55,8 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Action = [
           "iam:GetRole",
           "iam:ListRolePolicies",
-          "iam:GetRolePolicy"
+          "iam:GetRolePolicy",
+          "iam:ListAttachedRolePolicies"
         ],
         Resource = [
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.deploy_role_name}",
@@ -134,14 +135,16 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       {
         Effect = "Allow",
         Action = [
-            "logs:DescribeLogGroups"
+            "logs:DescribeLogGroups",
+            "logs:ListTagsForResource"
         ],
         Resource = "*"
       },
       {
         Effect = "Allow",
         Action = [
-            "s3:GetBucketPolicy"
+            "s3:GetBucketPolicy",
+            "s3:GetBucketAcl"
         ],
         Resource = "arn:aws:s3:::${local.bucket_name}"           
         
