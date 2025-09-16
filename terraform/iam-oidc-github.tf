@@ -49,6 +49,18 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${var.project_name}-${var.environment}-*"
       },
 
+      # Allow Terraform to read IAM roles it references (self and lambda exec role)
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:GetRole"
+        ],
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.deploy_role_name}",
+          aws_iam_role.lambda_execution_role.arn
+        ]
+      },
+
       #to allow OIDC role to attach lambda exec role to the resource it creates/updates
       {
         Effect   = "Allow",
@@ -90,7 +102,8 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       {
         Effect = "Allow",
         Action = [
-          "secretsmanager:GetSecretValue"
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
         ],
         Resource = aws_secretsmanager_secret.access_token.arn
       },
