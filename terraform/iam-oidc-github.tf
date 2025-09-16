@@ -143,9 +143,8 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       {
         Effect = "Allow",
         Action = [
-            "s3:GetBucketPolicy",
-            "s3:GetBucketAcl",
-            "s3:GetBucketCORS"
+            "s3:GetBucket*",
+            "s3:ListBucket*"
         ],
         Resource = "arn:aws:s3:::${local.bucket_name}"           
         
