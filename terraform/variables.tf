@@ -7,6 +7,7 @@ variable "aws_region" {
 variable "environment" {
   description = "Environment name (dev)"
   type        = string
+  default     = "dev"
   validation {
     condition     = contains(["dev"], var.environment)
     error_message = "Environment must be dev."
@@ -29,13 +30,6 @@ variable "base_url" {
   description = "Base URL for the application"
   type        = string
   default     = ""
-}
-
-# Environment Variables
-variable "access_token" {
-  description = "Access token for the application"
-  type        = string
-  sensitive   = true
 }
 
 variable "node_env" {
@@ -133,11 +127,6 @@ variable "tf_lock_table_name" {
   description = "Name of the DynamoDB table used for Terraform state locking for this environment"
   type        = string
   default     = ""
-}
-
-variable "access_token_secret_name" {
-  description = "Name of the Secrets Manager secret that holds the application bearer token for this environment"
-  type        = string
 }
 
 
