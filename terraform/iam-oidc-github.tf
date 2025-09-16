@@ -72,7 +72,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = aws_iam_role.lambda_execution_role.arn
       },
 
-      # API Gateway management (scoped to REST APIs, domains, and mappings)
+      #API Gateway management (scoped to REST APIs, domains, and mappings)
       {
         Effect = "Allow",
         Action = [
