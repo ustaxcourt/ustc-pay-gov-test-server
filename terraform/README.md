@@ -128,10 +128,10 @@ export TF_VAR_access_token="your-actual-access-token"
 ./build.sh
 
 # Plan deployment (will make this env agnostic in future, eg: stag.tfvars, prod.tfvars)
-terraform plan -var-file=dev.tfvars
+terraform plan
 
 # Apply changes
-terraform apply -var-file=dev.tfvars (replace dev with environment you are deploying to)
+terraform apply
 
 # Destroy resources (use with caution)
 terraform destroy
