@@ -1,19 +1,19 @@
-#only create domain name if we have custom domain and cert arn (they are in .tfvars)
+#only create domain name if we have custom domain and cert arn (they are in locals)
 resource "aws_api_gateway_domain_name" "custom" {
-  count = var.custom_domain != "" && var.certificate_arn != "" ? 1 : 0
+  count = local.custom_domain != "" && local.certificate_arn != "" ? 1 : 0
 
-  domain_name     = var.custom_domain
-  certificate_arn = var.certificate_arn
+  domain_name     = local.custom_domain
+  certificate_arn = local.certificate_arn
 
   endpoint_configuration {
     types = ["EDGE"]
   }
-  
+
 }
 
 #if domain isn't created, mapping isn't created
 resource "aws_api_gateway_base_path_mapping" "root" {
-  count = var.custom_domain != "" && var.certificate_arn != "" ? 1 : 0
+  count = local.custom_domain != "" && local.certificate_arn != "" ? 1 : 0
 
   api_id      = module.api_gateway.api_gateway_id
   stage_name  = var.api_gateway_stage_name
