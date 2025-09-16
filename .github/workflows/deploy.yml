@@ -73,11 +73,13 @@ jobs:
       - name: Terraform plan
         id: plan
         working-directory: terraform
-        run: terraform plan -input=false -lock-timeout=2m -detailed-exitcode
+        run: |
+          terraform plan -input=false -lock-timeout=2m -detailed-exitcode
+          echo "exitcode=$?" >> $GITHUB_OUTPUT
         continue-on-error: true
         
       - name: Terraform apply
-        if: steps.plan.outputs.exitcode == 2
+        if: steps.plan.outputs.exitcode == '2'
         working-directory: terraform
         run: terraform apply -input=false -auto-approve -lock-timeout=2m
   
