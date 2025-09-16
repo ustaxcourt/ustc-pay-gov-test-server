@@ -53,7 +53,8 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       {
         Effect = "Allow",
         Action = [
-          "iam:GetRole"
+          "iam:GetRole",
+          "iam:ListRolePolicies"
         ],
         Resource = [
           "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.deploy_role_name}",
@@ -103,7 +104,8 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Effect = "Allow",
         Action = [
           "secretsmanager:GetSecretValue",
-          "secretsmanager:DescribeSecret"
+          "secretsmanager:DescribeSecret",
+          "secretsmanager:GetResourcePolicy"
         ],
         Resource = aws_secretsmanager_secret.access_token.arn
       },
@@ -127,7 +129,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "dynamodb:DeleteItem"
         ],
         Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.tf_lock_table_name}"
-      },
+      }
     ]
   })
 }
