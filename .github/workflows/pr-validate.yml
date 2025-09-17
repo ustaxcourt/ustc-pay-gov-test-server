@@ -73,6 +73,8 @@ jobs:
       - name: Terraform plan (no apply)
         id: plan
         working-directory: terraform
+        env:
+          TF_CLI_ARGS: -no-color
         run: |
           terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out || true
           echo "exitcode=$?" >> $GITHUB_OUTPUT
@@ -87,6 +89,9 @@ jobs:
         if: always()
         run: |
           echo '### Terraform Plan Summary' >> $GITHUB_STEP_SUMMARY
+          echo '' >> $GITHUB_STEP_SUMMARY
+          echo '\`\`\`' >> $GITHUB_STEP_SUMMARY
           tail -n 200 terraform/plan.out >> $GITHUB_STEP_SUMMARY || true
+          echo '\`\`\`' >> $GITHUB_STEP_SUMMARY
           
 
