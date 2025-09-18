@@ -42,7 +42,7 @@ access_token = "CHANGE_ME_OR_SET_VIA_ENV_VAR"
 
 # OIDC Configuration
 github_oidc_provider_arn = "arn:aws:iam::account-id:oidc-provider/token.actions.githubusercontent.com"
-deploy_role_name         = "role-name"
+deploy_role_name         = "ustc-github-actions-oidc-deployer-role"
 github_repo              = "ustc-pay-gov-test-server"
 tf_state_bucket_name     = ""
 tf_lock_table_name       = ""

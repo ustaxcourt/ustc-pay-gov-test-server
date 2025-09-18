@@ -52,12 +52,12 @@ resource "aws_s3_bucket_policy" "main" {
         Resource = "${aws_s3_bucket.main.arn}/*"
       },
       {
-        Sid     = "AllowLambdaListBucket"
-        Effect  = "Allow"
+        Sid    = "AllowLambdaListBucket"
+        Effect = "Allow"
         Principal = {
           AWS = var.lambda_execution_role_arn
         }
-        Action = ["s3:ListBucket"]
+        Action   = ["s3:ListBucket"]
         Resource = aws_s3_bucket.main.arn
         Condition = {
           StringLike = {

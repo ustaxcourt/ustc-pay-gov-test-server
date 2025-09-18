@@ -7,6 +7,7 @@ variable "aws_region" {
 variable "environment" {
   description = "Environment name (dev)"
   type        = string
+  default     = "dev"
   validation {
     condition     = contains(["dev"], var.environment)
     error_message = "Environment must be dev."
@@ -31,13 +32,6 @@ variable "base_url" {
   default     = ""
 }
 
-# Environment Variables
-variable "access_token" {
-  description = "Access token for the application"
-  type        = string
-  sensitive   = true
-}
-
 variable "node_env" {
   description = "Node.js environment"
   type        = string
@@ -48,7 +42,7 @@ variable "node_env" {
 variable "lambda_runtime" {
   description = "Runtime for Lambda functions"
   type        = string
-  default     = "nodejs18.x"
+  default     = "nodejs22.x"
 }
 
 variable "lambda_timeout" {
@@ -100,7 +94,7 @@ variable "github_org" {
 variable "github_repo" {
   description = "GitHub repository name"
   type        = string
-  default     = ""
+  default     = "ustc-pay-gov-test-server"
 }
 
 
@@ -133,11 +127,6 @@ variable "tf_lock_table_name" {
   description = "Name of the DynamoDB table used for Terraform state locking for this environment"
   type        = string
   default     = ""
-}
-
-variable "access_token_secret_name" {
-  description = "Name of the Secrets Manager secret that holds the application bearer token for this environment"
-  type        = string
 }
 
 
