@@ -94,3 +94,4 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 200 terraform/plan.out >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
+          
