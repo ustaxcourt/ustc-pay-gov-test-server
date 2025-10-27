@@ -81,7 +81,7 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: terraform-plan
           path: terraform/plan.out
