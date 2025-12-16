@@ -60,6 +60,25 @@ npm run dev
 
 This will start a dev server at the port specified in the [environment variables](#environment-variables).
 
+### As a dependency 
+This repo can be installed as a dependency from npm.
+
+```
+npm i @ustaxcourt/ustc-pay-gov-test-server
+```
+
+Once installed, use the following command to start the server:
+
+```
+npx @ustaxcourt/ustc-pay-gov-test-server
+```
+
+When initially running the server with this command, you will be prompted to enter a port and access token for the test server to use. To update these variables, run the command with the following argument:
+
+```
+npx @ustaxcourt/ustc-pay-gov-test-server update-env
+```
+
 ## Testing
 
 ### Unit Tests
@@ -83,3 +102,17 @@ In order to test and ensure the production server is running properly, you can r
 ```
 npm run test:integration:prod
 ```
+
+## Publishing
+
+This package is published on `npm` so that we can use it in other libraries. To help manage this, we are using [changesets cli](https://www.npmjs.com/package/@changesets/cli) to specify changes that are locked into semantic versions.
+
+To begin a new changeset, commit your work into your feature branch. Then type in the following command:
+
+```
+npx changeset add
+```
+
+Follow the guided prompts to begin a new changeset version.
+
+Then push the changes to Github for review. Once they are merged into the `main` branch, a subsequent PR will be made in order to begin the process of releasing.
