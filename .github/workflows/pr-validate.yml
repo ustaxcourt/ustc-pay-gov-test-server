@@ -14,13 +14,14 @@ permissions:
   id-token: write
   contents: read
 
-concurrency:
-  group: terraform-dev-state
-  cancel-in-progress: true
-
 jobs:
   validate:
     if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
+
+    concurrency:
+      group: ${{ !startsWith(github.ref, 'refs/heads/changeset-release/') && 'terraform-dev-state' || format('changeset-{0}', github.run_id) }}
+      cancel-in-progress: true
+
     runs-on: ubuntu-latest
 
     steps:
