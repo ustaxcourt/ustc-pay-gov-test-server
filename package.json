@@ -1,6 +1,6 @@
 {
   "name": "@ustaxcourt/ustc-pay-gov-test-server",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "USTC Pay.gov test server",
   "main": "dist/index.js",
   "repository": {
