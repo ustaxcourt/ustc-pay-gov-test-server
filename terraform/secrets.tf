@@ -7,7 +7,7 @@ resource "random_password" "access_token" {
 }
 
 resource "aws_secretsmanager_secret" "access_token" {
-  name        = var.access_token_secret_name
+  name        = local.access_token_secret_name
   description = "USTC Pay Gov Test Server dev access token"
 }
 
@@ -15,4 +15,3 @@ resource "aws_secretsmanager_secret_version" "access_token" {
   secret_id     = aws_secretsmanager_secret.access_token.id
   secret_string = random_password.access_token.result
 }
-

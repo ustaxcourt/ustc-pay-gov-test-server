@@ -1,5 +1,5 @@
 locals {
-  github_sub = "repo:${var.github_org}/${var.github_repo}/*"
+  github_sub = "repo:${var.github_org}/${var.github_repo}:*"
 }
 
 resource "aws_iam_role" "github_actions_deployer" {
@@ -13,7 +13,7 @@ resource "aws_iam_role" "github_actions_deployer" {
         Effect = "Allow"
         Sid    = "GithubOIDCAssumeRole"
         Principal = {
-          Federated = var.github_oidc_provider_arn
+          Federated = local.github_oidc_provider_arn
         }
         Condition = {
           StringEquals = {
@@ -41,12 +41,28 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "lambda:CreateFunction",
           "lambda:UpdateFunctionCode",
           "lambda:UpdateFunctionConfiguration",
-          "lambda:GetFunction",
+          "lambda:GetFunction*",
+          "lambda:GetPolicy",
           "lambda:ListVersionsByFunction",
           "lambda:TagResource",
           "lambda:UntagResource"
         ],
         Resource = "arn:aws:lambda:${var.aws_region}:${data.aws_caller_identity.current.account_id}:function:${var.project_name}-${var.environment}-*"
+      },
+
+      # Allow Terraform to read IAM roles it references (self and lambda exec role)
+      {
+        Effect = "Allow",
+        Action = [
+          "iam:GetRole",
+          "iam:ListRolePolicies",
+          "iam:GetRolePolicy",
+          "iam:ListAttachedRolePolicies"
+        ],
+        Resource = [
+          "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/${var.deploy_role_name}",
+          aws_iam_role.lambda_execution_role.arn
+        ]
       },
 
       #to allow OIDC role to attach lambda exec role to the resource it creates/updates
@@ -56,7 +72,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = aws_iam_role.lambda_execution_role.arn
       },
 
-      # API Gateway management (scoped to REST APIs, domains, and mappings)
+      #API Gateway management (scoped to REST APIs, domains, and mappings)
       {
         Effect = "Allow",
         Action = [
@@ -90,19 +106,20 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       {
         Effect = "Allow",
         Action = [
-          "secretsmanager:GetSecretValue"
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret",
+          "secretsmanager:GetResourcePolicy"
         ],
         Resource = aws_secretsmanager_secret.access_token.arn
       },
-
 
       #Backend state access (s3 and dynamodb)
       {
         Effect = "Allow",
         Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket"],
         Resource = [
-          "arn:aws:s3:::${var.tf_state_bucket_name}",
-          "arn:aws:s3:::${var.tf_state_bucket_name}/*"
+          "arn:aws:s3:::${local.tf_state_bucket_name}",
+          "arn:aws:s3:::${local.tf_state_bucket_name}/*"
         ]
       },
       {
@@ -111,12 +128,31 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "dynamodb:DescribeTable",
           "dynamodb:GetItem",
           "dynamodb:PutItem",
-          "dynamodb:UpdateItem"
+          "dynamodb:UpdateItem",
+          "dynamodb:DeleteItem"
         ],
-        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${var.tf_lock_table_name}"
+        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.tf_lock_table_name}"
       },
+      {
+        Effect = "Allow",
+        Action = [
+            "logs:DescribeLogGroups",
+            "logs:ListTagsForResource"
+        ],
+        Resource = "*"
+      },
+      {
+        Effect = "Allow",
+        Action = [
+            "s3:Get*",
+            "s3:List*"
+        ],
+        Resource = "arn:aws:s3:::${local.bucket_name}"           
+        
+      }
     ]
   })
 }
+
 
 
