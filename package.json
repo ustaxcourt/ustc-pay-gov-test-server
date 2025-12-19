@@ -1,20 +1,31 @@
 {
-  "name": "soap-server",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@ustaxcourt/ustc-pay-gov-test-server",
+  "version": "0.0.0",
+  "description": "USTC Pay.gov test server",
   "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ustaxcourt/ustc-pay-gov-test-server"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
   "scripts": {
     "build": "npx tsc",
-    "dev": "NODE_ENV='local' concurrently \"npx tsc --watch\" \"nodemon -q ./dist/index.js\"",
+    "dev": "NODE_ENV='local' concurrently \"npx tsc --watch\" \"nodemon -q ./dist/server.js\"",
     "copy-files": "aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive",
     "test": "jest ./src",
     "start": "node .",
     "test:integration": "NODE_ENV='local' jest --verbose --bail ./test/integration",
-    "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod NODE_ENV='prod' jest --bail ./test/integration"
+    "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod NODE_ENV='prod' jest --bail ./test/integration",
+    "ci:publish": "changeset publish --provenance"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "bin": {
+    "start-pay-gov-test-server": "bin/start-pay-gov-test-server.sh"
+  },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.888.0",
     "express": "^4.18.2",
@@ -25,6 +36,7 @@
     "uuid": "^9.0.1"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.29.8",
     "@types/aws-lambda": "^8.10.152",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.14",
