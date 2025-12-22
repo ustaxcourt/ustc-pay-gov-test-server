@@ -3,8 +3,6 @@ name: PR Validate
 on:
   pull_request:
     branches: [ main ]
-  push:
-    branches: [ "changeset-release/**", main ]
   workflow_dispatch:
 
 env:
@@ -19,7 +17,7 @@ jobs:
     if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
 
     concurrency:
-      group: ${{ !startsWith(github.ref, 'refs/heads/changeset-release/') && 'terraform-dev-state' || format('changeset-{0}', github.run_id) }}
+      group: terraform-dev-state
       cancel-in-progress: true
 
     runs-on: ubuntu-latest
