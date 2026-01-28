@@ -1,4 +1,5 @@
 # First Time Setup
+This will give you everything you need to run the test server locally.
 - Create a `.env` file and add the following variables:
 ```
 BASE_URL=http://localhost:3366
