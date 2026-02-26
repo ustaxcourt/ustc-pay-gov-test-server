@@ -41,23 +41,9 @@ Defined in **`.env`** (local) and **`.env.prod`** (deployed). The deployed serve
 
 ---
 
-## 3) Context Diagram
+## 3) End‑to‑End Sequences
 
-> Export the existing **`system.drawio`** in the repo to a PNG (e.g., `docs/architecture/system.png`) and embed it below so readers don’t need Draw.io to view it. The boxes and arrows should match the elements listed in §2.1. 
-
-./system.png
-
-**Diagram contents to depict:**
-- **USTC App(s)** calling the **Payment Portal**.
-- **Payment Portal (Dev)** calling **Dev Server (this repo)** via **SOAP** and **REST**.
-- **Dev Server** serving **WSDL/XSD/HTML** from **S3** (prod) or filesystem (local).
-- **Mock Pay UI** (Complete/Cancel) redirecting to **Success/Cancel URLs** on the app. 
-
----
-
-## 4) End‑to‑End Sequences
-
-### 4.1 Happy Path (start → redirect → complete)
+### 3.1 Happy Path (start → redirect → complete)
 
 ```mermaid
 sequenceDiagram
@@ -82,7 +68,7 @@ sequenceDiagram
 *   The **Dev Server** always treats transactions as **successful** unless additional simulation controls are implemented. 
 *   The **mock UI** is a simple HTML page offering **Complete** and **Cancel**, and then redirects to the provided URLs. 
 
-### 4.2 AuthN validation (ACCESS\_TOKEN)
+### 3.2 AuthN validation (ACCESS\_TOKEN)
 
 ```mermaid
 sequenceDiagram
@@ -102,9 +88,9 @@ sequenceDiagram
 
 ***
 
-## 5) Interfaces
+## 4) Interfaces
 
-### 5.1 SOAP (Mocked Pay.gov)
+### 4.1 SOAP (Mocked Pay.gov)
 
 *   **Operations implemented** (as used by the Portal):
     *   `startOnlineCollection` → returns **token + redirect URL**. 
@@ -114,18 +100,18 @@ sequenceDiagram
 
 > **Tip.** Include example SOAP requests/responses in `/docs/api/mock-soap.md` so consumers can copy‑paste quickly. 
 
-### 5.2 REST (Dev Integration)
+### 4.2 REST (Dev Integration)
 
 *   The Payment Portal dev environment calls a **REST API** on this server; requests must include the bearer token header. See the repo README for up‑to‑date commands and integration testing instructions. 
 *   A full endpoint list and examples live in `/docs/api/rest.md`. 
 
-### 5.3 Mock UI
+### 4.3 Mock UI
 
 *   **`html/pay.html`** implements a simple **Complete/Cancel** choice and redirects to the URLs supplied at initiation; this emulates the Pay.gov hosted pages redirect. 
 
 ***
 
-## 6) Deployment & Environments (at a glance)
+## 5) Deployment & Environments (at a glance)
 
 *   **Dev (shared)** — Deployed via **Terraform** to the `ent-apps-pay-gov-workloads-dev` AWS account, using the custom domain `https://pay-gov-dev.ustaxcourt.gov`. After deployment, **S3 artifacts must be present** for the service to function. A **deployed integration test** command validates readiness. 
 *   **Local** — Run `npm run dev`; artifacts are read from the filesystem when `NODE_ENV=local`. 
@@ -134,21 +120,21 @@ sequenceDiagram
 
 ***
 
-## 7) Security Notes (summary)
+## 6) Security Notes (summary)
 
 *   The service requires `Authentication: Bearer <ACCESS_TOKEN>` for SOAP/REST. **Do not** commit tokens; rotate them per the Ops Runbook and ensure clients update promptly. 
 *   No real payment data is processed; keep logs free of PII/payment content. For production semantics/security, refer to Pay.gov documentation.
 
 ***
 
-## 8) Operational Pointers
+## 7) Operational Pointers
 
 *   **S3 artifacts** are mandatory in the deployed environment: ensure `html/pay.html`, `wsdl/*.wsdl`, and `wsdl/*.xsd` exist at the expected paths; missing files surface as route/404 failures. 
 *   **Deployed integration tests**: run `npm run test:integration:prod` after changes to verify live behavior (requires `.env.prod`). 
 
 ***
 
-## 9) Related Docs & References
+## 8) Related Docs & References
 
 *   **Project README** (quickstart, env vars, testing): <https://github.com/ustaxcourt/ustc-pay-gov-test-server> 
 *   **Payment Portal** (consumer; current and future workflows): <https://github.com/ustaxcourt/ustc-payment-portal/> [USTC Payment Portal](https://github.com/ustaxcourt/ustc-payment-portal/)
@@ -156,7 +142,7 @@ sequenceDiagram
 
 ***
 
-## 10) Future Enhancements
+## 9) Future Enhancements
 
 *   Add **documented simulation controls** for **pending** and **failed** outcomes (e.g., via header, token prefix, amount sentinel, or query param), and describe them in `/docs/api/*`. Track progress in the repo issues. [USTC Pay Test server issues](https://github.com/ustaxcourt/ustc-pay-gov-test-server/issues)
 *   Export `system.drawio` regularly and embed the PNG here to keep the diagram accessible and current. [USTC Pay Test server](https://github.com/ustaxcourt/ustc-pay-gov-test-server)
