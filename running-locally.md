@@ -23,3 +23,84 @@ NODE_ENV=local
 ```
 
 **You can now reach the server at localhost:3366**
+
+## Manual curl testing
+
+Use these commands to manually test the local SOAP flow, including a failed
+`completeOnlineCollectionWithDetails` response.
+
+### 1) Start a transaction (get token)
+
+```bash
+curl -s -X POST 'http://localhost:3366/wsdl' \
+	-H 'Content-Type: application/soap+xml' \
+	-H 'authentication: Bearer asdf123' \
+	--data-binary @- <<'EOF'
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tcs="http://fms.treas.gov/services/tcsonline_3_1">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<tcs:startOnlineCollection>
+			<startOnlineCollectionRequest>
+				<tcs_app_id>ustc-test-pay-gov-app</tcs_app_id>
+				<agency_tracking_id>curl-test-1</agency_tracking_id>
+				<transaction_type>Sale</transaction_type>
+				<transaction_amount>25.00</transaction_amount>
+				<language>en</language>
+				<url_success>https://client.app/success</url_success>
+				<url_cancel>https://client.app/cancel</url_cancel>
+			</startOnlineCollectionRequest>
+		</tcs:startOnlineCollection>
+	</soapenv:Body>
+</soapenv:Envelope>
+EOF
+```
+
+Copy the `<token>` from the SOAP response.
+
+### 2) Complete with details and force Failed
+
+```bash
+curl -s -X POST 'http://localhost:3366/wsdl' \
+	-H 'Content-Type: application/soap+xml' \
+	-H 'authentication: Bearer asdf123' \
+	--data-binary @- <<'EOF'
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tcs="http://fms.treas.gov/services/tcsonline_3_1">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<tcs:completeOnlineCollectionWithDetails>
+			<completeOnlineCollectionWithDetailsRequest>
+				<tcs_app_id>ustc-test-pay-gov-app</tcs_app_id>
+				<token>PASTE_TOKEN_HERE</token>
+				<transaction_status>Failed</transaction_status>
+			</completeOnlineCollectionWithDetailsRequest>
+		</tcs:completeOnlineCollectionWithDetails>
+	</soapenv:Body>
+</soapenv:Envelope>
+EOF
+```
+
+Copy the `<paygov_tracking_id>` from the SOAP response.
+
+### 3) Get details for that tracking id
+
+```bash
+curl -s -X POST 'http://localhost:3366/wsdl' \
+	-H 'Content-Type: application/soap+xml' \
+	-H 'authentication: Bearer asdf123' \
+	--data-binary @- <<'EOF'
+<soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tcs="http://fms.treas.gov/services/tcsonline_3_1">
+	<soapenv:Header/>
+	<soapenv:Body>
+		<tcs:getDetails>
+			<getDetailsRequest>
+				<tcs_app_id>ustc-test-pay-gov-app</tcs_app_id>
+				<paygov_tracking_id>PASTE_PAYGOV_TRACKING_ID_HERE</paygov_tracking_id>
+			</getDetailsRequest>
+		</tcs:getDetails>
+	</soapenv:Body>
+</soapenv:Envelope>
+EOF
+```
+
+You should see `<transaction_status>Failed</transaction_status>` in both
+`completeOnlineCollectionWithDetails` and `getDetails` responses.
