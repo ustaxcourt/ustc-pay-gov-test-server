@@ -17,6 +17,8 @@ export type CompleteOnlineCollectionWithDetailsResponse = {
   payment_date: string;
   transaction_status: TransactionStatus;
   payment_type: PaymentType;
+  payment_frequency: string;
+  number_of_installments: number;
 };
 
 export type HandleCompletOnlineCollectionWithDetails = (
@@ -38,9 +40,8 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
       .persistenceGateway()
       .saveCompletedTransaction(appContext, completedTransaction);
 
-    const response: CompleteOnlineCollectionWithDetailsResponse = pick(
-      completedTransaction,
-      [
+    const response: CompleteOnlineCollectionWithDetailsResponse = {
+      ...pick(completedTransaction, [
         "paygov_tracking_id",
         "agency_tracking_id",
         "transaction_amount",
@@ -49,8 +50,10 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
         "payment_date",
         "transaction_status",
         "payment_type",
-      ]
-    );
+      ]),
+      payment_frequency: "ONE_TIME",
+      number_of_installments: 1,
+    };
 
     return appContext.useCaseHelpers().buildXml({
       response,
