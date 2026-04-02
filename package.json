@@ -15,6 +15,7 @@
     "dev": "NODE_ENV='local' concurrently \"npx tsc --watch\" \"nodemon -q ./dist/server.js\"",
     "copy-files": "aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive",
     "test": "jest ./src",
+    "test:coverage": "jest --coverage ./src",
     "start": "node .",
     "test:integration": "NODE_ENV='local' jest --verbose --bail ./test/integration",
     "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod NODE_ENV='prod' jest --bail ./test/integration",
