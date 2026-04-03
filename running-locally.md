@@ -60,6 +60,8 @@ curl -s -X POST 'http://localhost:3366/wsdl' \
 EOF
 ```
 
+Note: The transaction_status will be updated from the `${baseUrl}/pay?token=${token}`. When "Complete Payment (Credit Card - Failed)" is clicked, it will mark the token as failed in future transactions.
+
 Copy the `<token>` from the SOAP response.
 
 ### 2) Complete with details and force Failed
@@ -76,7 +78,6 @@ curl -s -X POST 'http://localhost:3366/wsdl' \
 			<completeOnlineCollectionWithDetailsRequest>
 				<tcs_app_id>ustc-test-pay-gov-app</tcs_app_id>
 				<token>PASTE_TOKEN_HERE</token>
-				<transaction_status>Failed</transaction_status>
 			</completeOnlineCollectionWithDetailsRequest>
 		</tcs:completeOnlineCollectionWithDetails>
 	</soapenv:Body>

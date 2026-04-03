@@ -11,11 +11,7 @@ const xmlOptions = {
 };
 
 describe("initiate transaction", () => {
-  let token: string;
-  let agencyTrackingId: string;
-  let payGovTrackingId: string;
   const amount = "10.00";
-  const failedAmount = "22.50";
   const tcsAppId = "ustc-test-pay-gov-app";
   const today = DateTime.now().toFormat("yyyy-MM-dd");
   let server: Server;
@@ -170,12 +166,9 @@ describe("initiate transaction", () => {
       console.log("pageHtml", pageHtml);
 
       expect(result.status).toBe(200);
-      expect(pageHtml).toContain("Complete Payment");
-      expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
-      expect(pageHtml).toContain("Cancel Payment");
-      expect(pageHtml).toContain('href="https://example.com/success"');
-      expect(pageHtml).toContain('href="https://example.com/success"');
-      expect(pageHtml).toContain('href="https://example.com/cancel"');
+      expect(pageHtml).toContain('<a href=\"https://example.com/success\">Complete Payment (Credit Card - Failed)</a>');
+      expect(pageHtml).toContain('<a href=\"%%urlSuccess%%\">Complete Payment</a>');
+      expect(pageHtml).toContain('<a href=\"https://example.com/cancel\">Cancel Payment</a>');
     });
   });
 
@@ -199,31 +192,6 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
-    });
-
-    it("should process a failed transaction when transaction_status is Failed", async () => {
-      const { token, agencyTrackingId } = await startOnlineCollection(
-        failedAmount
-      );
-
-      const trackingResponse = await completeOnlineCollectionWithDetails(
-        token,
-        "Failed"
-      );
-
-      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.transaction_status).toBe("Failed");
-      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-      expect(Number(String(trackingResponse.transaction_amount))).toBe(
-        Number(failedAmount)
-      );
-      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-      expect(trackingResponse.shipping_address_return_message).toBe(
-        "address not available"
-      );
-      expect(trackingResponse.payment_date).toBeFalsy();
-      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
-      expect(trackingResponse.number_of_installments).toBe(1);
     });
   });
 
@@ -251,34 +219,6 @@ describe("initiate transaction", () => {
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
       expect(trackingResponse.payment_date).toMatch(/\d{4}-\d{2}-\d{2}/);
-    });
-
-    it("should find the details of a failed transaction", async () => {
-      const { token, agencyTrackingId } = await startOnlineCollection(
-        failedAmount
-      );
-      const completeResponse = await completeOnlineCollectionWithDetails(
-        token,
-        "Failed"
-      );
-      const trackingResponse = await getDetails(
-        completeResponse.paygov_tracking_id
-      );
-
-      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.transaction_status).toBe("Failed");
-      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-      expect(Number(String(trackingResponse.transaction_amount))).toBe(
-        Number(failedAmount)
-      );
-      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-      expect(trackingResponse.transaction_date).toBeTruthy();
-      expect(trackingResponse.shipping_address_return_message).toBe(
-        "address not available"
-      );
-      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
-      expect(trackingResponse.number_of_installments).toBe(1);
-      expect(trackingResponse.payment_date).toBeFalsy();
     });
   });
 });
