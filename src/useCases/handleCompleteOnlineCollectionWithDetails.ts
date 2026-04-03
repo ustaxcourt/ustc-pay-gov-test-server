@@ -33,9 +33,13 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
       .persistenceGateway()
       .getTransactionRequest(appContext, token);
 
+    const transactionStatus: TransactionStatus = transaction.failed_payment
+      ? "Failed"
+      : "Success";
+
     const completedTransaction = appContext
       .useCaseHelpers()
-      .completeTransaction(transaction);
+      .completeTransaction(transaction, { transactionStatus });
 
     await appContext
       .persistenceGateway()

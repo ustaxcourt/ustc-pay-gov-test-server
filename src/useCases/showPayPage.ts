@@ -19,6 +19,7 @@ export const showPayPage: ShowPayPage = async (appContext, { token }) => {
     .getFile(appContext, "html/pay.html");
 
   return html
-    .replace("%%urlSuccess%%", transactionRequest.url_success)
-    .replace("%%urlCancel%%", transactionRequest.url_cancel);
+    .replaceAll("%%urlSuccess%%", transactionRequest.url_success)
+    .replaceAll("%%urlCancel%%", transactionRequest.url_cancel)
+    .replaceAll("%%token%%", token);
 };

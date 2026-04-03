@@ -5,6 +5,7 @@ export type PaymentType = "PLASTIC_CARD" | "ACH" | "AMAZON" | "PAYPAL";
 
 export type TransactionRequest = {
   agency_tracking_id: string;
+  failed_payment?: boolean;
   tcp_appid: string;
   token: string;
   transaction_amount: string;

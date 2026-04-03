@@ -2,8 +2,8 @@
 "@ustaxcourt/ustc-pay-gov-test-server": patch
 ---
 
-Adds support for mocking failed payment responses in `completeOnlineCollectionWithDetails` by honoring `transaction_status` on the request payload.
+Adds support for mocking failed credit-card payment responses using a token-based flow.
 
-When `transaction_status` is set to `Failed`, the mock now persists and returns `Failed` for that transaction while keeping `payment_type` as `PLASTIC_CARD`.
+The new `POST /pay/fail?token={token}` endpoint marks that token as failed. After the token is marked failed, `completeOnlineCollectionWithDetails` and `getDetails` return `transaction_status` as `Failed` for that specific payment while keeping `payment_type` as `PLASTIC_CARD`.
 
-Also adds integration test coverage for the failed path to verify both `completeOnlineCollectionWithDetails` and subsequent `getDetails` responses.
+Also adds integration coverage for the failed path, including duplicate failed-mark requests returning an error.

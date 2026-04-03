@@ -60,7 +60,10 @@ curl -s -X POST 'http://localhost:3366/wsdl' \
 EOF
 ```
 
-Note: The transaction_status will be updated from the `${baseUrl}/pay?token=${token}`. When "Complete Payment (Credit Card - Failed)" is clicked, it will mark the token as failed in future transactions.
+Note: Transaction status is now controlled by token state. When
+"Complete Payment (Credit Card - Failed)" is clicked on the pay page, it calls
+`POST /pay/fail?token={token}` and marks that token as failed for future
+completion and details calls.
 
 Copy the `<token>` from the SOAP response.
 
@@ -70,7 +73,13 @@ Copy the `<token>` from the SOAP response.
 curl -s "http://localhost:3366/pay?token={token}"
 ```
 
-### 3) Complete with details and force Failed
+### 3) Mark that token as failed
+
+```bash
+curl -s -X POST "http://localhost:3366/pay/fail?token={token}"
+```
+
+### 4) Complete with details
 
 ```bash
 curl -s -X POST 'http://localhost:3366/wsdl' \
@@ -93,7 +102,7 @@ EOF
 
 Copy the `<paygov_tracking_id>` from the SOAP response.
 
-### 4) Get details for that tracking id
+### 5) Get details for that tracking id
 
 ```bash
 curl -s -X POST 'http://localhost:3366/wsdl' \
