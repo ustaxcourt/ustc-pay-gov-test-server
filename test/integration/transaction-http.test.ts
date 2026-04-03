@@ -167,10 +167,13 @@ describe("initiate transaction", () => {
       const url = `${baseUrl}/pay?token=${token}`;
       const result = await fetch(url);
       const pageHtml = await result.text();
+      console.log("pageHtml", pageHtml);
 
       expect(result.status).toBe(200);
       expect(pageHtml).toContain("Complete Payment");
+      expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
       expect(pageHtml).toContain("Cancel Payment");
+      expect(pageHtml).toContain('href="https://example.com/success"');
       expect(pageHtml).toContain('href="https://example.com/success"');
       expect(pageHtml).toContain('href="https://example.com/cancel"');
     });
