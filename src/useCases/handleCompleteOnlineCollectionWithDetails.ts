@@ -50,9 +50,9 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
         "payment_date",
         "transaction_status",
         "payment_type",
-      ]),
-      payment_frequency: "ONE_TIME",
-      number_of_installments: 1,
+        "payment_frequency",
+        "number_of_installments",
+      ])
     };
 
     return appContext.useCaseHelpers().buildXml({

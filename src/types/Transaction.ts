@@ -14,9 +14,11 @@ export type TransactionRequest = {
 
 export type CompletedTransaction = {
   agency_tracking_id: string;
+  number_of_installments: number;
   paid: boolean;
   paygov_tracking_id: string;
   payment_date: string;
+  payment_frequency: string;
   payment_type: PaymentType;
   tcp_appid: string;
   token: string;

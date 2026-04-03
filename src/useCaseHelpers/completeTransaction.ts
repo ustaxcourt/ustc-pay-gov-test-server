@@ -17,5 +17,7 @@ export const completeTransaction: CompleteTransaction = (transaction) => {
     transaction_date: now.toJSDate().toISOString(),
     transaction_status: "Success",
     transaction_type: "Sale",
+    payment_frequency: "ONE_TIME",
+    number_of_installments: 1,
   };
 };
