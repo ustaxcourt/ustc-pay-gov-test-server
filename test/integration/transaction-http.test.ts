@@ -1,6 +1,8 @@
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { v4 as uuidv4 } from "uuid";
 import { DateTime } from "luxon";
+import { Server } from "http";
+import { AddressInfo } from "net";
 
 const xmlOptions = {
   ignoreAttributes: false,
@@ -16,7 +18,31 @@ describe("initiate transaction", () => {
   const failedAmount = "22.50";
   const tcsAppId = "ustc-test-pay-gov-app";
   const today = DateTime.now().toFormat("yyyy-MM-dd");
-  const wsdlUrl = `${process.env.BASE_URL!}/wsdl`;
+  let server: Server;
+  let baseUrl: string;
+  let wsdlUrl: string;
+
+  beforeAll(async () => {
+    process.env.NODE_ENV = "local";
+    const { app } = await import("../../src/app");
+    server = app.listen(0);
+    const address = server.address() as AddressInfo;
+    baseUrl = `http://127.0.0.1:${address.port}`;
+    wsdlUrl = `${baseUrl}/wsdl`;
+  });
+
+  afterAll(async () => {
+    await new Promise<void>((resolve, reject) => {
+      server.close((error) => {
+        if (error) {
+          reject(error);
+          return;
+        }
+
+        resolve();
+      });
+    });
+  });
 
   const postSoapRequest = async (body: unknown) => {
     const builder = new XMLBuilder(xmlOptions);
@@ -138,7 +164,7 @@ describe("initiate transaction", () => {
 
     it("should call the pay page with the token", async () => {
       const { token } = await startOnlineCollection(amount);
-      const url = `${process.env.BASE_URL}/pay?token=${token}`;
+      const url = `${baseUrl}/pay?token=${token}`;
       const result = await fetch(url);
 
       expect(result.status).toBe(200);
