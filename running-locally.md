@@ -64,7 +64,13 @@ Note: The transaction_status will be updated from the `${baseUrl}/pay?token=${to
 
 Copy the `<token>` from the SOAP response.
 
-### 2) Complete with details and force Failed
+### 2) Verify the Pay page
+
+```bash
+curl -s "http://localhost:3366/pay?token={token}"
+```
+
+### 3) Complete with details and force Failed
 
 ```bash
 curl -s -X POST 'http://localhost:3366/wsdl' \
@@ -87,7 +93,7 @@ EOF
 
 Copy the `<paygov_tracking_id>` from the SOAP response.
 
-### 3) Get details for that tracking id
+### 4) Get details for that tracking id
 
 ```bash
 curl -s -X POST 'http://localhost:3366/wsdl' \
