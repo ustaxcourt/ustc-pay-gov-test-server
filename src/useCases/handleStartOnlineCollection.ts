@@ -15,8 +15,8 @@ export const handleStartOnlineCollection: HandleStartOnlineCollection = async (
   appContext,
   transaction
 ) => {
-  // build token
-  const token = uuidv4();
+  // build token (Strip the - from the uuid to get us to exactly 32 characters)
+  const token = uuidv4().replace(/-/g, "");
 
   // persist token
   await appContext.persistenceGateway().saveTransactionRequest(appContext, {
