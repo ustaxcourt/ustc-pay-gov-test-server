@@ -18,6 +18,7 @@
     "test:coverage": "jest --coverage ./src",
     "start": "node .",
     "test:integration": "NODE_ENV='local' jest --verbose --bail ./test/integration",
+    "test:integration:coverage": "jest --config jest.config.ts --coverage --testPathPattern=integration",
     "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod NODE_ENV='prod' jest --bail ./test/integration",
     "ci:publish": "changeset publish --provenance"
   },
