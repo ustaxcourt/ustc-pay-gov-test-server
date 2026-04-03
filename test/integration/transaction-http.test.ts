@@ -13,53 +13,24 @@ describe("initiate transaction", () => {
   let agencyTrackingId: string;
   let payGovTrackingId: string;
   const amount = "10.00";
+  const failedAmount = "22.50";
   const tcsAppId = "ustc-test-pay-gov-app";
   const today = DateTime.now().toFormat("yyyy-MM-dd");
+  const wsdlUrl = `${process.env.BASE_URL!}/wsdl`;
 
-  it("attempts to load the wsdl", async () => {
-    const url = `${process.env.BASE_URL!}/wsdl`;
-    // console.log({ url });
-    const result = await fetch(url, {
-      headers: {
-        authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
-      },
-    });
-    // console.log(result);
-    expect(result.status).toBe(200);
-  });
-
-  it("calls the server to initiate a transaction", async () => {
-    agencyTrackingId = uuidv4();
-
-    const startOnlineCollectionRequest = {
-      tcs_app_id: tcsAppId,
-      agency_tracking_id: agencyTrackingId,
-      transaction_type: "Sale",
-      transaction_amount: amount,
-      language: "en",
-      url_success: "https://example.com/success",
-      url_cancel: "https://example.com/cancel",
-    };
-
-    const reqObj = {
+  const postSoapRequest = async (body: unknown) => {
+    const builder = new XMLBuilder(xmlOptions);
+    const parser = new XMLParser(xmlOptions);
+    const xmlBody = builder.build({
       "soapenv:Envelope": {
         "soapenv:Header": {},
-        "soapenv:Body": {
-          "tcs:startOnlineCollection": {
-            startOnlineCollectionRequest,
-          },
-        },
+        "soapenv:Body": body,
         "@xmlns:soapenv": "http://schemas.xmlsoap.org/soap/envelope/",
         "@xmlns:tcs": "http://fms.treas.gov/services/tcsonline_3_1",
       },
-    };
+    });
 
-    const builder = new XMLBuilder(xmlOptions);
-    const xmlBody = builder.build(reqObj);
-
-    const url = `${process.env.BASE_URL!}/wsdl`;
-    // console.log({ url });
-    const result = await fetch(url, {
+    const result = await fetch(wsdlUrl, {
       method: "POST",
       body: xmlBody,
       headers: {
@@ -68,155 +39,213 @@ describe("initiate transaction", () => {
       },
     });
 
-    // console.log({ result });
-
-    const parser = new XMLParser(xmlOptions);
     const data = await result.text();
-    const response = parser.parse(data);
+    return parser.parse(data);
+  };
+
+  const startOnlineCollection = async (transactionAmount: string) => {
+    const agencyTrackingId = uuidv4();
+
+    const response = await postSoapRequest({
+      "tcs:startOnlineCollection": {
+        startOnlineCollectionRequest: {
+          tcs_app_id: tcsAppId,
+          agency_tracking_id: agencyTrackingId,
+          transaction_type: "Sale",
+          transaction_amount: transactionAmount,
+          language: "en",
+          url_success: "https://example.com/success",
+          url_cancel: "https://example.com/cancel",
+        },
+      },
+    });
+
     const tokenResponse =
       response["S:Envelope"]["S:Body"]["ns2:startOnlineCollectionResponse"]
         .startOnlineCollectionResponse;
 
-    token = tokenResponse.token;
-    expect(token).toBeTruthy();
-  });
+    return {
+      token: tokenResponse.token,
+      agencyTrackingId,
+    };
+  };
 
-  it("should call the pay page with the token", async () => {
-    const url = `${process.env.BASE_URL}/pay?token=${token}`;
-    // console.log({ url });
-    const result = await fetch(url);
-    // console.log({ result });
-
-    expect(result.status).toBe(200);
-    expect(result.body).toBeTruthy();
-  });
-
-  it("should process the transaction", async () => {
-    const args = {
-      completeOnlineCollectionWithDetailsRequest: {
-        tcs_app_id: tcsAppId,
-        token,
-      },
+  const completeOnlineCollectionWithDetails = async (
+    token: string,
+    transactionStatus?: "Success" | "Failed"
+  ) => {
+    const completeOnlineCollectionWithDetailsRequest: {
+      tcs_app_id: string;
+      token: string;
+      transaction_status?: "Success" | "Failed";
+    } = {
+      tcs_app_id: tcsAppId,
+      token,
     };
 
-    const reqObj = {
-      "soapenv:Envelope": {
-        "soapenv:Header": {},
-        "soapenv:Body": {
-          "tcs:completeOnlineCollectionWithDetails": args,
-        },
-        "@xmlns:soapenv": "http://schemas.xmlsoap.org/soap/envelope/",
-        "@xmlns:tcs": "http://fms.treas.gov/services/tcsonline_3_1",
-      },
-    };
+    if (transactionStatus) {
+      completeOnlineCollectionWithDetailsRequest.transaction_status =
+        transactionStatus;
+    }
 
-    const builder = new XMLBuilder(xmlOptions);
-    const xmlBody = builder.build(reqObj);
-
-    const url = `${process.env.BASE_URL!}/wsdl`;
-
-    const result = await fetch(url, {
-      method: "POST",
-      body: xmlBody,
-      headers: {
-        "Content-type": "application/soap+xml",
-        authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+    const response = await postSoapRequest({
+      "tcs:completeOnlineCollectionWithDetails": {
+        completeOnlineCollectionWithDetailsRequest,
       },
     });
 
-    const parser = new XMLParser(xmlOptions);
-    const data = await result.text();
-    const response = parser.parse(data);
-    const trackingResponse =
-      response["S:Envelope"]["S:Body"][
-        "ns2:completeOnlineCollectionWithDetailsResponse"
-      ].completeOnlineCollectionWithDetailsResponse;
+    return response["S:Envelope"]["S:Body"][
+      "ns2:completeOnlineCollectionWithDetailsResponse"
+    ].completeOnlineCollectionWithDetailsResponse;
+  };
 
-    expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-    payGovTrackingId = trackingResponse.paygov_tracking_id;
-    expect(trackingResponse.transaction_status).toBe("Success");
-    expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-    expect(Number(String(trackingResponse.transaction_amount))).toBe(
-      Number(amount)
-    );
-    expect(trackingResponse.transaction_status).toBe("Success");
-    expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-    expect(trackingResponse.shipping_address_return_message).toBe(
-      "address not available"
-    );
-    expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
-    expect(trackingResponse.number_of_installments).toBe(1);
-    expect(trackingResponse.payment_date).toBe(today);
-  });
-
-  it("should find the details of the transaction via getDetails api", async () => {
-    const args = {
-      getDetailsRequest: {
-        tcs_app_id: tcsAppId,
-        paygov_tracking_id: payGovTrackingId,
-      },
-    };
-
-    const reqObj = {
-      "soapenv:Envelope": {
-        "soapenv:Header": {},
-        "soapenv:Body": {
-          "tcs:getDetails": args,
+  const getDetails = async (paygovTrackingId: string) => {
+    const response = await postSoapRequest({
+      "tcs:getDetails": {
+        getDetailsRequest: {
+          tcs_app_id: tcsAppId,
+          paygov_tracking_id: paygovTrackingId,
         },
-        "@xmlns:soapenv": "http://schemas.xmlsoap.org/soap/envelope/",
-        "@xmlns:tcs": "http://fms.treas.gov/services/tcsonline_3_1",
-      },
-    };
-
-    const builder = new XMLBuilder(xmlOptions);
-    const xmlBody = builder.build(reqObj);
-    const url = `${process.env.BASE_URL!}/wsdl`;
-
-    console.log({ url });
-
-    const result = await fetch(url, {
-      method: "POST",
-      body: xmlBody,
-      headers: {
-        "Content-type": "application/soap+xml",
-        authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
       },
     });
-
-    const parser = new XMLParser(xmlOptions);
-    const data = await result.text();
-
-    console.log(data);
-    const response = parser.parse(data);
 
     const detailsResponse =
       response["S:Envelope"]["S:Body"]["ns2:getDetailsResponse"]
         .getDetailsResponse;
 
-    console.log({ length: detailsResponse.transactions.length });
-    let trackingResponse;
+    return Array.isArray(detailsResponse.transactions)
+      ? detailsResponse.transactions[0].transaction
+      : detailsResponse.transactions.transaction;
+  };
 
-    if (detailsResponse.transactions.length) {
-      trackingResponse = detailsResponse.transactions[0].transaction;
-    } else {
-      trackingResponse = detailsResponse.transactions.transaction;
-    }
+  describe("wsdl", () => {
+    it("attempts to load the wsdl", async () => {
+      const result = await fetch(wsdlUrl, {
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+      });
 
-    expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-    expect(trackingResponse.transaction_status).toBe("Success");
-    expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-    expect(Number(String(trackingResponse.transaction_amount))).toBe(
-      Number(amount)
-    );
-    expect(trackingResponse.transaction_status).toBe("Success");
-    expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-    expect(trackingResponse.transaction_date).toBeTruthy();
-    expect(trackingResponse.shipping_address_return_message).toBe(
-      "address not available"
-    );
-    expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
-    expect(trackingResponse.number_of_installments).toBe(1);
-    expect(trackingResponse.payment_date).toBe(today);
-    expect(trackingResponse.payment_date).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(result.status).toBe(200);
+    });
+  });
+
+  describe("handleStartOnlineCollection", () => {
+    it("calls the server to initiate a transaction", async () => {
+      const { token } = await startOnlineCollection(amount);
+      expect(token).toBeTruthy();
+    });
+
+    it("should call the pay page with the token", async () => {
+      const { token } = await startOnlineCollection(amount);
+      const url = `${process.env.BASE_URL}/pay?token=${token}`;
+      const result = await fetch(url);
+
+      expect(result.status).toBe(200);
+      expect(result.body).toBeTruthy();
+    });
+  });
+
+  describe("handleCompleteOnlineCollectionWithDetails", () => {
+    it("should process a successful transaction", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.transaction_status).toBe("Success");
+      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+      expect(Number(String(trackingResponse.transaction_amount))).toBe(
+        Number(amount)
+      );
+      expect(trackingResponse.transaction_status).toBe("Success");
+      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+      expect(trackingResponse.shipping_address_return_message).toBe(
+        "address not available"
+      );
+      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+      expect(trackingResponse.number_of_installments).toBe(1);
+      expect(trackingResponse.payment_date).toBe(today);
+    });
+
+    it("should process a failed transaction when transaction_status is Failed", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(
+        failedAmount
+      );
+
+      const trackingResponse = await completeOnlineCollectionWithDetails(
+        token,
+        "Failed"
+      );
+
+      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.transaction_status).toBe("Failed");
+      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+      expect(Number(String(trackingResponse.transaction_amount))).toBe(
+        Number(failedAmount)
+      );
+      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+      expect(trackingResponse.shipping_address_return_message).toBe(
+        "address not available"
+      );
+      expect(trackingResponse.payment_date).toBeFalsy();
+      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+      expect(trackingResponse.number_of_installments).toBe(1);
+    });
+  });
+
+  describe("handleGetDetails", () => {
+    it("should find the details of a successful transaction via getDetails api", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+      const completeResponse = await completeOnlineCollectionWithDetails(token);
+      const trackingResponse = await getDetails(
+        completeResponse.paygov_tracking_id
+      );
+
+      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.transaction_status).toBe("Success");
+      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+      expect(Number(String(trackingResponse.transaction_amount))).toBe(
+        Number(amount)
+      );
+      expect(trackingResponse.transaction_status).toBe("Success");
+      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+      expect(trackingResponse.transaction_date).toBeTruthy();
+      expect(trackingResponse.shipping_address_return_message).toBe(
+        "address not available"
+      );
+      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+      expect(trackingResponse.number_of_installments).toBe(1);
+      expect(trackingResponse.payment_date).toBe(today);
+      expect(trackingResponse.payment_date).toMatch(/\d{4}-\d{2}-\d{2}/);
+    });
+
+    it("should find the details of a failed transaction", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(
+        failedAmount
+      );
+      const completeResponse = await completeOnlineCollectionWithDetails(
+        token,
+        "Failed"
+      );
+      const trackingResponse = await getDetails(
+        completeResponse.paygov_tracking_id
+      );
+
+      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.transaction_status).toBe("Failed");
+      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+      expect(Number(String(trackingResponse.transaction_amount))).toBe(
+        Number(failedAmount)
+      );
+      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+      expect(trackingResponse.transaction_date).toBeTruthy();
+      expect(trackingResponse.shipping_address_return_message).toBe(
+        "address not available"
+      );
+      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+      expect(trackingResponse.number_of_installments).toBe(1);
+      expect(trackingResponse.payment_date).toBeFalsy();
+    });
   });
 });
