@@ -17,6 +17,7 @@ export type CompleteOnlineCollectionWithDetailsResponse = {
   payment_date: string;
   transaction_status: TransactionStatus;
   payment_type: PaymentType;
+  shipping_address_return_message: string;
   payment_frequency: string;
   number_of_installments: number;
 };
@@ -50,6 +51,7 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
         "payment_date",
         "transaction_status",
         "payment_type",
+        "shipping_address_return_message",
         "payment_frequency",
         "number_of_installments",
       ])

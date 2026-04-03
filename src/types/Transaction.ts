@@ -20,6 +20,7 @@ export type CompletedTransaction = {
   payment_date: string;
   payment_frequency: string;
   payment_type: PaymentType;
+  shipping_address_return_message: string;
   tcp_appid: string;
   token: string;
   transaction_amount: string;
