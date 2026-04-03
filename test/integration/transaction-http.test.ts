@@ -166,9 +166,13 @@ describe("initiate transaction", () => {
       const { token } = await startOnlineCollection(amount);
       const url = `${baseUrl}/pay?token=${token}`;
       const result = await fetch(url);
+      const pageHtml = await result.text();
 
       expect(result.status).toBe(200);
-      expect(result.body).toBeTruthy();
+      expect(pageHtml).toContain("Complete Payment");
+      expect(pageHtml).toContain("Cancel Payment");
+      expect(pageHtml).toContain('href="https://example.com/success"');
+      expect(pageHtml).toContain('href="https://example.com/cancel"');
     });
   });
 
