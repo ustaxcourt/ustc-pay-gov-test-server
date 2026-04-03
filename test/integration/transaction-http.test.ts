@@ -147,6 +147,14 @@ describe("initiate transaction", () => {
   });
 
   describe("handleStartOnlineCollection", () => {
+    it("returns an error message when pay page token is missing", async () => {
+      const result = await fetch(`${baseUrl}/pay`);
+      const body = await result.text();
+
+      expect(result.status).toBe(200);
+      expect(body).toBe("no token found");
+    });
+
     it("calls the server to initiate a transaction", async () => {
       const { token } = await startOnlineCollection(amount);
       expect(token).toBeTruthy();
