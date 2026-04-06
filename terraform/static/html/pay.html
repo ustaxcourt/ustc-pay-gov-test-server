@@ -5,47 +5,10 @@
   <body>
     <h1>This is a test payment page</h1>
 
-    <p>
-      <a id="failed-payment-link" href="%%urlSuccess%%"
-        >Complete Payment (Credit Card - Failed)</a
-      >
-    </p>
+    <p><a href="%%urlSuccess%%">Complete Payment (Credit Card - Failed)</a></p>
     <p><a href="%%urlSuccess%%">Complete Payment</a></p>
     <p><a href="%%urlCancel%%">Cancel Payment</a></p>
 
-    <script>
-      (function () {
-        const token = "%%token%%";
-        const failedPaymentLink = document.getElementById("failed-payment-link");
-
-        if (!failedPaymentLink || !token) {
-          return;
-        }
-
-        failedPaymentLink.addEventListener("click", async function (event) {
-          event.preventDefault();
-          const redirectUrl = failedPaymentLink.getAttribute("href") || "/";
-
-          try {
-            const response = await fetch(
-              "/pay/fail?token=" + encodeURIComponent(token),
-              {
-                method: "POST",
-              }
-            );
-
-            if (!response.ok) {
-              const errorMessage = await response.text();
-              window.alert(errorMessage || "Unable to mark payment as failed");
-              return;
-            }
-
-            window.location.assign(redirectUrl);
-          } catch (error) {
-            window.alert("Unable to mark payment as failed");
-          }
-        });
-      })();
-    </script>
+    <script type="text/javascript" src="/scripts/override-links.js?token=%%token%%"></script>
   </body>
 </html>
