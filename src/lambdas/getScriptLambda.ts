@@ -5,7 +5,7 @@ import { existsSync, readFileSync } from "fs";
 const resolveScriptPath = (filename: string) => {
   const candidatePaths = [
     path.resolve(__dirname, "../static/html/scripts", filename),
-    path.resolve(__dirname, "../src/static/html/scripts", filename),
+    path.resolve(__dirname, "../../src/static/html/scripts", filename),
   ];
 
   return candidatePaths.find((candidatePath) => existsSync(candidatePath));
