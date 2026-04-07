@@ -8,6 +8,9 @@ import {
   yyyyMmDdRegex,
 } from "../../src/useCaseHelpers/dateFormats";
 
+const toMoneyString = (value: string | number) =>
+  Number.parseFloat(String(value)).toFixed(2);
+
 const xmlOptions = {
   ignoreAttributes: false,
   attributeNamePrefix: "@",
@@ -189,9 +192,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-      expect(Number(String(trackingResponse.transaction_amount))).toBe(
-        Number(amount)
-      );
+      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
@@ -214,9 +215,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
       expect(trackingResponse.transaction_status).toBe("Failed");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-      expect(Number(String(trackingResponse.transaction_amount))).toBe(
-        Number(amount)
-      );
+      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
       expect(trackingResponse.payment_date).toBe(today);
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
@@ -252,9 +251,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-      expect(Number(String(trackingResponse.transaction_amount))).toBe(
-        Number(amount)
-      );
+      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
       expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
@@ -279,9 +276,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
       expect(trackingResponse.transaction_status).toBe("Failed");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-      expect(Number(String(trackingResponse.transaction_amount))).toBe(
-        Number(amount)
-      );
+      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
       expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
       expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);

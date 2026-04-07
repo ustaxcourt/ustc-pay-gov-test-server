@@ -1,9 +1,35 @@
 import { handleGetDetails } from './handleGetDetails';
 import { isoDateTimeRegex, yyyyMmDdRegex } from '../useCaseHelpers/dateFormats';
+import { PaymentFrequencyType } from '../types/Transaction';
+import { XMLParser } from 'fast-xml-parser';
+
+const toMoneyString = (value: string | number) => Number.parseFloat(String(value)).toFixed(2);
 
 describe('handleGetDetails', () => {
   it('returns XML for a completed transaction', async () => {
-    const buildXml = jest.fn().mockReturnValue('<xml>details</xml>');
+    // Use a real XML serializer for buildXml
+    function buildXml({ response, responseType }: { response: any; responseType: string }) {
+      // Minimal XML serialization for test purposes
+      const t = response.transactions[0].transaction;
+      return `
+        <${responseType}>
+          <transactions>
+            <transaction>
+              <paygov_tracking_id>${t.paygov_tracking_id}</paygov_tracking_id>
+              <agency_tracking_id>${t.agency_tracking_id}</agency_tracking_id>
+              <transaction_amount>${t.transaction_amount}</transaction_amount>
+              <transaction_type>${t.transaction_type}</transaction_type>
+              <transaction_date>${t.transaction_date}</transaction_date>
+              <payment_date>${t.payment_date}</payment_date>
+              <transaction_status>${t.transaction_status}</transaction_status>
+              <payment_type>${t.payment_type}</payment_type>
+              <payment_frequency>${t.payment_frequency}</payment_frequency>
+              <number_of_installments>${t.number_of_installments}</number_of_installments>
+            </transaction>
+          </transactions>
+        </${responseType}>
+      `.replace(/\s+/g, ' ').trim();
+    }
 
     const appContext = {
       persistenceGateway: () => ({
@@ -27,22 +53,22 @@ describe('handleGetDetails', () => {
 
     const xml = await handleGetDetails(appContext, { paygov_tracking_id: 'id' });
 
-    expect(xml).toBe('<xml>details</xml>');
+    // Parse the XML and assert on its structure and values
+    const parser = new XMLParser({ parseTagValue: false });
+    const parsed = parser.parse(xml);
+    const transaction = parsed.getDetailsResponse.transactions.transaction;
 
-    const buildXmlArg = buildXml.mock.calls[0][0] as {
-      response: {
-        transactions: Array<{
-          transaction: {
-            transaction_date: string;
-            payment_date: string;
-          };
-        }>;
-      };
-    };
-
-    const transaction = buildXmlArg.response.transactions[0].transaction;
-    expect(Date.parse(transaction.transaction_date)).not.toBeNaN();
+    expect(transaction.paygov_tracking_id).toBe('id');
+    expect(transaction.agency_tracking_id).toBe('aid');
+    expect(toMoneyString(transaction.transaction_amount)).toBe('10.00');
+    expect(transaction.transaction_type).toBe('Sale');
     expect(transaction.transaction_date).toMatch(isoDateTimeRegex);
     expect(transaction.payment_date).toMatch(yyyyMmDdRegex);
+    expect(transaction.transaction_status).toBe('Success');
+    expect(transaction.payment_type).toBe('PLASTIC_CARD');
+    expect(transaction.payment_frequency).toBe('ONE_TIME');
+    expect(Number(transaction.number_of_installments)).toBe(1);
+    // Negative assertion: field should not exist
+    expect(transaction.shipping_address_return_message).toBeUndefined();
   });
 });
