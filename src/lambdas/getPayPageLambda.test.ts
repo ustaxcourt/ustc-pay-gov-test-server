@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
-import { handler as getPayPageHandler } from "../../src/lambdas/getPayPageLambda";
-import * as appContextModule from "../../src/appContext";
+import { handler as getPayPageHandler } from "./getPayPageLambda";
+import * as appContextModule from "../appContext";
 
 describe("getPayPageLambda.handler", () => {
   afterEach(() => {
