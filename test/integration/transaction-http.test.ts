@@ -28,7 +28,13 @@ describe("initiate transaction", () => {
   beforeAll(async () => {
     process.env.NODE_ENV = "local";
     const { app } = await import("../../src/app");
-    server = app.listen(0);
+    server = await new Promise<Server>((resolve, reject) => {
+      const listeningServer = app.listen(0, () => {
+        resolve(listeningServer);
+      });
+      listeningServer.once("error", reject);
+    });
+
     const address = server.address() as AddressInfo;
     baseUrl = `http://127.0.0.1:${address.port}`;
     wsdlUrl = `${baseUrl}/wsdl`;
