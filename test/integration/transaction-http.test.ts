@@ -3,6 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import { DateTime } from "luxon";
 import { Server } from "http";
 import { AddressInfo } from "net";
+import {
+  isoDateTimeRegex,
+  yyyyMmDdRegex,
+} from "../../src/useCaseHelpers/dateFormats";
 
 const xmlOptions = {
   ignoreAttributes: false,
@@ -193,6 +197,9 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
+      expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
+      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
@@ -214,6 +221,9 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_date).toBe(today);
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
+      expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
+      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
@@ -247,11 +257,12 @@ describe("initiate transaction", () => {
       );
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-      expect(trackingResponse.transaction_date).toBeTruthy();
+      expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
+      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
-      expect(trackingResponse.payment_date).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
@@ -272,10 +283,12 @@ describe("initiate transaction", () => {
         Number(amount)
       );
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-      expect(trackingResponse.transaction_date).toBeTruthy();
+      expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
+      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
+      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
   });
