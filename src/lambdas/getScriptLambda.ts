@@ -2,7 +2,8 @@ import { Request, Response } from "express";
 import path from "path";
 import { existsSync, readFileSync } from "fs";
 
-// Validates that the filename is a simple name without any path components
+// Path traversal protection:
+// ensures the filename is a simple name without directory components
 // and only contains allowed characters
 const isSafeFilename = (filename: string) => {
   if (!filename) {
@@ -20,7 +21,8 @@ const isSafeFilename = (filename: string) => {
   return /^[a-zA-Z0-9._-]+$/.test(filename);
 };
 
-// Checks if the resolved path is within the specified base directory
+// Path traversal protection:
+// ensures the resolved path is within the intended base directories
 const isWithinBaseDir = (baseDir: string, fullPath: string) => {
   const relativePath = path.relative(baseDir, fullPath);
   return !relativePath.startsWith("..") && !path.isAbsolute(relativePath);
@@ -36,6 +38,9 @@ const resolveScriptPath = (filename: string) => {
     path.resolve(__dirname, "../../src/static/html/scripts"),
   ];
 
+  // Path traversal protection:
+  // only consider candidate paths
+  // that are within the intended base directories
   const candidatePaths = candidateBaseDirs
     .map((baseDir) => path.resolve(baseDir, filename))
     .filter((candidatePath, index) =>
