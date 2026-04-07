@@ -193,6 +193,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
+      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
     it("should process a failed transaction when token is marked failed", async () => {
@@ -213,6 +214,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_date).toBe(today);
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
+      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
     it("should return an error when token is already marked failed", async () => {
@@ -250,6 +252,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
       expect(trackingResponse.payment_date).toMatch(/\d{4}-\d{2}-\d{2}/);
+      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
     it("should find the details of a failed transaction", async () => {
@@ -273,6 +276,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
+      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
   });
 });
