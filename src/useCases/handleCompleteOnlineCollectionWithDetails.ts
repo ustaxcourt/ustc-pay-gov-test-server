@@ -1,6 +1,7 @@
 import { AppContext } from "../types/AppContext";
 import { pick } from "lodash";
 import {
+  PaymentFrequencyType,
   PaymentType,
   TransactionRequest,
   TransactionType,
@@ -17,7 +18,7 @@ export type CompleteOnlineCollectionWithDetailsResponse = {
   payment_date: string;
   transaction_status: TransactionStatus;
   payment_type: PaymentType;
-  payment_frequency: string;
+  payment_frequency: PaymentFrequencyType;
   number_of_installments: number;
 };
 

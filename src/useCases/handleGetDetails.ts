@@ -1,12 +1,12 @@
 import { AppContext } from "../types/AppContext";
-import { PaymentType, TransactionType } from "../types/Transaction";
+import { PaymentFrequencyType, PaymentType, TransactionType } from "../types/Transaction";
 import { TransactionStatus } from "../types/TransactionStatus";
 
 export type GetDetailsRequest = {
   paygov_tracking_id: string;
 };
 
-export type TransacitonDetails = {
+export type TransactionDetails = {
   transaction: {
     paygov_tracking_id: string;
     agency_tracking_id: string;
@@ -16,13 +16,13 @@ export type TransacitonDetails = {
     payment_date: string;
     transaction_status: TransactionStatus;
     payment_type: PaymentType;
-    payment_frequency: string;
+    payment_frequency: PaymentFrequencyType;
     number_of_installments: number;
   };
 };
 
 export type GetDetailsResponse = {
-  transactions: TransacitonDetails[];
+  transactions: TransactionDetails[];
 };
 
 export type HandleGetDetails = (
