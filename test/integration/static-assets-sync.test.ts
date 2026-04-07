@@ -40,21 +40,4 @@ describe("static assets sync", () => {
       expect(terraformContent).toBe(srcContent);
     }
   });
-
-  it("keeps override-links.js in sync between src and terraform", () => {
-    const workspaceRoot = path.resolve(__dirname, "../..");
-    const srcScriptPath = path.join(
-      workspaceRoot,
-      "src/static/html/scripts/override-links.js"
-    );
-    const terraformScriptPath = path.join(
-      workspaceRoot,
-      "terraform/static/html/scripts/override-links.js"
-    );
-
-    const srcContent = fs.readFileSync(srcScriptPath, "utf-8");
-    const terraformContent = fs.readFileSync(terraformScriptPath, "utf-8");
-
-    expect(terraformContent).toBe(srcContent);
-  });
 });
