@@ -22,6 +22,10 @@ describe('getScriptLocal', () => {
     };
   });
 
+  afterEach(() => {
+    jest.restoreAllMocks();
+  });
+
   it('serves the script if found', async () => {
     const scriptContent = 'console.log("hello");';
     const scriptPath = path.resolve(__dirname, '../../src/static/html/scripts/test.js');
@@ -39,6 +43,17 @@ describe('getScriptLocal', () => {
   it('returns 404 if script not found', async () => {
     jest.spyOn(fs, 'existsSync').mockReturnValue(false);
     await getScriptLocal(req as Request, res as Response);
+    expect(statusSpy).toHaveBeenCalledWith(404);
+    expect(sendSpy).toHaveBeenCalledWith('File not found');
+  });
+
+  it('returns 404 for path traversal filenames', async () => {
+    req = { params: { file: '../../etc/passwd' } };
+    const existsSpy = jest.spyOn(fs, 'existsSync');
+
+    await getScriptLocal(req as Request, res as Response);
+
+    expect(existsSpy).not.toHaveBeenCalled();
     expect(statusSpy).toHaveBeenCalledWith(404);
     expect(sendSpy).toHaveBeenCalledWith('File not found');
   });
