@@ -1,7 +1,7 @@
 (function () {
   // Extract token from URL query parameter
   const urlParams = new URLSearchParams(window.location.search);
-  const token = urlParams.get('token') || new URL(document.currentScript.src).searchParams.get('token');
+  const token = urlParams.get('token');
   const urlLinks = [
     {
       text: "Complete Payment (Credit Card - Failed)",

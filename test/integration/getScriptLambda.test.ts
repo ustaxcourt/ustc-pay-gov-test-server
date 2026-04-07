@@ -28,7 +28,7 @@ describe("getScriptLocal", () => {
 
   it("serves the override script without authentication", async () => {
     const response = await fetch(
-      `${baseUrl}/scripts/override-links.js?token=test-token`
+      `${baseUrl}/scripts/override-links.js`
     );
     const body = await response.text();
 
@@ -36,7 +36,6 @@ describe("getScriptLocal", () => {
     expect(response.headers.get("content-type")).toContain(
       "application/javascript"
     );
-    expect(body).toContain("document.currentScript.src");
     expect(body).toContain("Complete Payment (Credit Card - Failed)");
   });
 

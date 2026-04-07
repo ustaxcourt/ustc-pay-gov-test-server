@@ -170,7 +170,7 @@ describe("initiate transaction", () => {
       expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
       expect(pageHtml).toContain("Complete Payment");
       expect(pageHtml).toContain("Cancel Payment");
-      expect(pageHtml).toContain('src="/scripts/override-links.js?token=');
+      expect(pageHtml).toContain('src="/scripts/override-links.js"');
       expect(pageHtml).toContain('href="https://example.com/success"');
       expect(pageHtml).toContain('href="https://example.com/cancel"');
     });
