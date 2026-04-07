@@ -2,6 +2,7 @@ import { TransactionStatus } from "./TransactionStatus";
 
 export type TransactionType = "Sale" | "Authorization";
 export type PaymentType = "PLASTIC_CARD" | "ACH" | "AMAZON" | "PAYPAL";
+export type PaymentFrequencyType = "ONE_TIME";
 
 export type TransactionRequest = {
   agency_tracking_id: string;
@@ -19,9 +20,8 @@ export type CompletedTransaction = {
   paid: boolean;
   paygov_tracking_id: string;
   payment_date: string;
-  payment_frequency: string;
+  payment_frequency: PaymentFrequencyType;
   payment_type: PaymentType;
-  shipping_address_return_message: string;
   tcp_appid: string;
   token: string;
   transaction_amount: string;

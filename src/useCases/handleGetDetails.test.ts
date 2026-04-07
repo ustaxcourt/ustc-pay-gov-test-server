@@ -13,7 +13,6 @@ describe('handleGetDetails', () => {
           payment_date: '2026-04-07',
           transaction_status: 'Success',
           payment_type: 'PLASTIC_CARD',
-          shipping_address_return_message: 'address',
           payment_frequency: 'ONE_TIME',
           number_of_installments: 1,
         }),

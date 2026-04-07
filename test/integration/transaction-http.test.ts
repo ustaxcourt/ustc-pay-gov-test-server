@@ -190,9 +190,6 @@ describe("initiate transaction", () => {
       );
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-      expect(trackingResponse.shipping_address_return_message).toBe(
-        "address not available"
-      );
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
@@ -213,9 +210,6 @@ describe("initiate transaction", () => {
         Number(amount)
       );
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
-      expect(trackingResponse.shipping_address_return_message).toBe(
-        "address not available"
-      );
       expect(trackingResponse.payment_date).toBe(today);
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
@@ -252,9 +246,6 @@ describe("initiate transaction", () => {
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
       expect(trackingResponse.transaction_date).toBeTruthy();
-      expect(trackingResponse.shipping_address_return_message).toBe(
-        "address not available"
-      );
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);
@@ -279,9 +270,6 @@ describe("initiate transaction", () => {
       );
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
       expect(trackingResponse.transaction_date).toBeTruthy();
-      expect(trackingResponse.shipping_address_return_message).toBe(
-        "address not available"
-      );
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toBe(today);

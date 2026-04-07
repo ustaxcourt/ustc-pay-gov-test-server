@@ -16,7 +16,6 @@ export type TransacitonDetails = {
     payment_date: string;
     transaction_status: TransactionStatus;
     payment_type: PaymentType;
-    shipping_address_return_message: string;
     payment_frequency: string;
     number_of_installments: number;
   };
@@ -51,8 +50,6 @@ export const handleGetDetails: HandleGetDetails = async (
           payment_date: completedTransaction.payment_date,
           transaction_status: completedTransaction.transaction_status,
           payment_type: completedTransaction.payment_type,
-          shipping_address_return_message:
-            completedTransaction.shipping_address_return_message,
           payment_frequency: completedTransaction.payment_frequency,
           number_of_installments: completedTransaction.number_of_installments,
         },

@@ -18,7 +18,6 @@ export const completeTransaction: CompleteTransaction = (transaction, options) =
     paygov_tracking_id: uuidv4(),
     payment_date: now.toFormat("yyyy-MM-dd"),
     payment_type: "PLASTIC_CARD",
-    shipping_address_return_message: "address not available",
     transaction_date: now.toJSDate().toISOString(),
     transaction_status: transactionStatus,
     transaction_type: "Sale",
