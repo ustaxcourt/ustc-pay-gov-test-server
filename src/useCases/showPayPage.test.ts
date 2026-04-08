@@ -5,7 +5,7 @@ describe('showPayPage', () => {
   it('returns rendered HTML with replacements', async () => {
     const appContext = {
       persistenceGateway: () => ({
-        getTransactionRequest: jest.fn().mockResolvedValue({
+        getInitiatedTransaction: jest.fn().mockResolvedValue({
           url_success: 'success',
           url_cancel: 'cancel',
         }),

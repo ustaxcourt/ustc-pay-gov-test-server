@@ -1,14 +1,14 @@
 import { completeTransaction } from './completeTransaction';
-import { TransactionRequest } from '../types/Transaction';
+import { InitiatedTransaction } from '../types/Transaction';
 
 describe('completeTransaction', () => {
-  const baseRequest: TransactionRequest = {
+  const baseRequest: InitiatedTransaction = {
     agency_tracking_id: 'A1',
     transaction_amount: '100.00',
     url_success: 'https://success',
     url_cancel: 'https://cancel',
-    // add any other required TransactionRequest fields here
-  } as TransactionRequest;
+    // add any other required InitiatedTransaction fields here
+  } as InitiatedTransaction;
 
   it('sets paid to true when transactionStatus is "Success"', () => {
     const result = completeTransaction(baseRequest, { transactionStatus: 'Success' });

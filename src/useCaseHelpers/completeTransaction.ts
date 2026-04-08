@@ -1,10 +1,10 @@
-import { CompletedTransaction, TransactionRequest } from "../types/Transaction";
+import { CompletedTransaction, InitiatedTransaction } from "../types/Transaction";
 import { DateTime } from "luxon";
 import { v4 as uuidv4 } from "uuid";
 import { TransactionStatus } from "../types/TransactionStatus";
 
 export type CompleteTransaction = (
-  transaction: TransactionRequest,
+  transaction: InitiatedTransaction,
   options?: { transactionStatus?: TransactionStatus }
 ) => CompletedTransaction;
 

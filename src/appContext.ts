@@ -5,9 +5,9 @@ import { handleStartOnlineCollection } from "./useCases/handleStartOnlineCollect
 import { showPayPage } from "./useCases/showPayPage";
 import { buildXml } from "./useCaseHelpers/buildXml";
 import { getCompletedTransaction } from "./persistence/getCompletedTransaction";
-import { getTransactionRequest } from "./persistence/getTransactionRequest";
+import { getInitiatedTransaction } from "./persistence/getInitiatedTransaction";
 import { saveCompletedTransaction } from "./persistence/saveCompletedTransaction";
-import { saveTransactionRequest } from "./persistence/saveTransactionRequest";
+import { saveInitiatedTransaction } from "./persistence/saveInitatedTransaction";
 import { handleCompleteOnlineCollectionWithDetails } from "./useCases/handleCompleteOnlineCollectionWithDetails";
 import { handleGetDetails } from "./useCases/handleGetDetails";
 import { completeTransaction } from "./useCaseHelpers/completeTransaction";
@@ -30,9 +30,9 @@ export function createAppContext() {
     }),
     persistenceGateway: () => ({
       getCompletedTransaction,
-      getTransactionRequest,
+      getInitiatedTransaction,
       saveCompletedTransaction,
-      saveTransactionRequest,
+      saveInitiatedTransaction,
     }),
     storageClient,
     files: {},

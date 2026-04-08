@@ -6,12 +6,15 @@ export type PaymentFrequencyType = "ONE_TIME";
 
 export type TransactionRequest = {
   agency_tracking_id: string;
-  failed_payment?: boolean;
   tcp_appid: string;
-  token: string;
   transaction_amount: string;
   url_cancel: string;
   url_success: string;
+};
+
+export type InitiatedTransaction = TransactionRequest & {
+  failed_payment?: boolean;
+  token: string;
 };
 
 export type CompletedTransaction = {

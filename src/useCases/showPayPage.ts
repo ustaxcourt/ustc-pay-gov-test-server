@@ -13,7 +13,7 @@ export const showPayPage: ShowPayPage = async (appContext, { token }) => {
   }
   const transactionRequest = await appContext
     .persistenceGateway()
-    .getTransactionRequest(appContext, token);
+    .getInitiatedTransaction(appContext, token);
 
   const html = await appContext
     .storageClient()

@@ -1,4 +1,3 @@
-import { PaymentFrequencyType } from '../types/Transaction';
 import { isoDateTimeRegex, yyyyMmDdRegex } from '../useCaseHelpers/dateFormats';
 import { handleCompleteOnlineCollectionWithDetails } from '../useCases/handleCompleteOnlineCollectionWithDetails';
 import { XMLParser } from 'fast-xml-parser';
@@ -28,7 +27,7 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
 
     const appContext = {
       persistenceGateway: () => ({
-        getTransactionRequest: jest.fn().mockResolvedValue({ failed_payment: false }),
+        getInitiatedTransaction: jest.fn().mockResolvedValue({ failed_payment: false }),
         saveCompletedTransaction: jest.fn().mockResolvedValue(undefined),
       }),
       useCaseHelpers: () => ({
@@ -90,7 +89,7 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
 
     const appContext = {
       persistenceGateway: () => ({
-        getTransactionRequest: jest.fn().mockResolvedValue({ failed_payment: true }),
+        getInitiatedTransaction: jest.fn().mockResolvedValue({ failed_payment: true }),
         saveCompletedTransaction: jest.fn().mockResolvedValue(undefined),
       }),
       useCaseHelpers: () => ({

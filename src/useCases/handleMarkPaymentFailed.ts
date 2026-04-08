@@ -12,13 +12,13 @@ export const handleMarkPaymentFailed: HandleMarkPaymentFailed = async (
 ) => {
   const transaction = await appContext
     .persistenceGateway()
-    .getTransactionRequest(appContext, token);
+    .getInitiatedTransaction(appContext, token);
 
   if (transaction.failed_payment) {
     throw new InvalidRequestError("Token already marked failed");
   }
 
-  await appContext.persistenceGateway().saveTransactionRequest(appContext, {
+  await appContext.persistenceGateway().saveInitiatedTransaction(appContext, {
     ...transaction,
     failed_payment: true,
   });

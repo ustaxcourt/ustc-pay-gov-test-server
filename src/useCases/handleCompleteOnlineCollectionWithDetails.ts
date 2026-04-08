@@ -1,9 +1,9 @@
 import { AppContext } from "../types/AppContext";
 import { pick } from "lodash";
 import {
+  InitiatedTransaction,
   PaymentFrequencyType,
   PaymentType,
-  TransactionRequest,
   TransactionType,
 } from "../types/Transaction";
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
@@ -29,9 +29,9 @@ export type HandleCompletOnlineCollectionWithDetails = (
 
 export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
   async (appContext, { token }) => {
-    const transaction: TransactionRequest = await appContext
+    const transaction: InitiatedTransaction = await appContext
       .persistenceGateway()
-      .getTransactionRequest(appContext, token);
+      .getInitiatedTransaction(appContext, token);
 
     const transactionStatus: TransactionStatus = transaction.failed_payment
       ? "Failed"

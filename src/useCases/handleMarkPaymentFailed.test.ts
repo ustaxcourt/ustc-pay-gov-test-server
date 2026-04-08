@@ -4,8 +4,8 @@ describe('handleMarkPaymentFailed', () => {
   it('marks payment as failed if not already failed', async () => {
     const appContext = {
       persistenceGateway: () => ({
-        getTransactionRequest: jest.fn().mockResolvedValue({ failed_payment: false }),
-        saveTransactionRequest: jest.fn().mockResolvedValue(undefined),
+        getInitiatedTransaction: jest.fn().mockResolvedValue({ failed_payment: false }),
+        saveInitiatedTransaction: jest.fn().mockResolvedValue(undefined),
       }),
     } as any;
     await expect(handleMarkPaymentFailed(appContext, { token: 'tok' })).resolves.toBeUndefined();
@@ -14,8 +14,8 @@ describe('handleMarkPaymentFailed', () => {
   it('throws if already marked failed', async () => {
     const appContext = {
       persistenceGateway: () => ({
-        getTransactionRequest: jest.fn().mockResolvedValue({ failed_payment: true }),
-        saveTransactionRequest: jest.fn(),
+        getInitiatedTransaction: jest.fn().mockResolvedValue({ failed_payment: true }),
+        saveInitiatedTransaction: jest.fn(),
       }),
     } as any;
     await expect(handleMarkPaymentFailed(appContext, { token: 'tok' })).rejects.toThrow('Token already marked failed');
