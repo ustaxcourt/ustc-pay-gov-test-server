@@ -14,7 +14,7 @@ export const completeTransaction: CompleteTransaction = (transaction, options) =
 
   return {
     ...transaction,
-    paid: true,
+    paid: transactionStatus === "Success",
     paygov_tracking_id: uuidv4(),
     payment_date: now.toFormat("yyyy-MM-dd"),
     payment_type: "PLASTIC_CARD",
