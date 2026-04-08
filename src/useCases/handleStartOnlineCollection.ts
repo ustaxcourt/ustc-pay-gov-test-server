@@ -19,7 +19,7 @@ export const handleStartOnlineCollection: HandleStartOnlineCollection = async (
   const token = uuidv4().replace(/-/g, "");
 
   // persist token
-  await appContext.persistenceGateway().saveTransactionRequest(appContext, {
+  await appContext.persistenceGateway().saveInitiatedTransaction(appContext, {
     ...transaction,
     token,
   });
