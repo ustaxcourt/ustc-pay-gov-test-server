@@ -3,6 +3,7 @@ import { TransactionStatus } from "./TransactionStatus";
 export type TransactionType = "Sale" | "Authorization";
 export type PaymentType = "PLASTIC_CARD" | "ACH" | "AMAZON" | "PAYPAL";
 export type PaymentFrequencyType = "ONE_TIME";
+export type PaymentStatus = "Success" | "Failed" | "Pending";
 
 export type TransactionRequest = {
   agency_tracking_id: string;
