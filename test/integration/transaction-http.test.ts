@@ -122,10 +122,15 @@ describe("initiate transaction", () => {
     ].completeOnlineCollectionWithDetailsResponse;
   };
 
-  const markPaymentFailed = async (token: string) => {
-    return fetch(`${baseUrl}/pay/fail?token=${token}`, {
-      method: "POST",
-    });
+  const markPaymentStatus = async (
+    token: string,
+    paymentMethod: string,
+    paymentStatus: string
+  ) => {
+    return fetch(
+      `${baseUrl}/pay/${paymentMethod}/${paymentStatus}?token=${token}`,
+      { method: "POST" }
+    );
   };
 
   const getDetails = async (paygovTrackingId: string) => {
@@ -180,8 +185,9 @@ describe("initiate transaction", () => {
       const pageHtml = await result.text();
 
       expect(result.status).toBe(200);
-      expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
       expect(pageHtml).toContain("Complete Payment");
+      expect(pageHtml).toContain("Complete Payment (ACH - Success)");
+      expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
       expect(pageHtml).toContain("Cancel Payment");
       expect(pageHtml).toContain('src="/scripts/override-links.js"');
       expect(pageHtml).toContain('href="https://example.com/success"');
@@ -213,7 +219,7 @@ describe("initiate transaction", () => {
     it("should process a failed transaction when token is marked failed", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const markFailedResponse = await markPaymentFailed(token);
+      const markFailedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       expect(markFailedResponse.status).toBe(200);
 
       const trackingResponse = await completeOnlineCollectionWithDetails(token);
@@ -235,14 +241,36 @@ describe("initiate transaction", () => {
     it("should return an error when token is already marked failed", async () => {
       const { token } = await startOnlineCollection(amount);
 
-      const firstResponse = await markPaymentFailed(token);
+      const firstResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       expect(firstResponse.status).toBe(200);
 
-      const secondResponse = await markPaymentFailed(token);
+      const secondResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       const errorMessage = await secondResponse.text();
 
       expect(secondResponse.status).toBe(400);
       expect(errorMessage).toBe("Token already marked failed");
+    });
+  });
+
+  describe("ACH payment", () => {
+    it("should return Received status within 60 seconds of ACH initiation", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
+      expect(markAchResponse.status).toBe(200);
+
+      const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.transaction_status).toBe("Received");
+      expect(trackingResponse.payment_type).toBe("ACH");
+      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+      expect(trackingResponse.number_of_installments).toBe(1);
+      expect(trackingResponse.payment_date).toBe(today);
+      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
     });
   });
 
@@ -271,7 +299,7 @@ describe("initiate transaction", () => {
 
     it("should find the details of a failed transaction", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
-      const markFailedResponse = await markPaymentFailed(token);
+      const markFailedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       expect(markFailedResponse.status).toBe(200);
 
       const completeResponse = await completeOnlineCollectionWithDetails(token);
