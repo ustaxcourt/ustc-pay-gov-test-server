@@ -41,6 +41,7 @@ terraform.rc
 #Ignore js and zip files
 *.js
 *.zip
+!terraform/static/html/scripts/override-links.js
 
 # Ignore lock files (optional, some teams prefer to commit these)
 # .terraform.lock.hcl

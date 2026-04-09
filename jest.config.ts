@@ -4,5 +4,9 @@ module.exports = {
   testEnvironment: "node",
   setupFiles: ["dotenv/config"],
   bail: true,
+  collectCoverageFrom: ["src/**/*.ts"],
+  coverageDirectory: "coverage",
+  coverageReporters: ["text", "lcov"],
+  testPathIgnorePatterns: ["/node_modules/", "/dist/"],
   // silent: true,
 };
