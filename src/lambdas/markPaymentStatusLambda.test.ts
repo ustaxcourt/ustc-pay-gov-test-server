@@ -102,21 +102,23 @@ describe("markPaymentStatusLambda", () => {
     });
   });
 
-  it("should call handleMarkPaymentStatus and return redirectUrl", async () => {
-    req.query = { token: "tok" };
-    handleMarkPaymentStatus.mockResolvedValue("http://redirect.url");
+  describe("handleLocalError", () => {
+    it("should call handleMarkPaymentStatus and return redirectUrl", async () => {
+      req.query = { token: "tok" };
+      handleMarkPaymentStatus.mockResolvedValue("http://redirect.url");
 
-    await markPaymentStatusLambda(req as Request, res as Response);
+      await markPaymentStatusLambda(req as Request, res as Response);
 
-    expect(handleMarkPaymentStatus).toHaveBeenCalledWith(
-      appContext,
-      {
-        token: "tok",
-        paymentMethod: "PLASTIC_CARD",
-        paymentStatus: "Failed",
-      }
-    );
-    expect(statusSpy).toHaveBeenCalledWith(200);
-    expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl: "http://redirect.url" });
+      expect(handleMarkPaymentStatus).toHaveBeenCalledWith(
+        appContext,
+        {
+          token: "tok",
+          paymentMethod: "PLASTIC_CARD",
+          paymentStatus: "Failed",
+        }
+      );
+      expect(statusSpy).toHaveBeenCalledWith(200);
+      expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl: "http://redirect.url" });
+    });
   });
 });
