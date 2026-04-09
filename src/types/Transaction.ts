@@ -13,8 +13,10 @@ export type TransactionRequest = {
 };
 
 export type InitiatedTransaction = TransactionRequest & {
-  failed_payment?: boolean;
   token: string;
+  payment_type?: PaymentType;
+  failed_payment?: boolean;
+  ach_initiated_at?: string;
 };
 
 export type CompletedTransaction = {
