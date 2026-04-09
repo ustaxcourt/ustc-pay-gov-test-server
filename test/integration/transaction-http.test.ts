@@ -243,9 +243,11 @@ describe("initiate transaction", () => {
 
       const firstResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       expect(firstResponse.status).toBe(200);
+      console.log('First mark failed response', await firstResponse.text());
 
       const secondResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       const errorMessage = await secondResponse.text();
+      console.log('Second mark failed response', errorMessage);
 
       expect(secondResponse.status).toBe(400);
       expect(errorMessage).toBe("Token already marked failed");

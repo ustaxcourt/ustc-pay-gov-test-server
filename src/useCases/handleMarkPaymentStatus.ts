@@ -14,7 +14,7 @@ export type HandleMarkPaymentStatus = (
     paymentMethod,
     paymentStatus,
   }: { token: string; paymentMethod: string; paymentStatus: string }
-) => Promise<string>;
+) => Promise<string|undefined>;
 
 export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
   appContext,
@@ -32,6 +32,11 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
   const transaction = await appContext
     .persistenceGateway()
     .getInitiatedTransaction(appContext, token);
+
+  if (transaction.failed_payment) {
+    throw new InvalidRequestError("Token already marked failed");
+    return;
+  }
 
   const isFailed = validatedStatus === "Failed";
   const isAchSuccess = validatedMethod === "ACH" && !isFailed;
