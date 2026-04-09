@@ -1,4 +1,5 @@
 import { AppContext } from "../types/AppContext";
+import { InvalidRequestError } from "../errors/InvalidRequestError";
 
 export type ShowPayPage = (
   appContext: AppContext,
@@ -8,17 +9,17 @@ export type ShowPayPage = (
 export const showPayPage: ShowPayPage = async (appContext, { token }) => {
   console.log("handling a pay page", token);
   if (!token) {
-    throw "Token not found";
+    throw new InvalidRequestError("Token not found");
   }
   const transactionRequest = await appContext
     .persistenceGateway()
-    .getTransactionRequest(appContext, token);
+    .getInitiatedTransaction(appContext, token);
 
   const html = await appContext
     .storageClient()
     .getFile(appContext, "html/pay.html");
 
   return html
-    .replace("%%urlSuccess%%", transactionRequest.url_success)
-    .replace("%%urlCancel%%", transactionRequest.url_cancel);
+    .replaceAll("%%urlSuccess%%", transactionRequest.url_success)
+    .replaceAll("%%urlCancel%%", transactionRequest.url_cancel);
 };
