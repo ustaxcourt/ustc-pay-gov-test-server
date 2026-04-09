@@ -1,10 +1,10 @@
-import dotenv from "dotenv";
-dotenv.config();
-
-import { app } from "./app";
-
-app.listen(process.env.PORT, () => {
-  console.log(
-    `⚡️[server]: Server is running at http://localhost:${process.env.PORT}`
-  );
-});
+export * from './types/CompleteTransactionRequest';
+export * from './types/Filename';
+export * from './types/GetFile';
+export * from './types/ResourceRequest';
+export * from './types/SaveFile';
+export * from './types/Transaction';
+export * from './types/TransactionStatus';
+export * from './errors/InvalidRequestError';
+export * from './errors/NotFoundError';
+export * from './errors/UnauthorizedError';

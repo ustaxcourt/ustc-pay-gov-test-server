@@ -3,6 +3,7 @@ name: PR Validate
 on:
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
 
 env:
   AWS_REGION: us-east-1
@@ -11,20 +12,22 @@ permissions:
   id-token: write
   contents: read
 
-concurrency:
-  group: terraform-dev-state
-  cancel-in-progress: true
-
 jobs:
   validate:
+    if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
+
+    concurrency:
+      group: terraform-dev-state
+      cancel-in-progress: true
+
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Cache Node modules
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -32,7 +35,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '22'
 
@@ -57,7 +60,7 @@ jobs:
           terraform_version: 1.7.5
 
       - name: Cache Terraform
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.terraform.d/plugin-cache
@@ -80,7 +83,7 @@ jobs:
           echo "exitcode=$?" >> $GITHUB_OUTPUT
 
       - name: Upload plan artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: terraform-plan
           path: terraform/plan.out
@@ -90,8 +93,7 @@ jobs:
         run: |
           echo '### Terraform Plan Summary' >> $GITHUB_STEP_SUMMARY
           echo '' >> $GITHUB_STEP_SUMMARY
-          echo '\`\`\`' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 200 terraform/plan.out >> $GITHUB_STEP_SUMMARY || true
-          echo '\`\`\`' >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
           
-
