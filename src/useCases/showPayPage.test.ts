@@ -13,8 +13,8 @@ describe('showPayPage', () => {
     const appContext = {
       persistenceGateway: () => ({
         getInitiatedTransaction: jest.fn().mockResolvedValue({
-          url_success: 'success',
-          url_cancel: 'cancel',
+          url_success: 'http://example.com/success',
+          url_cancel: 'https://example.com/cancel',
         }),
       }),
       storageClient: () => ({
@@ -34,17 +34,17 @@ describe('showPayPage', () => {
 
     // Check the first three links for data attributes and href (attribute order agnostic)
     expect(normalizedHtml).toMatch(
-      /<a[^>]*href="success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Success"[^>]*>Complete Payment<\/a>/
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Success"[^>]*>Complete Payment<\/a>/
     );
     expect(normalizedHtml).toMatch(
-      /<a[^>]*href="success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Success"[^>]*>Complete Payment \(ACH - Success\)<\/a>/
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Success"[^>]*>Complete Payment \(ACH - Success\)<\/a>/
     );
     expect(normalizedHtml).toMatch(
-      /<a[^>]*href="success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(Credit Card - Failed\)<\/a>/
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(Credit Card - Failed\)<\/a>/
     );
 
     // The fourth link is cancel
-    expect(normalizedHtml).toMatch(/<a href="cancel">Cancel Payment<\/a>/);
+    expect(normalizedHtml).toMatch(/<a href="https:\/\/example.com\/cancel">Cancel Payment<\/a>/);
   });
 
   it('throws if token is missing', async () => {
