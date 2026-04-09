@@ -1,6 +1,11 @@
 import { DateTime } from "luxon";
 import { AppContext } from "../types/AppContext";
-import { InitiatedTransaction, PaymentStatus, PaymentType } from "../types/Transaction";
+import { InitiatedTransaction, PaymentType } from "../types/Transaction";
+import { InvalidRequestError } from "../errors/InvalidRequestError";
+
+const VALID_PAYMENT_METHODS: PaymentType[] = ["PLASTIC_CARD", "ACH", "AMAZON", "PAYPAL"];
+const VALID_PAYMENT_STATUSES = ["Success", "Failed"] as const;
+type ValidPaymentStatus = (typeof VALID_PAYMENT_STATUSES)[number];
 
 export type HandleMarkPaymentStatus = (
   appContext: AppContext,
@@ -8,24 +13,32 @@ export type HandleMarkPaymentStatus = (
     token,
     paymentMethod,
     paymentStatus,
-  }: { token: string; paymentMethod: PaymentType; paymentStatus: PaymentStatus }
+  }: { token: string; paymentMethod: string; paymentStatus: string }
 ) => Promise<string>;
-
 
 export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
   appContext,
   { token, paymentMethod, paymentStatus }
 ) => {
+  if (!VALID_PAYMENT_METHODS.includes(paymentMethod as PaymentType)) {
+    throw new InvalidRequestError(`Unknown payment method: ${paymentMethod}`);
+  }
+  if (!VALID_PAYMENT_STATUSES.includes(paymentStatus as ValidPaymentStatus)) {
+    throw new InvalidRequestError(`Unknown payment status: ${paymentStatus}`);
+  }
+
+  const validatedMethod = paymentMethod as PaymentType;
+  const validatedStatus = paymentStatus as ValidPaymentStatus;
   const transaction = await appContext
     .persistenceGateway()
     .getInitiatedTransaction(appContext, token);
 
-  const isFailed = paymentStatus === "Failed";
-  const isAchSuccess = paymentMethod === "ACH" && !isFailed;
+  const isFailed = validatedStatus === "Failed";
+  const isAchSuccess = validatedMethod === "ACH" && !isFailed;
 
   const updatedTransaction: InitiatedTransaction = {
     ...transaction,
-    payment_type: paymentMethod,
+    payment_type: validatedMethod,
     ...(isFailed && { failed_payment: true }),
     ...(isAchSuccess && {
       ach_initiated_at: DateTime.now().toJSDate().toISOString(),

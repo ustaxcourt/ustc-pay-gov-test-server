@@ -3,8 +3,8 @@ import { getResourceLocal } from "./lambdas/getResourceLambda";
 import { getPayPageLambda } from "./lambdas/getPayPageLambda";
 import { handleSoapRequestLocal } from "./lambdas/handleSoapRequestLambda";
 import { createAppContext } from "./appContext";
-import { markPaymentFailedLambda } from "./lambdas/markPaymentFailedLambda";
 import { getScriptLocal } from "./lambdas/getScriptLambda";
+import { markPaymentStatusLambda } from "./lambdas/markPaymentStatusLambda";
 
 const appContext = createAppContext();
 const app = express();
@@ -34,7 +34,7 @@ app.get("/wsdl/:file", getResourceLocal);
 app.get("/pay", getPayPageLambda);
 app.get("/scripts/:file", getScriptLocal);
 app.get("/:file", getResourceLocal);
-app.post("/pay/fail", markPaymentFailedLambda);
+app.post("/pay/:paymentMethod/:paymentStatus", markPaymentStatusLambda);
 
 app.post("/wsdl", handleSoapRequestLocal);
 

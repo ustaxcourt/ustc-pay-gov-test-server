@@ -11,7 +11,7 @@ import { saveInitiatedTransaction } from "./persistence/saveInitatedTransaction"
 import { handleCompleteOnlineCollectionWithDetails } from "./useCases/handleCompleteOnlineCollectionWithDetails";
 import { handleGetDetails } from "./useCases/handleGetDetails";
 import { completeTransaction } from "./useCaseHelpers/completeTransaction";
-import { handleMarkPaymentFailed } from "./useCases/handleMarkPaymentFailed";
+import { handleMarkPaymentStatus } from "./useCases/handleMarkPaymentStatus";
 
 export function createAppContext() {
   return {
@@ -20,7 +20,7 @@ export function createAppContext() {
       handleCompleteOnlineCollection,
       handleCompleteOnlineCollectionWithDetails,
       handleGetDetails,
-      handleMarkPaymentFailed,
+      handleMarkPaymentStatus,
       handleStartOnlineCollection,
       showPayPage,
     }),

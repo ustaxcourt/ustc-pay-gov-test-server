@@ -8,6 +8,7 @@ import {
 } from "../types/Transaction";
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
 import { TransactionStatus } from "../types/TransactionStatus";
+import { DateTime } from "luxon";
 
 export type CompleteOnlineCollectionWithDetailsResponse = {
   paygov_tracking_id: string;
@@ -27,15 +28,28 @@ export type HandleCompletOnlineCollectionWithDetails = (
   { token }: CompleteTransactionRequest
 ) => Promise<string>;
 
+export const resolveTransactionStatus = (
+  transaction: InitiatedTransaction
+): TransactionStatus => {
+  if (transaction.failed_payment) {
+    return "Failed";
+  }
+  if (transaction.payment_type === "ACH" && transaction.ach_initiated_at) {
+    const elapsed = DateTime.now()
+      .diff(DateTime.fromISO(transaction.ach_initiated_at), "seconds")
+      .seconds;
+    return elapsed < 60 ? "Received" : "Success";
+  }
+  return "Success";
+};
+
 export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
   async (appContext, { token }) => {
     const transaction: InitiatedTransaction = await appContext
       .persistenceGateway()
       .getInitiatedTransaction(appContext, token);
 
-    const transactionStatus: TransactionStatus = transaction.failed_payment
-      ? "Failed"
-      : "Success";
+    const transactionStatus: TransactionStatus = resolveTransactionStatus(transaction);
 
     const completedTransaction = appContext
       .useCaseHelpers()
