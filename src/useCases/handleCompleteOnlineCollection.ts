@@ -14,7 +14,7 @@ export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
   async (appContext, { token }) => {
     const transaction = await appContext
       .persistenceGateway()
-      .getTransactionRequest(appContext, token);
+      .getInitiatedTransaction(appContext, token);
 
     const completedTransaction = appContext
       .useCaseHelpers()

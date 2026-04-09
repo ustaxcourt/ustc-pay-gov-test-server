@@ -15,8 +15,10 @@
     "dev": "NODE_ENV='local' concurrently \"npx tsc --watch\" \"nodemon -q ./dist/server.js\"",
     "copy-files": "aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive",
     "test": "jest ./src",
+    "test:coverage": "jest --coverage ./src",
     "start": "node .",
     "test:integration": "NODE_ENV='local' jest --verbose --bail ./test/integration",
+    "test:integration:coverage": "jest --config jest.config.ts --coverage --testPathPattern=integration",
     "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod NODE_ENV='prod' jest --bail ./test/integration",
     "ci:publish": "changeset publish --provenance"
   },
@@ -27,8 +29,8 @@
     "start-pay-gov-test-server": "bin/start-pay-gov-test-server.sh"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.888.0",
-    "@types/aws-lambda": "^8.10.152",
+    "@aws-sdk/client-s3": "^3.975.0",
+    "@types/aws-lambda": "^8.10.160",
     "@types/express": "^4.17.17",
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.20",
