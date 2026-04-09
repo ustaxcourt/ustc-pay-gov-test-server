@@ -1,8 +1,9 @@
 import { AppContext } from "../types/AppContext";
 import { pick } from "lodash";
 import {
+  InitiatedTransaction,
+  PaymentFrequencyType,
   PaymentType,
-  TransactionRequest,
   TransactionType,
 } from "../types/Transaction";
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
@@ -17,6 +18,8 @@ export type CompleteOnlineCollectionWithDetailsResponse = {
   payment_date: string;
   transaction_status: TransactionStatus;
   payment_type: PaymentType;
+  payment_frequency: PaymentFrequencyType;
+  number_of_installments: number;
 };
 
 export type HandleCompletOnlineCollectionWithDetails = (
@@ -26,21 +29,24 @@ export type HandleCompletOnlineCollectionWithDetails = (
 
 export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
   async (appContext, { token }) => {
-    const transaction: TransactionRequest = await appContext
+    const transaction: InitiatedTransaction = await appContext
       .persistenceGateway()
-      .getTransactionRequest(appContext, token);
+      .getInitiatedTransaction(appContext, token);
+
+    const transactionStatus: TransactionStatus = transaction.failed_payment
+      ? "Failed"
+      : "Success";
 
     const completedTransaction = appContext
       .useCaseHelpers()
-      .completeTransaction(transaction);
+      .completeTransaction(transaction, { transactionStatus });
 
     await appContext
       .persistenceGateway()
       .saveCompletedTransaction(appContext, completedTransaction);
 
-    const response: CompleteOnlineCollectionWithDetailsResponse = pick(
-      completedTransaction,
-      [
+    const response: CompleteOnlineCollectionWithDetailsResponse = {
+      ...pick(completedTransaction, [
         "paygov_tracking_id",
         "agency_tracking_id",
         "transaction_amount",
@@ -49,8 +55,10 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
         "payment_date",
         "transaction_status",
         "payment_type",
-      ]
-    );
+        "payment_frequency",
+        "number_of_installments",
+      ])
+    };
 
     return appContext.useCaseHelpers().buildXml({
       response,

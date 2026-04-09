@@ -1,7 +1,7 @@
 import { GetCompletedTransaction } from "../persistence/getCompletedTransaction";
-import { GetTransactionRequest } from "../persistence/getTransactionRequest";
+import { GetInitiatedTransaction } from "../persistence/getInitiatedTransaction";
 import { SaveCompletedTransaction } from "../persistence/saveCompletedTransaction";
-import { SaveTransactionRequest } from "../persistence/saveTransactionRequest";
+import { SaveInitiatedTransaction } from "../persistence/saveInitatedTransaction";
 import { ShowPayPage } from "../useCases/showPayPage";
 import { HandleStartOnlineCollection } from "../useCases/handleStartOnlineCollection";
 import { HandleCompletOnlineCollectionWithDetails } from "../useCases/handleCompleteOnlineCollectionWithDetails";
@@ -12,6 +12,7 @@ import { GetFile } from "./GetFile";
 import { SaveFile } from "./SaveFile";
 import { HandleGetDetails } from "../useCases/handleGetDetails";
 import { CompleteTransaction } from "../useCaseHelpers/completeTransaction";
+import { HandleMarkPaymentFailed } from "../useCases/handleMarkPaymentFailed";
 
 export type AppContext = {
   useCases: () => {
@@ -19,6 +20,7 @@ export type AppContext = {
     handleCompleteOnlineCollection: HandleCompleteOnlineCollection;
     handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails;
     handleGetDetails: HandleGetDetails;
+    handleMarkPaymentFailed: HandleMarkPaymentFailed;
     handleStartOnlineCollection: HandleStartOnlineCollection;
     showPayPage: ShowPayPage;
   };
@@ -28,9 +30,9 @@ export type AppContext = {
   };
   persistenceGateway: () => {
     getCompletedTransaction: GetCompletedTransaction;
-    getTransactionRequest: GetTransactionRequest;
+    getInitiatedTransaction: GetInitiatedTransaction;
     saveCompletedTransaction: SaveCompletedTransaction;
-    saveTransactionRequest: SaveTransactionRequest;
+    saveInitiatedTransaction: SaveInitiatedTransaction;
   };
   storageClient: () => {
     getFile: GetFile;
