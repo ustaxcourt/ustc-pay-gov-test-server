@@ -4,6 +4,17 @@ export type TransactionType = "Sale" | "Authorization";
 export type PaymentType = "PLASTIC_CARD" | "ACH" | "AMAZON" | "PAYPAL";
 export type PaymentFrequencyType = "ONE_TIME";
 export type PaymentStatus = "Success" | "Failed" | "Pending";
+export type MarkablePaymentStatus = "Success" | "Failed";
+
+const VALID_PAYMENT_TYPES: PaymentType[] = ["PLASTIC_CARD", "ACH", "AMAZON", "PAYPAL"];
+
+export function isPaymentType(value: unknown): value is PaymentType {
+  return VALID_PAYMENT_TYPES.includes(value as PaymentType);
+}
+
+export function isMarkablePaymentStatus(value: unknown): value is MarkablePaymentStatus {
+  return ["Success", "Failed"].includes(value as string);
+}
 
 export type TransactionRequest = {
   agency_tracking_id: string;

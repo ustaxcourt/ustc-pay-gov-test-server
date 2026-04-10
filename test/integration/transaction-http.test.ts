@@ -243,11 +243,9 @@ describe("initiate transaction", () => {
 
       const firstResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       expect(firstResponse.status).toBe(200);
-      console.log('First mark failed response', await firstResponse.text());
 
       const secondResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       const errorMessage = await secondResponse.text();
-      console.log('Second mark failed response', errorMessage);
 
       expect(secondResponse.status).toBe(400);
       expect(errorMessage).toBe("Token already marked failed");
@@ -375,6 +373,32 @@ describe("initiate transaction", () => {
 
         expect(response.status).toBe(400);
         expect(errorMessage).toBe("Invalid payment status: INVALID_STATUS");
+      });
+
+      it("should return an error when ACH is marked a second time", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const firstResponse = await markPaymentStatus(token, "ACH", "Success");
+        expect(firstResponse.status).toBe(200);
+
+        const secondResponse = await markPaymentStatus(token, "ACH", "Success");
+        const errorMessage = await secondResponse.text();
+
+        expect(secondResponse.status).toBe(400);
+        expect(errorMessage).toBe("Token already marked as ACH");
+      });
+
+      it("should return an error when marking failed after ACH was initiated", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const achResponse = await markPaymentStatus(token, "ACH", "Success");
+        expect(achResponse.status).toBe(200);
+
+        const failedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+        const errorMessage = await failedResponse.text();
+
+        expect(failedResponse.status).toBe(400);
+        expect(errorMessage).toBe("Token already marked as ACH");
       });
     });
 
