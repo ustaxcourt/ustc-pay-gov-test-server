@@ -7,7 +7,8 @@ import {
   isoDateTimeRegex,
   yyyyMmDdRegex,
 } from "../../src/useCaseHelpers/dateFormats";
-import { handleMarkPaymentStatus } from "../../src/useCases/handleMarkPaymentStatus";
+import { markPaymentStatusLambda } from "../../src/lambdas/markPaymentStatusLambda";
+import { Request, Response } from "express";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -344,6 +345,44 @@ describe("initiate transaction", () => {
 
       expect(response.status).toBe(400);
       expect(errorMessage).toBe("Invalid payment status: UNKNOWN_STATUS");
+    });
+  });
+
+  describe("markPaymentStatusLambda token validation", () => {
+    const appContext = {
+      useCases: () => ({
+        handleMarkPaymentStatus: jest.fn(),
+      }),
+    };
+
+    const req: Partial<Request> = {
+      params: {
+        paymentMethod: "PLASTIC_CARD",
+        paymentStatus: "Failed",
+      },
+      query: {},
+    };
+
+    const sendSpy = jest.fn();
+    const statusSpy: jest.Mock<any, any> = jest.fn().mockReturnThis();
+
+    const res: Partial<Response> = {
+      locals: {
+        appContext,
+      },
+      status: statusSpy,
+      send: sendSpy,
+    };
+
+    it("should return 400 when token is missing", async () => {
+      req.query = {
+        token: undefined,
+      };
+      await markPaymentStatusLambda(req as Request, res as Response);
+
+      expect(appContext.useCases().handleMarkPaymentStatus).not.toHaveBeenCalled();
+      expect(statusSpy).toHaveBeenCalledWith(400);
+      expect(sendSpy).toHaveBeenCalledWith("No token found");
     });
   });
 });
