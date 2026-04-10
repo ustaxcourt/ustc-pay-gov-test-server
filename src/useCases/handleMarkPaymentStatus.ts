@@ -35,7 +35,6 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
 
   if (transaction.failed_payment) {
     throw new InvalidRequestError("Token already marked failed");
-    return;
   }
 
   const isFailed = validatedStatus === "Failed";

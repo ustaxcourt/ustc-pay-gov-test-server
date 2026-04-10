@@ -58,4 +58,61 @@ describe('handleMarkPaymentStatus', () => {
     });
     expect(result).toBe('success');
   });
+
+  it('throws error for unknown payment method', async () => {
+    const appContext = {
+      persistenceGateway: () => ({
+        getInitiatedTransaction: jest.fn(),
+        saveInitiatedTransaction: jest.fn(),
+      }),
+    } as unknown as Parameters<typeof handleMarkPaymentStatus>[0];
+
+    await expect(
+      handleMarkPaymentStatus(appContext, {
+        token: 'tok',
+        paymentMethod: 'UNKNOWN_METHOD',
+        paymentStatus: 'Success',
+      })
+    ).rejects.toThrow('Unknown payment method: UNKNOWN_METHOD');
+  });
+
+  it('throws error for unknown payment status', async () => {
+    const appContext = {
+      persistenceGateway: () => ({
+        getInitiatedTransaction: jest.fn(),
+        saveInitiatedTransaction: jest.fn(),
+      }),
+    } as unknown as Parameters<typeof handleMarkPaymentStatus>[0];
+
+    await expect(
+      handleMarkPaymentStatus(appContext, {
+        token: 'tok',
+        paymentMethod: 'PLASTIC_CARD',
+        paymentStatus: 'UNKNOWN_STATUS',
+      })
+    ).rejects.toThrow('Unknown payment status: UNKNOWN_STATUS');
+  });
+
+  it('throws error if token already marked failed', async () => {
+    const getInitiatedTransaction = jest.fn().mockResolvedValue({
+      token: 'tok',
+      url_success: 'success',
+      failed_payment: true,
+    });
+    const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
+    const appContext = {
+      persistenceGateway: () => ({
+        getInitiatedTransaction,
+        saveInitiatedTransaction,
+      }),
+    } as unknown as Parameters<typeof handleMarkPaymentStatus>[0];
+
+    await expect(
+      handleMarkPaymentStatus(appContext, {
+        token: 'tok',
+        paymentMethod: 'PLASTIC_CARD',
+        paymentStatus: 'Failed',
+      })
+    ).rejects.toThrow('Token already marked failed');
+  })
 });
