@@ -256,21 +256,28 @@ describe("initiate transaction", () => {
     it("should return Received status within 15 seconds of ACH initiation", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
-      expect(markAchResponse.status).toBe(200);
+      const frozenNow = DateTime.now();
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
-      const trackingResponse = await completeOnlineCollectionWithDetails(token);
+      try {
+        const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
+        expect(markAchResponse.status).toBe(200);
 
-      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.transaction_status).toBe("Received");
-      expect(trackingResponse.payment_type).toBe("ACH");
-      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
-      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
-      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
-      expect(trackingResponse.number_of_installments).toBe(1);
-      expect(trackingResponse.payment_date).toBe(today);
-      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
-      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.transaction_status).toBe("Received");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
     });
 
     it("should return Success status when ACH initiation is 16 seconds ago", async () => {

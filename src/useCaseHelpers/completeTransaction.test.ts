@@ -49,7 +49,7 @@ describe('completeTransaction', () => {
   });
 
   describe("payment_type: none", () => {
-    it('sets payment_type to undefined when transaction.payment_type is not provided', () => {
+    it('defaults payment_type to PLASTIC_CARD when transaction.payment_type is not provided', () => {
       const request: InitiatedTransaction = {
         ...baseRequest,
         payment_type: undefined,

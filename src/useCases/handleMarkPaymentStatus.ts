@@ -10,7 +10,7 @@ export type HandleMarkPaymentStatus = (
     paymentMethod,
     paymentStatus,
   }: { token: string; paymentMethod: PaymentType; paymentStatus: MarkablePaymentStatus },
-) => Promise<string | undefined>;
+) => Promise<string>;
 
 export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
   appContext,
