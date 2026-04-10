@@ -7,6 +7,7 @@ import {
   isoDateTimeRegex,
   yyyyMmDdRegex,
 } from "../../src/useCaseHelpers/dateFormats";
+import { handleMarkPaymentStatus } from "../../src/useCases/handleMarkPaymentStatus";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -321,6 +322,28 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_date).toBe(today);
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
+    });
+  });
+
+  describe("handleMarkPaymentStatus", () => {
+    it("should return an error for unknown payment method", async () => {
+      const { token } = await startOnlineCollection(amount);
+
+      const response = await markPaymentStatus(token, "UNKNOWN_METHOD", "Failed");
+      const errorMessage = await response.text();
+
+      expect(response.status).toBe(400);
+      expect(errorMessage).toBe("Invalid payment method: UNKNOWN_METHOD");
+    });
+
+    it("should return an error for unknown payment status", async () => {
+      const { token } = await startOnlineCollection(amount);
+
+      const response = await markPaymentStatus(token, "PLASTIC_CARD", "UNKNOWN_STATUS");
+      const errorMessage = await response.text();
+
+      expect(response.status).toBe(400);
+      expect(errorMessage).toBe("Invalid payment status: UNKNOWN_STATUS");
     });
   });
 });
