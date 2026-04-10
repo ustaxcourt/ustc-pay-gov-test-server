@@ -20,13 +20,6 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
   appContext,
   { token, paymentMethod, paymentStatus }
 ) => {
-  if (!VALID_PAYMENT_METHODS.includes(paymentMethod as PaymentType)) {
-    throw new InvalidRequestError(`Unknown payment method: ${paymentMethod}`);
-  }
-  if (!VALID_PAYMENT_STATUSES.includes(paymentStatus as ValidPaymentStatus)) {
-    throw new InvalidRequestError(`Unknown payment status: ${paymentStatus}`);
-  }
-
   const validatedMethod = paymentMethod as PaymentType;
   const validatedStatus = paymentStatus as ValidPaymentStatus;
   const transaction = await appContext

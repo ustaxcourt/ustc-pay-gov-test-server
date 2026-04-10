@@ -276,6 +276,34 @@ describe("initiate transaction", () => {
       expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
     });
+
+    it("should return Success status when ACH initiation is 61 seconds ago", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
+      expect(markAchResponse.status).toBe(200);
+
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+
+      try {
+        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.transaction_status).toBe("Success");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
   });
 
   describe("handleGetDetails", () => {
@@ -327,24 +355,67 @@ describe("initiate transaction", () => {
   });
 
   describe("handleMarkPaymentStatus", () => {
-    it("should return an error for unknown payment method", async () => {
-      const { token } = await startOnlineCollection(amount);
+    describe ("ACH", () => {
+      it("should successfully mark a transaction as ACH success", async () => {
+        const { token } = await startOnlineCollection(amount);
 
-      const response = await markPaymentStatus(token, "UNKNOWN_METHOD", "Failed");
-      const errorMessage = await response.text();
+        const response = await markPaymentStatus(token, "ACH", "Success");
+        expect(response.status).toBe(200);
+      });
 
-      expect(response.status).toBe(400);
-      expect(errorMessage).toBe("Invalid payment method: UNKNOWN_METHOD");
+      it("should successfully mark a transaction as ACH failed", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const response = await markPaymentStatus(token, "ACH", "Failed");
+        expect(response.status).toBe(200);
+      });
+
+      it("should return Invalid payment status error for invalid ACH status", async () => {
+        const { token } = await startOnlineCollection(amount);
+        const response = await markPaymentStatus(token, "ACH", "INVALID_STATUS");
+        const errorMessage = await response.text();
+
+        expect(response.status).toBe(400);
+        expect(errorMessage).toBe("Invalid payment status: INVALID_STATUS");
+      });
     });
 
-    it("should return an error for unknown payment status", async () => {
-      const { token } = await startOnlineCollection(amount);
+    describe("PLASTIC_CARD", () => {
+      it("should successfully mark a transaction as successful", async () => {
+        const { token } = await startOnlineCollection(amount);
 
-      const response = await markPaymentStatus(token, "PLASTIC_CARD", "UNKNOWN_STATUS");
-      const errorMessage = await response.text();
+        const response = await markPaymentStatus(token, "PLASTIC_CARD", "Success");
+        expect(response.status).toBe(200);
+      });
 
-      expect(response.status).toBe(400);
-      expect(errorMessage).toBe("Invalid payment status: UNKNOWN_STATUS");
+      it("should successfully mark a transaction as failed", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const response = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+        expect(response.status).toBe(200);
+      });
+
+      it("should return an error for unknown payment status", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const response = await markPaymentStatus(token, "PLASTIC_CARD", "UNKNOWN_STATUS");
+        const errorMessage = await response.text();
+
+        expect(response.status).toBe(400);
+        expect(errorMessage).toBe("Invalid payment status: UNKNOWN_STATUS");
+      });
+    });
+
+    describe("INVALID_METHOD", () => {
+      it("should return an error for invalid payment method", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const response = await markPaymentStatus(token, "INVALID_METHOD", "Success");
+        const errorMessage = await response.text();
+
+        expect(response.status).toBe(400);
+        expect(errorMessage).toBe("Invalid payment method: INVALID_METHOD");
+      });
     });
   });
 
