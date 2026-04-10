@@ -53,7 +53,7 @@ describe("markPaymentStatusLambda", () => {
     });
   });
 
-  describe("paymenMethod validation", () => {
+  describe("paymentMethod validation", () => {
     it("should return 400 when payment method is missing", async () => {
       req.query = { token: "tok" };
       delete req.params?.paymentMethod;
@@ -102,7 +102,7 @@ describe("markPaymentStatusLambda", () => {
     });
   });
 
-  describe("handleLocalError", () => {
+  describe("valid token and params", () => {
     it("should call handleMarkPaymentStatus and return redirectUrl", async () => {
       req.query = { token: "tok" };
       handleMarkPaymentStatus.mockResolvedValue("http://redirect.url");

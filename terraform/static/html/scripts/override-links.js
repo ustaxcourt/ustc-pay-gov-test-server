@@ -18,7 +18,6 @@
 
       const method = link.getAttribute("data-payment-method");
       const status = link.getAttribute("data-payment-status");
-      const redirectUrl = link.getAttribute("href") || "/";
 
       try {
         const response = await fetch(
@@ -32,7 +31,8 @@
           return;
         }
 
-        window.location.assign(redirectUrl);
+        const { redirectUrl } = await response.json();
+        window.location.assign(redirectUrl || link.getAttribute("href") || "/");
       } catch (error) {
         console.error("Payment request failed", error);
         window.alert("Unable to process payment");

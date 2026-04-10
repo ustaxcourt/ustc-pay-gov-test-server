@@ -38,7 +38,7 @@ export const resolveTransactionStatus = (
     const elapsed = DateTime.now()
       .diff(DateTime.fromISO(transaction.ach_initiated_at), "seconds")
       .seconds;
-    return elapsed < 60 ? "Received" : "Success";
+    return elapsed < 15 ? "Received" : "Success";
   }
   return "Success";
 };

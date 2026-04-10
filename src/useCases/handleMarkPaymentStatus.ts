@@ -3,7 +3,12 @@ import { AppContext } from "../types/AppContext";
 import { InitiatedTransaction, PaymentType } from "../types/Transaction";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
 
-const VALID_PAYMENT_METHODS: PaymentType[] = ["PLASTIC_CARD", "ACH", "AMAZON", "PAYPAL"];
+const VALID_PAYMENT_METHODS: PaymentType[] = [
+  "PLASTIC_CARD",
+  "ACH",
+  "AMAZON",
+  "PAYPAL",
+];
 const VALID_PAYMENT_STATUSES = ["Success", "Failed"] as const;
 type ValidPaymentStatus = (typeof VALID_PAYMENT_STATUSES)[number];
 
@@ -13,12 +18,12 @@ export type HandleMarkPaymentStatus = (
     token,
     paymentMethod,
     paymentStatus,
-  }: { token: string; paymentMethod: string; paymentStatus: string }
-) => Promise<string|undefined>;
+  }: { token: string; paymentMethod: string; paymentStatus: string },
+) => Promise<string | undefined>;
 
 export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
   appContext,
-  { token, paymentMethod, paymentStatus }
+  { token, paymentMethod, paymentStatus },
 ) => {
   const validatedMethod = paymentMethod as PaymentType;
   const validatedStatus = paymentStatus as ValidPaymentStatus;

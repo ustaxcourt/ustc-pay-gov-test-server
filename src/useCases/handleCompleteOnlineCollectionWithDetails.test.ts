@@ -115,10 +115,10 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
     });
   });
 
-  describe('Case: payment_type: "ACH", ach_initiated_at < 60s ago', () => {
+  describe('Case: payment_type: "ACH", ach_initiated_at < 15s ago', () => {
     it('transaction_status: "Received", payment_type: "ACH"', async () => {
       const now = new Date();
-      const achInitiatedAt = new Date(now.getTime() - 30 * 1000).toISOString(); // 30s ago
+      const achInitiatedAt = new Date(now.getTime() - 5 * 1000).toISOString(); // 5s ago
       const appContext = {
         persistenceGateway: () => ({
           getInitiatedTransaction: jest.fn().mockResolvedValue({
@@ -162,10 +162,10 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
     });
   });
 
-  describe('Case: payment_type: "ACH", ach_initiated_at >= 60s ago', () => {
+  describe('Case: payment_type: "ACH", ach_initiated_at >= 15s ago', () => {
     it('transaction_status: "Success", payment_type: "ACH"', async () => {
       const now = new Date();
-      const achInitiatedAt = new Date(now.getTime() - 61 * 1000).toISOString(); // 61s ago
+      const achInitiatedAt = new Date(now.getTime() - 16 * 1000).toISOString(); // 16s ago
       const appContext = {
         persistenceGateway: () => ({
           getInitiatedTransaction: jest.fn().mockResolvedValue({

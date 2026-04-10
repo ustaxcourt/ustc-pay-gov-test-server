@@ -8,8 +8,8 @@ export function isPaymentType(value: any): value is PaymentType {
   return ["PLASTIC_CARD", "ACH", "AMAZON", "PAYPAL"].includes(value);
 }
 
-export function isPaymentStatus(value: any): value is "Success" | "Failed" | "Pending" {
-  return ["Success", "Failed", "Pending"].includes(value);
+export function isPaymentStatus(value: any): value is "Success" | "Failed" {
+  return ["Success", "Failed"].includes(value);
 }
 
 export async function markPaymentStatusLambda(req: Request, res: Response) {

@@ -7,8 +7,6 @@ import {
   isoDateTimeRegex,
   yyyyMmDdRegex,
 } from "../../src/useCaseHelpers/dateFormats";
-import { markPaymentStatusLambda } from "../../src/lambdas/markPaymentStatusLambda";
-import { Request, Response } from "express";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -257,7 +255,7 @@ describe("initiate transaction", () => {
   });
 
   describe("ACH payment", () => {
-    it("should return Received status within 60 seconds of ACH initiation", async () => {
+    it("should return Received status within 15 seconds of ACH initiation", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
@@ -277,7 +275,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
     });
 
-    it("should return Success status when ACH initiation is 61 seconds ago", async () => {
+    it("should return Success status when ACH initiation is 16 seconds ago", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
@@ -285,7 +283,7 @@ describe("initiate transaction", () => {
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+        .mockReturnValue(DateTime.now().plus({ seconds: 16 }));
 
       try {
         const trackingResponse = await completeOnlineCollectionWithDetails(token);
@@ -406,54 +404,14 @@ describe("initiate transaction", () => {
       });
     });
 
-    describe("INVALID_METHOD", () => {
-      it("should return an error for invalid payment method", async () => {
-        const { token } = await startOnlineCollection(amount);
+    it("should return an error for invalid payment method", async () => {
+      const { token } = await startOnlineCollection(amount);
 
-        const response = await markPaymentStatus(token, "INVALID_METHOD", "Success");
-        const errorMessage = await response.text();
+      const response = await markPaymentStatus(token, "INVALID_METHOD", "Success");
+      const errorMessage = await response.text();
 
-        expect(response.status).toBe(400);
-        expect(errorMessage).toBe("Invalid payment method: INVALID_METHOD");
-      });
-    });
-  });
-
-  describe("markPaymentStatusLambda token validation", () => {
-    const appContext = {
-      useCases: () => ({
-        handleMarkPaymentStatus: jest.fn(),
-      }),
-    };
-
-    const req: Partial<Request> = {
-      params: {
-        paymentMethod: "PLASTIC_CARD",
-        paymentStatus: "Failed",
-      },
-      query: {},
-    };
-
-    const sendSpy = jest.fn();
-    const statusSpy: jest.Mock<any, any> = jest.fn().mockReturnThis();
-
-    const res: Partial<Response> = {
-      locals: {
-        appContext,
-      },
-      status: statusSpy,
-      send: sendSpy,
-    };
-
-    it("should return 400 when token is missing", async () => {
-      req.query = {
-        token: undefined,
-      };
-      await markPaymentStatusLambda(req as Request, res as Response);
-
-      expect(appContext.useCases().handleMarkPaymentStatus).not.toHaveBeenCalled();
-      expect(statusSpy).toHaveBeenCalledWith(400);
-      expect(sendSpy).toHaveBeenCalledWith("No token found");
+      expect(response.status).toBe(400);
+      expect(errorMessage).toBe("Invalid payment method: INVALID_METHOD");
     });
   });
 });

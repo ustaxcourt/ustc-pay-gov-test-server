@@ -7,7 +7,6 @@ describe('completeTransaction', () => {
     transaction_amount: '100.00',
     url_success: 'https://success',
     url_cancel: 'https://cancel',
-    // add any other required InitiatedTransaction fields here
   } as InitiatedTransaction;
 
   describe("generic fields", () => {
