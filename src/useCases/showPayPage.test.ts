@@ -46,11 +46,4 @@ describe('showPayPage', () => {
     // The fourth link is cancel
     expect(normalizedHtml).toMatch(/<a href="https:\/\/example.com\/cancel">Cancel Payment<\/a>/);
   });
-
-  it('throws if token is missing', async () => {
-    const appContext = {} as unknown as Parameters<typeof showPayPage>[0];
-    await expect(showPayPage(appContext, { token: '' })).rejects.toThrow(
-      new InvalidRequestError('Token not found')
-    );
-  });
 });

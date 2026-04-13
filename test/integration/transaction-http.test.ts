@@ -520,4 +520,30 @@ describe("initiate transaction", () => {
       expect(body).toEqual({ redirectUrl: "https://example.com/success" });
     });
   });
+
+  describe("getPayPageLambda", () => {
+    it("should return 200 and the pay page html when token is provided", async () => {
+      const { token } = await startOnlineCollection(amount);
+
+      const response = await fetch(`${baseUrl}/pay?token=${token}`);
+      const body = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(body).toContain("Complete Payment");
+      expect(body).toContain("Complete Payment (ACH - Success)");
+      expect(body).toContain("Complete Payment (Credit Card - Failed)");
+      expect(body).toContain("Cancel Payment");
+      expect(body).toContain('src="/scripts/override-links.js"');
+      expect(body).toContain('href="https://example.com/success"');
+      expect(body).toContain('href="https://example.com/cancel"');
+    });
+
+    it("should return 200 and an error message when token is missing", async () => {
+      const response = await fetch(`${baseUrl}/pay`);
+      const body = await response.text();
+
+      expect(response.status).toBe(200);
+      expect(body).toBe("no token found");
+    });
+  });
 });
