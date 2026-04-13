@@ -495,4 +495,29 @@ describe("initiate transaction", () => {
       expect(errorMessage).toBe("Invalid payment method: INVALID_METHOD");
     });
   });
+
+  describe("markPaymentStatusLambda", () => {
+    it("should return 400 when token is missing", async () => {
+      const response = await fetch(`${baseUrl}/pay/PLASTIC_CARD/Success`, {
+        method: "POST",
+      });
+      const errorMessage = await response.text();
+
+      expect(response.status).toBe(400);
+      expect(errorMessage).toBe("No token found");
+    });
+
+    it("should return redirectUrl json for a valid request", async () => {
+      const { token } = await startOnlineCollection(amount);
+
+      const response = await fetch(
+        `${baseUrl}/pay/PLASTIC_CARD/Success?token=${token}`,
+        { method: "POST" }
+      );
+      const body = await response.json();
+
+      expect(response.status).toBe(200);
+      expect(body).toEqual({ redirectUrl: "https://example.com/success" });
+    });
+  });
 });
