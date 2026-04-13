@@ -355,6 +355,56 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
+
+    it("should return Received status for ACH within 15 seconds via getDetails", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const frozenNow = DateTime.now();
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
+
+      try {
+        await markPaymentStatus(token, "ACH", "Success");
+        const completeResponse = await completeOnlineCollectionWithDetails(token);
+        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+
+        expect(trackingResponse.transaction_status).toBe("Received");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it("should return Success status for ACH after 15 seconds via getDetails", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      await markPaymentStatus(token, "ACH", "Success");
+      const completeResponse = await completeOnlineCollectionWithDetails(token);
+
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(DateTime.now().plus({ seconds: 16 }));
+
+      try {
+        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+
+        expect(trackingResponse.transaction_status).toBe("Success");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
   });
 
   describe("handleMarkPaymentStatus", () => {

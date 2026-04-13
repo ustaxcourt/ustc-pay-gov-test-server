@@ -1,6 +1,7 @@
 import { AppContext } from "../types/AppContext";
 import { PaymentFrequencyType, PaymentType, TransactionType } from "../types/Transaction";
 import { TransactionStatus } from "../types/TransactionStatus";
+import { resolveTransactionStatus } from "../useCaseHelpers/resolveTransactionStatus";
 
 export type GetDetailsRequest = {
   paygov_tracking_id: string;
@@ -38,6 +39,12 @@ export const handleGetDetails: HandleGetDetails = async (
     .persistenceGateway()
     .getCompletedTransaction(appContext, paygov_tracking_id);
 
+  const initiatedTransaction = await appContext
+    .persistenceGateway()
+    .getInitiatedTransaction(appContext, completedTransaction.token);
+
+  const transactionStatus: TransactionStatus = resolveTransactionStatus(initiatedTransaction);
+
   const getDetailsResponse: GetDetailsResponse = {
     transactions: [
       {
@@ -48,7 +55,7 @@ export const handleGetDetails: HandleGetDetails = async (
           transaction_type: completedTransaction.transaction_type,
           transaction_date: completedTransaction.transaction_date,
           payment_date: completedTransaction.payment_date,
-          transaction_status: completedTransaction.transaction_status,
+          transaction_status: transactionStatus,
           payment_type: completedTransaction.payment_type,
           payment_frequency: completedTransaction.payment_frequency,
           number_of_installments: completedTransaction.number_of_installments,
