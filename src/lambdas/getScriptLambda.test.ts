@@ -47,8 +47,30 @@ describe('getScriptLocal', () => {
     expect(sendSpy).toHaveBeenCalledWith('File not found');
   });
 
+  it('returns 404 for an empty filename', async () => {
+    req = { params: { file: '' } };
+    const existsSpy = jest.spyOn(fs, 'existsSync');
+
+    await getScriptLocal(req as Request, res as Response);
+
+    expect(existsSpy).not.toHaveBeenCalled();
+    expect(statusSpy).toHaveBeenCalledWith(404);
+    expect(sendSpy).toHaveBeenCalledWith('File not found');
+  });
+
   it('returns 404 for path traversal filenames', async () => {
     req = { params: { file: '../../etc/passwd' } };
+    const existsSpy = jest.spyOn(fs, 'existsSync');
+
+    await getScriptLocal(req as Request, res as Response);
+
+    expect(existsSpy).not.toHaveBeenCalled();
+    expect(statusSpy).toHaveBeenCalledWith(404);
+    expect(sendSpy).toHaveBeenCalledWith('File not found');
+  });
+
+  it('returns 404 for filenames containing double dots', async () => {
+    req = { params: { file: 'test..js' } };
     const existsSpy = jest.spyOn(fs, 'existsSync');
 
     await getScriptLocal(req as Request, res as Response);
