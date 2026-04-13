@@ -41,7 +41,9 @@ describe("getScriptLocal", () => {
     expect(response.headers.get("content-type")).toContain(
       "application/javascript"
     );
-    expect(body).toContain("Complete Payment (Credit Card - Failed)");
+    expect(body).toContain('a[data-payment-method][data-payment-status]');
+    expect(body).toContain('/pay/${encodeURIComponent(method)}/${encodeURIComponent(status)}?token=${encodeURIComponent(token)}');
+    expect(body).toContain('No token found');
   });
 
   it("returns 404 when the script file does not exist", async () => {

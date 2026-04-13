@@ -8,6 +8,7 @@ import {
 } from "../types/Transaction";
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
 import { TransactionStatus } from "../types/TransactionStatus";
+import { resolveTransactionStatus } from "../useCaseHelpers/resolveTransactionStatus";
 
 export type CompleteOnlineCollectionWithDetailsResponse = {
   paygov_tracking_id: string;
@@ -27,15 +28,14 @@ export type HandleCompletOnlineCollectionWithDetails = (
   { token }: CompleteTransactionRequest
 ) => Promise<string>;
 
+
 export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
   async (appContext, { token }) => {
     const transaction: InitiatedTransaction = await appContext
       .persistenceGateway()
       .getInitiatedTransaction(appContext, token);
 
-    const transactionStatus: TransactionStatus = transaction.failed_payment
-      ? "Failed"
-      : "Success";
+    const transactionStatus: TransactionStatus = resolveTransactionStatus(transaction);
 
     const completedTransaction = appContext
       .useCaseHelpers()

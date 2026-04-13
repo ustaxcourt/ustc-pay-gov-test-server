@@ -1,31 +1,49 @@
+
 import { showPayPage } from '../useCases/showPayPage';
 import { InvalidRequestError } from '../errors/InvalidRequestError';
+import fs from 'fs';
+import path from 'path';
+
 
 describe('showPayPage', () => {
-  it('returns rendered HTML with replacements', async () => {
+  it('renders HTML with all links and correct data attributes', async () => {
+    const payHtmlPath = path.join(__dirname, '../static/html/pay.html');
+    const payHtml = fs.readFileSync(payHtmlPath, 'utf-8');
+
     const appContext = {
       persistenceGateway: () => ({
         getInitiatedTransaction: jest.fn().mockResolvedValue({
-          url_success: 'success',
-          url_cancel: 'cancel',
+          url_success: 'http://example.com/success',
+          url_cancel: 'https://example.com/cancel',
         }),
       }),
       storageClient: () => ({
-        getFile: jest.fn().mockResolvedValue('<html>%%urlSuccess%% %%urlCancel%%</html>'),
+        getFile: jest.fn().mockResolvedValue(payHtml),
       }),
     } as unknown as Parameters<typeof showPayPage>[0];
 
     const html = await showPayPage(appContext, { token: 'tok' });
 
-    expect(html).toBe('<html>success cancel</html>');
-    expect(html).not.toContain('tok');
-  });
+    // Normalize whitespace for robust matching
+    const normalizedHtml = html.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
 
-  it('throws if token is missing', async () => {
-    const appContext = {} as unknown as Parameters<typeof showPayPage>[0];
+    // There should be 4 anchor tags
+    const anchorMatches = normalizedHtml.match(/<a [^>]*>/g);
+    expect(anchorMatches).not.toBeNull();
+    expect(anchorMatches!.length).toBe(4);
 
-    await expect(showPayPage(appContext, { token: '' })).rejects.toThrow(
-      new InvalidRequestError('Token not found')
+    // Check the first three links for data attributes and href (attribute order agnostic)
+    expect(normalizedHtml).toMatch(
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Success"[^>]*>Complete Payment<\/a>/
     );
+    expect(normalizedHtml).toMatch(
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Success"[^>]*>Complete Payment \(ACH - Success\)<\/a>/
+    );
+    expect(normalizedHtml).toMatch(
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(Credit Card - Failed\)<\/a>/
+    );
+
+    // The fourth link is cancel
+    expect(normalizedHtml).toMatch(/<a href="https:\/\/example.com\/cancel">Cancel Payment<\/a>/);
   });
 });

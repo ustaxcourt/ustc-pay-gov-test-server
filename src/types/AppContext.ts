@@ -12,7 +12,7 @@ import { GetFile } from "./GetFile";
 import { SaveFile } from "./SaveFile";
 import { HandleGetDetails } from "../useCases/handleGetDetails";
 import { CompleteTransaction } from "../useCaseHelpers/completeTransaction";
-import { HandleMarkPaymentFailed } from "../useCases/handleMarkPaymentFailed";
+import { HandleMarkPaymentStatus } from "../useCases/handleMarkPaymentStatus";
 
 export type AppContext = {
   useCases: () => {
@@ -20,7 +20,7 @@ export type AppContext = {
     handleCompleteOnlineCollection: HandleCompleteOnlineCollection;
     handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails;
     handleGetDetails: HandleGetDetails;
-    handleMarkPaymentFailed: HandleMarkPaymentFailed;
+    handleMarkPaymentStatus: HandleMarkPaymentStatus;
     handleStartOnlineCollection: HandleStartOnlineCollection;
     showPayPage: ShowPayPage;
   };

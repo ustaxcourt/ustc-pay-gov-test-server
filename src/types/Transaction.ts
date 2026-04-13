@@ -1,8 +1,20 @@
 import { TransactionStatus } from "./TransactionStatus";
 
 export type TransactionType = "Sale" | "Authorization";
-export type PaymentType = "PLASTIC_CARD" | "ACH" | "AMAZON" | "PAYPAL";
+export type PaymentType = "PLASTIC_CARD" | "ACH" | "PAYPAL";
 export type PaymentFrequencyType = "ONE_TIME";
+export type PaymentStatus = "Success" | "Failed" | "Pending";
+export type MarkablePaymentStatus = "Success" | "Failed";
+
+const VALID_PAYMENT_TYPES: PaymentType[] = ["PLASTIC_CARD", "ACH", "PAYPAL"];
+
+export function isPaymentType(value: unknown): value is PaymentType {
+  return VALID_PAYMENT_TYPES.includes(value as PaymentType);
+}
+
+export function isMarkablePaymentStatus(value: unknown): value is MarkablePaymentStatus {
+  return ["Success", "Failed"].includes(value as string);
+}
 
 export type TransactionRequest = {
   agency_tracking_id: string;
@@ -13,8 +25,10 @@ export type TransactionRequest = {
 };
 
 export type InitiatedTransaction = TransactionRequest & {
-  failed_payment?: boolean;
   token: string;
+  payment_type?: PaymentType;
+  failed_payment?: boolean;
+  ach_initiated_at?: string;
 };
 
 export type CompletedTransaction = {

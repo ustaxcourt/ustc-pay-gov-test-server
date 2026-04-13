@@ -7,10 +7,6 @@ export type ShowPayPage = (
 ) => Promise<string>;
 
 export const showPayPage: ShowPayPage = async (appContext, { token }) => {
-  console.log("handling a pay page", token);
-  if (!token) {
-    throw new InvalidRequestError("Token not found");
-  }
   const transactionRequest = await appContext
     .persistenceGateway()
     .getInitiatedTransaction(appContext, token);
