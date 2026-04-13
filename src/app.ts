@@ -34,6 +34,7 @@ app.get("/wsdl/:file", getResourceLocal);
 app.get("/pay", getPayPageLambda);
 app.get("/scripts/:file", getScriptLocal);
 app.get("/:file", getResourceLocal);
+// Handles all payment method/status combinations (e.g. PLASTIC_CARD/Failed, ACH/Success)
 app.post("/pay/:paymentMethod/:paymentStatus", markPaymentStatusLambda);
 
 app.post("/wsdl", handleSoapRequestLocal);
