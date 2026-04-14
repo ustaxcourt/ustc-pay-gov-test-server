@@ -7,7 +7,6 @@ locals {
   deploy_role_name         = "ustc-github-actions-oidc-deployer-role"
   github_repo              = "ustc-pay-gov-test-server"
   tf_state_bucket_name     = "ustc-pay-gov-terraform-state"
-  tf_lock_table_name       = "ustc-pay-gov-terraform-locks"
 
   # Derived locals used across modules
   common_tags = {
