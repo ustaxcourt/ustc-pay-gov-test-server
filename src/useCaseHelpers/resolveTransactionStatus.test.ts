@@ -108,8 +108,8 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH with no ach_initiated_at", () => {
-    it("returns Success (ACH marked failed path, ach_initiated_at never set)", () => {
+  describe("ACH with no ach_initiated_at and no flags", () => {
+    it("returns Success", () => {
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
