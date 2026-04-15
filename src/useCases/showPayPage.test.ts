@@ -30,7 +30,7 @@ describe('showPayPage', () => {
     // There should be 4 anchor tags
     const anchorMatches = normalizedHtml.match(/<a [^>]*>/g);
     expect(anchorMatches).not.toBeNull();
-    expect(anchorMatches!.length).toBe(4);
+    expect(anchorMatches!.length).toBe(5);
 
     // Check the first three links for data attributes and href (attribute order agnostic)
     expect(normalizedHtml).toMatch(

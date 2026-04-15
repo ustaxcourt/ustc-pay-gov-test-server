@@ -69,6 +69,32 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
+  describe("ACH failed within 60 seconds", () => {
+    it("returns Received", () => {
+      const achInitiatedAt = DateTime.now().minus({ seconds: 30 }).toJSDate().toISOString();
+      const result = resolveTransactionStatus({
+        ...baseTransaction,
+        payment_type: "ACH",
+        ach_initiated_at: achInitiatedAt,
+        failed_payment: true,
+      });
+      expect(result).toBe("Received");
+    });
+  });
+
+  describe("ACH failed after 60 seconds", () => {
+    it("returns Failed", () => {
+      const achInitiatedAt = DateTime.now().minus({ seconds: 61 }).toJSDate().toISOString();
+      const result = resolveTransactionStatus({
+        ...baseTransaction,
+        payment_type: "ACH",
+        ach_initiated_at: achInitiatedAt,
+        failed_payment: true,
+      });
+      expect(result).toBe("Failed");
+    });
+  });
+
   describe("ACH with no ach_initiated_at", () => {
     it("returns Success (ACH marked failed path, ach_initiated_at never set)", () => {
       const result = resolveTransactionStatus({
