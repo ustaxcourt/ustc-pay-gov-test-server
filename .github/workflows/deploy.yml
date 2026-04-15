@@ -19,7 +19,7 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -31,32 +31,33 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
-              
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
 
       - name: Install dependencies
         run: npm ci
 
       - name: Run tests
         run: npm test
-        
+
       - name: Build Lambda functions
         run: bash terraform/build.sh
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v5
         with:
           role-to-assume: ${{ secrets.DEV_AWS_DEPLOYER_ROLE_ARN }}
           aws-region: ${{ env.AWS_REGION }}
-      
+
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.7.5
-          
+          terraform_wrapper: false
+
       - name: Cache Terraform
         uses: actions/cache@v5
         with:
@@ -66,24 +67,35 @@ jobs:
           key: ${{ runner.os }}-terraform-${{ hashFiles('terraform/.terraform.lock.hcl') }}
           restore-keys: |
             ${{ runner.os }}-terraform-
-      
+
       - name: Terraform init
         working-directory: terraform
         run: terraform init -backend-config=backend-dev.hcl
-        
+
       - name: Terraform plan
         id: plan
         working-directory: terraform
         run: |
+          set +e
           terraform plan -input=false -lock-timeout=2m -detailed-exitcode
-          echo "exitcode=$?" >> $GITHUB_OUTPUT
-        continue-on-error: true
-        
+          PLAN_EXIT=$?
+          set -e
+          echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"
+          if [ "$PLAN_EXIT" -eq 0 ]; then
+            echo "No changes detected."
+          elif [ "$PLAN_EXIT" -eq 2 ]; then
+            echo "Changes detected. Terraform apply will run."
+          else
+            echo "::error::Terraform plan failed with exit code $PLAN_EXIT"
+          fi
+
+      - name: Check for plan failure
+        if: steps.plan.outputs.exitcode != '0' && steps.plan.outputs.exitcode != '2'
+        run: |
+          echo "Terraform plan failed with exit code ${{ steps.plan.outputs.exitcode }}"
+          exit 1
+
       - name: Terraform apply
         if: steps.plan.outputs.exitcode == '2'
         working-directory: terraform
         run: terraform apply -input=false -auto-approve -lock-timeout=2m
-        
-  
-
-

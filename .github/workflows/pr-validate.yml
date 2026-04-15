@@ -37,7 +37,28 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
+
+      - name: Lint deploy workflow
+        run: |
+          # Guard: every terraform plan run block that uses -detailed-exitcode
+          # must also use set +e so the exit code can be captured before the shell exits.
+          FAIL=0
+          PATTERN='detailed-exitcode'
+          for file in .github/workflows/deploy.yml .github/workflows/pr-validate.yml; do
+            if [ ! -f "$file" ]; then continue; fi
+            # Find each line number containing -detailed-exitcode, excluding comments
+            grep -n "$PATTERN" "$file" | grep -v '^[0-9]*:\s*#' | while IFS=: read -r lineno _; do
+              # Check the 5 lines before it in the same run block for set +e
+              start=$((lineno > 5 ? lineno - 5 : 1))
+              if ! sed -n "${start},${lineno}p" "$file" | grep -q 'set +e'; then
+                echo "::error file=${file},line=${lineno}::${file}:${lineno} uses -detailed-exitcode without 'set +e'. Exit code will be lost."
+                FAIL=1
+              fi
+            done
+          done
+          if [ "$FAIL" -eq 1 ]; then exit 1; fi
+          echo "Workflow exit code handling OK"
 
       - name: Install dependencies
         run: npm ci
@@ -58,6 +79,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.7.5
+          terraform_wrapper: false
 
       - name: Cache Terraform
         uses: actions/cache@v5
@@ -79,8 +101,17 @@ jobs:
         env:
           TF_CLI_ARGS: -no-color
         run: |
-          terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out || true
-          echo "exitcode=$?" >> $GITHUB_OUTPUT
+          set +e
+          terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out
+          PLAN_EXIT=${PIPESTATUS[0]}
+          set -e
+          echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"
+
+      - name: Check for plan failure
+        if: steps.plan.outputs.exitcode != '0' && steps.plan.outputs.exitcode != '2'
+        run: |
+          echo "Terraform plan failed with exit code ${{ steps.plan.outputs.exitcode }}"
+          exit 1
 
       - name: Upload plan artifact
         uses: actions/upload-artifact@v6
@@ -96,4 +127,4 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 200 terraform/plan.out >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
-          
+
