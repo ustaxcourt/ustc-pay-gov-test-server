@@ -2,7 +2,7 @@ name: Deploy Code
 
 on:
   push:
-    branches: [main]
+    branches: [main, PAY-278-Terraform-apply] # TEMP: remove branch before merge
   workflow_dispatch:
 
 env:
@@ -94,10 +94,10 @@ jobs:
           echo "Terraform plan failed with exit code ${{ steps.plan.outputs.exitcode }}"
           exit 1
 
-      - name: Terraform apply
+      - name: Terraform apply (DRY RUN)
         if: steps.plan.outputs.exitcode == '2'
         working-directory: terraform
-        run: terraform apply -input=false -auto-approve -lock-timeout=2m
+        run: echo "APPLY WOULD RUN — exitcode was 2. Dry-run only, no changes applied." # TEMP: restore actual apply before merge
 
 
 
