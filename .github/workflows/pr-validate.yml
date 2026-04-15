@@ -41,16 +41,24 @@ jobs:
 
       - name: Lint deploy workflow
         run: |
-          # Guard: any workflow step using -detailed-exitcode must use set +e
-          # to capture the exit code. Without it, set -e (the shell default in
-          # GitHub Actions) kills the script before $? can be read.
-          if grep -q 'detailed-exitcode' .github/workflows/deploy.yml; then
-            if ! grep -B2 'detailed-exitcode' .github/workflows/deploy.yml | grep -q 'set +e'; then
-              echo "::error::deploy.yml uses -detailed-exitcode without 'set +e'. Exit code will be lost."
-              exit 1
-            fi
-          fi
-          echo "deploy.yml exit code handling OK"
+          # Guard: every run block that uses -detailed-exitcode must also use
+          # set +e, otherwise set -e (GitHub Actions default) kills the shell
+          # before $? can be captured.
+          FAIL=0
+          for file in .github/workflows/deploy.yml .github/workflows/pr-validate.yml; do
+            if [ ! -f "$file" ]; then continue; fi
+            # Find each line number containing -detailed-exitcode
+            grep -n 'detailed-exitcode' "$file" | while IFS=: read -r lineno _; do
+              # Check the 5 lines before it in the same run block for set +e
+              start=$((lineno > 5 ? lineno - 5 : 1))
+              if ! sed -n "${start},${lineno}p" "$file" | grep -q 'set +e'; then
+                echo "::error file=${file},line=${lineno}::${file}:${lineno} uses -detailed-exitcode without 'set +e'. Exit code will be lost."
+                FAIL=1
+              fi
+            done
+          done
+          if [ "$FAIL" -eq 1 ]; then exit 1; fi
+          echo "Workflow exit code handling OK"
 
       - name: Install dependencies
         run: npm ci
@@ -98,6 +106,12 @@ jobs:
           PLAN_EXIT=${PIPESTATUS[0]}
           set -e
           echo "exitcode=$PLAN_EXIT" >> $GITHUB_OUTPUT
+
+      - name: Check for plan failure
+        if: steps.plan.outputs.exitcode != '0' && steps.plan.outputs.exitcode != '2'
+        run: |
+          echo "Terraform plan failed with exit code ${{ steps.plan.outputs.exitcode }}"
+          exit 1
 
       - name: Upload plan artifact
         uses: actions/upload-artifact@v6
