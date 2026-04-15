@@ -41,15 +41,14 @@ jobs:
 
       - name: Lint deploy workflow
         run: |
-          # Guard: every run block that uses detailed-exitcode must also use
-          # set +e, otherwise set -e (GitHub Actions default) kills the shell
-          # before $? can be captured.
+          # Guard: every terraform plan run block that uses -detailed-exitcode
+          # must also use set +e so the exit code can be captured before the shell exits.
           FAIL=0
           PATTERN='detailed-exitcode'
           for file in .github/workflows/deploy.yml .github/workflows/pr-validate.yml; do
             if [ ! -f "$file" ]; then continue; fi
-            # Find each line number containing detailed-exitcode
-            grep -n "$PATTERN" "$file" | while IFS=: read -r lineno _; do
+            # Find each line number containing -detailed-exitcode, excluding comments
+            grep -n "$PATTERN" "$file" | grep -v '^[0-9]*:\s*#' | while IFS=: read -r lineno _; do
               # Check the 5 lines before it in the same run block for set +e
               start=$((lineno > 5 ? lineno - 5 : 1))
               if ! sed -n "${start},${lineno}p" "$file" | grep -q 'set +e'; then
