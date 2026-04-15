@@ -39,6 +39,19 @@ jobs:
         with:
           node-version: '22'
 
+      - name: Lint deploy workflow
+        run: |
+          # Guard: any workflow step using -detailed-exitcode must use set +e
+          # to capture the exit code. Without it, set -e (the shell default in
+          # GitHub Actions) kills the script before $? can be read.
+          if grep -q 'detailed-exitcode' .github/workflows/deploy.yml; then
+            if ! grep -B2 'detailed-exitcode' .github/workflows/deploy.yml | grep -q 'set +e'; then
+              echo "::error::deploy.yml uses -detailed-exitcode without 'set +e'. Exit code will be lost."
+              exit 1
+            fi
+          fi
+          echo "deploy.yml exit code handling OK"
+
       - name: Install dependencies
         run: npm ci
 
@@ -79,8 +92,11 @@ jobs:
         env:
           TF_CLI_ARGS: -no-color
         run: |
-          terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out || true
-          echo "exitcode=$?" >> $GITHUB_OUTPUT
+          set +e
+          terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out
+          PLAN_EXIT=${PIPESTATUS[0]}
+          set -e
+          echo "exitcode=$PLAN_EXIT" >> $GITHUB_OUTPUT
 
       - name: Upload plan artifact
         uses: actions/upload-artifact@v6
