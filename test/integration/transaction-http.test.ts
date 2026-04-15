@@ -334,6 +334,34 @@ describe("initiate transaction", () => {
         nowSpy.mockRestore();
       }
     });
+
+    it("should return Failed status when ACH is marked failed after 60 seconds", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
+      expect(markAchFailedResponse.status).toBe(200);
+
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+
+      try {
+        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.transaction_status).toBe("Failed");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
   });
 
   describe("handleGetDetails", () => {
