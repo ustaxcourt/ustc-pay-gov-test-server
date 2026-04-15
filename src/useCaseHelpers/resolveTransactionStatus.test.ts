@@ -22,8 +22,8 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("failed_payment flag", () => {
-    it("returns Failed regardless of payment type", () => {
+  describe("non-ACH failed_payment flag", () => {
+    it("returns Failed immediately for PLASTIC_CARD", () => {
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "PLASTIC_CARD",
@@ -82,9 +82,22 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
+  describe("ACH failed at exactly 60 seconds", () => {
+    it("returns Failed", () => {
+      const achInitiatedAt = DateTime.now().minus({ seconds: 60 }).toJSDate().toISOString();
+      const result = resolveTransactionStatus({
+        ...baseTransaction,
+        payment_type: "ACH",
+        ach_initiated_at: achInitiatedAt,
+        failed_payment: true,
+      });
+      expect(result).toBe("Failed");
+    });
+  });
+
   describe("ACH failed after 60 seconds", () => {
     it("returns Failed", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 61 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: 90 }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
