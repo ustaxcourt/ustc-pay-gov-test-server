@@ -33,6 +33,10 @@ jobs:
 
       - name: Install dependencies and build
         run: |
+          NODE_VERSION=$(node -v)
+          echo "Node version: ${NODE_VERSION}"
+          NPM_VERSION=$(npm -v)
+          echo "NPM version: ${NPM_VERSION}"
           npm ci
           npm run build
 
