@@ -95,10 +95,10 @@ jobs:
           echo "Terraform plan failed with exit code ${{ steps.plan.outputs.exitcode }}"
           exit 1
 
-      - name: Terraform apply (DRY RUN)
+      - name: Terraform apply
         if: steps.plan.outputs.exitcode == '2'
         working-directory: terraform
-        run: echo "APPLY WOULD RUN — exitcode was 2. Dry-run only, no changes applied." # TEMP: restore actual apply before merge
+        run: terraform apply -input=false -auto-approve -lock-timeout=2m
 
 
 
