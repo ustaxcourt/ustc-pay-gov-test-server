@@ -2,7 +2,7 @@ name: Deploy Code
 
 on:
   push:
-    branches: [main, PAY-278-Terraform-apply] # TEMP: remove branch before merge
+    branches: [main]
   workflow_dispatch:
 
 env:
