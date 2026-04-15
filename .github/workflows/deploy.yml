@@ -80,10 +80,10 @@ jobs:
           terraform plan -input=false -lock-timeout=2m -detailed-exitcode
           PLAN_EXIT=$?
           set -e
-          echo "exitcode=$PLAN_EXIT" >> $GITHUB_OUTPUT
-          if [ $PLAN_EXIT -eq 0 ]; then
+          echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"
+          if [ "$PLAN_EXIT" -eq 0 ]; then
             echo "No changes detected."
-          elif [ $PLAN_EXIT -eq 2 ]; then
+          elif [ "$PLAN_EXIT" -eq 2 ]; then
             echo "Changes detected. Terraform apply will run."
           else
             echo "::error::Terraform plan failed with exit code $PLAN_EXIT"

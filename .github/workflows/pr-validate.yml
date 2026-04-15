@@ -105,7 +105,7 @@ jobs:
           terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out
           PLAN_EXIT=${PIPESTATUS[0]}
           set -e
-          echo "exitcode=$PLAN_EXIT" >> $GITHUB_OUTPUT
+          echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"
 
       - name: Check for plan failure
         if: steps.plan.outputs.exitcode != '0' && steps.plan.outputs.exitcode != '2'
