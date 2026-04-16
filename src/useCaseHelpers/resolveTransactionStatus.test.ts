@@ -1,5 +1,5 @@
 import { DateTime } from "luxon";
-import { resolveTransactionStatus } from "./resolveTransactionStatus";
+import { ACH_THRESHOLD_SECONDS, resolveTransactionStatus } from "./resolveTransactionStatus";
 import { InitiatedTransaction } from "../types/Transaction";
 
 const baseTransaction: InitiatedTransaction = {
@@ -33,9 +33,12 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH within 15 seconds", () => {
+  describe(`ACH within ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Received", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 5 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now()
+        .minus({ seconds: ACH_THRESHOLD_SECONDS - 1 })
+        .toJSDate()
+        .toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
@@ -45,9 +48,9 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH at exactly 15 seconds", () => {
+  describe(`ACH at exactly ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Success", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 15 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: ACH_THRESHOLD_SECONDS }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
@@ -57,9 +60,9 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH after 15 seconds", () => {
+  describe(`ACH after ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Success", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 16 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: ACH_THRESHOLD_SECONDS + 1 }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
@@ -69,9 +72,12 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH failed within 15 seconds", () => {
+  describe(`ACH failed within ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Received", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 10 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now()
+        .minus({ seconds: ACH_THRESHOLD_SECONDS - 1 })
+        .toJSDate()
+        .toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
@@ -82,9 +88,9 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH failed at exactly 15 seconds", () => {
+  describe(`ACH failed at exactly ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Failed", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 15 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: ACH_THRESHOLD_SECONDS }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
@@ -95,9 +101,9 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH failed after 15 seconds", () => {
+  describe(`ACH failed after ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Failed", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 16 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: ACH_THRESHOLD_SECONDS + 1 }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",

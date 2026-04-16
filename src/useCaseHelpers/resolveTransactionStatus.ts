@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { InitiatedTransaction } from "../types/Transaction";
 import { TransactionStatus } from "../types/TransactionStatus";
 
-const ACH_THRESHOLD_SECONDS = 15;
+export const ACH_THRESHOLD_SECONDS = 15;
 
 export const resolveTransactionStatus = (
   transaction: InitiatedTransaction
