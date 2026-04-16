@@ -48,10 +48,9 @@ terraform/
 ## Prerequisites
 
 1. **AWS CLI configured** with appropriate credentials
-2. **Terraform installed** (>= 1.0) - [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+2. **Terraform installed** (~> 1.14.0) - [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 3. **Node.js and npm** for Lambda function builds
 4. **S3 bucket** for Terraform state storage (optional but recommended)
-5. **DynamoDB table** for state locking (optional but recommended)
 
 ### Install Terraform
 ```bash
@@ -69,15 +68,11 @@ brew install hashicorp/tap/terraform
 
 ### 1. Backend State Management (Recommended)
 
-Create S3 bucket and DynamoDB table for Terraform state management:
+Create the S3 bucket for Terraform state storage. State locking uses S3 native locking (`use_lockfile = true`) — no DynamoDB table required.
 
 ```bash
 # Use the automated script (recommended)
 ./create-terraform-backend.sh
-
-# Or create manually if needed:
-# aws s3 mb s3://ustc-pay-gov-terraform-state --region us-east-1
-# aws dynamodb create-table --table-name ustc-pay-gov-terraform-locks ...
 ```
 
 ### 2. Initialize Terraform
@@ -223,7 +218,7 @@ terraform show
    - Ensure Route53 zone exists (AWS Account: ustc-aws-isd-prod)
    - Check domain ownership
 
-4. **Backend initialization fails**: Ensure S3 bucket and DynamoDB table exist
+4. **Backend initialization fails**: Ensure S3 bucket exists and versioning is enabled (required for `use_lockfile`)
 5. **Permission errors**: Verify AWS credentials have required permissions
 6. **State conflicts**: Check for concurrent Terraform operations
 
