@@ -11,10 +11,11 @@ export const resolveTransactionStatus = (
     const elapsed = DateTime.now()
       .diff(DateTime.fromISO(transaction.ach_initiated_at), "seconds")
       .seconds;
-    if (transaction.failed_payment) {
-      return elapsed < ACH_THRESHOLD_SECONDS ? "Received" : "Failed";
+
+    if (elapsed < ACH_THRESHOLD_SECONDS) {
+      return "Received";
     }
-    return elapsed < ACH_THRESHOLD_SECONDS ? "Received" : "Success";
+    return transaction.failed_payment ? "Failed" : "Success";
   }
   if (transaction.failed_payment) {
     return "Failed";

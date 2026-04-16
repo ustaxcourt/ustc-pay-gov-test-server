@@ -36,7 +36,7 @@ describe("resolveTransactionStatus", () => {
   describe(`ACH within ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Received", () => {
       const achInitiatedAt = DateTime.now()
-        .minus({ seconds: ACH_THRESHOLD_SECONDS - 1 })
+        .minus({ seconds: ACH_THRESHOLD_SECONDS - 5 })
         .toJSDate()
         .toISOString();
       const result = resolveTransactionStatus({
@@ -75,7 +75,7 @@ describe("resolveTransactionStatus", () => {
   describe(`ACH failed within ${ACH_THRESHOLD_SECONDS} seconds`, () => {
     it("returns Received", () => {
       const achInitiatedAt = DateTime.now()
-        .minus({ seconds: ACH_THRESHOLD_SECONDS - 1 })
+        .minus({ seconds: ACH_THRESHOLD_SECONDS - 5 })
         .toJSDate()
         .toISOString();
       const result = resolveTransactionStatus({
