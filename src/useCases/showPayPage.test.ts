@@ -27,10 +27,10 @@ describe('showPayPage', () => {
     // Normalize whitespace for robust matching
     const normalizedHtml = html.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
 
-    // There should be 5 anchor tags (PAYPAL Success, PLASTIC_CARD Success, ACH Success, PLASTIC_CARD Failed, Cancel)
+    // There should be 6 anchor tags (PAYPAL Success, PLASTIC_CARD Success, ACH Success, PLASTIC_CARD Failed, ACH Failed, Cancel)
     const anchorMatches = normalizedHtml.match(/<a [^>]*>/g);
     expect(anchorMatches).not.toBeNull();
-    expect(anchorMatches!.length).toBe(5);
+    expect(anchorMatches!.length).toBe(6);
 
     // Check the links for data attributes and href (attribute order agnostic)
     expect(normalizedHtml).toMatch(
@@ -44,6 +44,9 @@ describe('showPayPage', () => {
     );
     expect(normalizedHtml).toMatch(
       /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(Credit Card - Failed\)<\/a>/
+    );
+    expect(normalizedHtml).toMatch(
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(ACH - Failed\)<\/a>/
     );
 
     // The last link is cancel

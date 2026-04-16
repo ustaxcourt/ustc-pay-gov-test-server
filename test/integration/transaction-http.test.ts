@@ -188,6 +188,7 @@ describe("initiate transaction", () => {
       expect(pageHtml).toContain("Complete Payment");
       expect(pageHtml).toContain("Complete Payment (ACH - Success)");
       expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
+      expect(pageHtml).toContain("Complete Payment (ACH - Failed)");
       expect(pageHtml).toContain("Cancel Payment");
       expect(pageHtml).toContain('src="/scripts/override-links.js"');
       expect(pageHtml).toContain('href="https://example.com/success"');
@@ -295,6 +296,61 @@ describe("initiate transaction", () => {
 
         expect(trackingResponse.paygov_tracking_id).toBeTruthy();
         expect(trackingResponse.transaction_status).toBe("Success");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it("should return Received status when ACH is marked failed within 60 seconds", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const frozenNow = DateTime.now();
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
+
+      try {
+        const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
+        expect(markAchFailedResponse.status).toBe(200);
+
+        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.transaction_status).toBe("Received");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it("should return Failed status when ACH is marked failed after 60 seconds", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
+      expect(markAchFailedResponse.status).toBe(200);
+
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+
+      try {
+        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.transaction_status).toBe("Failed");
         expect(trackingResponse.payment_type).toBe("ACH");
         expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
         expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -462,6 +518,56 @@ describe("initiate transaction", () => {
         nowSpy.mockRestore();
       }
     });
+
+    it("should return Received status for ACH failed within 60 seconds via getDetails", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const frozenNow = DateTime.now();
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
+
+      try {
+        await markPaymentStatus(token, "ACH", "Failed");
+        const completeResponse = await completeOnlineCollectionWithDetails(token);
+        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+
+        expect(trackingResponse.transaction_status).toBe("Received");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it("should return Failed status for ACH failed after 60 seconds via getDetails", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      await markPaymentStatus(token, "ACH", "Failed");
+      const completeResponse = await completeOnlineCollectionWithDetails(token);
+
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+
+      try {
+        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+
+        expect(trackingResponse.transaction_status).toBe("Failed");
+        expect(trackingResponse.payment_type).toBe("ACH");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
   });
 
   describe("handleMarkPaymentStatus", () => {
@@ -589,6 +695,7 @@ describe("initiate transaction", () => {
       expect(body).toContain("Complete Payment");
       expect(body).toContain("Complete Payment (ACH - Success)");
       expect(body).toContain("Complete Payment (Credit Card - Failed)");
+      expect(body).toContain("Complete Payment (ACH - Failed)");
       expect(body).toContain("Cancel Payment");
       expect(body).toContain('src="/scripts/override-links.js"');
       expect(body).toContain('href="https://example.com/success"');
