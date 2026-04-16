@@ -18,6 +18,9 @@ export const resolveTransactionStatus = (
     const elapsed = DateTime.now()
       .diff(DateTime.fromISO(transaction.paypal_initiated_at), "seconds")
       .seconds;
+    if (transaction.failed_payment) {
+      return elapsed < 60 ? "Received" : "Failed";
+    }
     return elapsed < 15 ? "Received" : "Success";
   }
   if (transaction.failed_payment) {

@@ -190,6 +190,7 @@ describe("initiate transaction", () => {
       expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
       expect(pageHtml).toContain("Complete Payment (ACH - Failed)");
       expect(pageHtml).toContain("Complete Payment (PAYPAL - Success)");
+      expect(pageHtml).toContain("Complete Payment (PAYPAL - Failed)");
       expect(pageHtml).toContain("Cancel Payment");
       expect(pageHtml).toContain('src="/scripts/override-links.js"');
       expect(pageHtml).toContain('href="https://example.com/success"');
@@ -409,6 +410,115 @@ describe("initiate transaction", () => {
 
         expect(trackingResponse.paygov_tracking_id).toBeTruthy();
         expect(trackingResponse.transaction_status).toBe("Success");
+        expect(trackingResponse.payment_type).toBe("PAYPAL");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+  });
+
+  describe("PAYPAL failed payment", () => {
+    it("should return Received status when PAYPAL is marked failed within 60 seconds", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const frozenNow = DateTime.now();
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
+
+      try {
+        const markPaypalFailedResponse = await markPaymentStatus(token, "PAYPAL", "Failed");
+        expect(markPaypalFailedResponse.status).toBe(200);
+
+        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.transaction_status).toBe("Received");
+        expect(trackingResponse.payment_type).toBe("PAYPAL");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it("should return Failed status when PAYPAL is marked failed after 60 seconds", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const markPaypalFailedResponse = await markPaymentStatus(token, "PAYPAL", "Failed");
+      expect(markPaypalFailedResponse.status).toBe(200);
+
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+
+      try {
+        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.transaction_status).toBe("Failed");
+        expect(trackingResponse.payment_type).toBe("PAYPAL");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+  });
+
+  describe("PAYPAL failed payment via getDetails", () => {
+    it("should return Received status for PAYPAL failed within 60 seconds via getDetails", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const frozenNow = DateTime.now();
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
+
+      try {
+        await markPaymentStatus(token, "PAYPAL", "Failed");
+        const completeResponse = await completeOnlineCollectionWithDetails(token);
+        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+
+        expect(trackingResponse.transaction_status).toBe("Received");
+        expect(trackingResponse.payment_type).toBe("PAYPAL");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      } finally {
+        nowSpy.mockRestore();
+      }
+    });
+
+    it("should return Failed status for PAYPAL failed after 60 seconds via getDetails", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      await markPaymentStatus(token, "PAYPAL", "Failed");
+      const completeResponse = await completeOnlineCollectionWithDetails(token);
+
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+
+      try {
+        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+
+        expect(trackingResponse.transaction_status).toBe("Failed");
         expect(trackingResponse.payment_type).toBe("PAYPAL");
         expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
         expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -696,6 +806,13 @@ describe("initiate transaction", () => {
         expect(errorMessage).toBe("Token already marked as PAYPAL");
       });
 
+      it("should successfully mark a transaction as PAYPAL failed", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const response = await markPaymentStatus(token, "PAYPAL", "Failed");
+        expect(response.status).toBe(200);
+      });
+
       it("should return an error when marking failed after PAYPAL was initiated", async () => {
         const { token } = await startOnlineCollection(amount);
 
@@ -785,6 +902,7 @@ describe("initiate transaction", () => {
       expect(body).toContain("Complete Payment (Credit Card - Failed)");
       expect(body).toContain("Complete Payment (ACH - Failed)");
       expect(body).toContain("Complete Payment (PAYPAL - Success)");
+      expect(body).toContain("Complete Payment (PAYPAL - Failed)");
       expect(body).toContain("Cancel Payment");
       expect(body).toContain('src="/scripts/override-links.js"');
       expect(body).toContain('href="https://example.com/success"');

@@ -28,8 +28,8 @@ describe('showPayPage', () => {
     const document = new JSDOM(html).window.document;
     const links = document.querySelectorAll('a');
 
-    // PAYPAL Success, PLASTIC_CARD Success, ACH Success, PLASTIC_CARD Failed, ACH Failed, Cancel
-    expect(links).toHaveLength(6);
+    // PAYPAL Success, PLASTIC_CARD Success, ACH Success, PLASTIC_CARD Failed, ACH Failed, PAYPAL Failed, Cancel
+    expect(links).toHaveLength(7);
 
     const paypalSuccess = document.querySelector(
       'a[data-payment-method="PAYPAL"][data-payment-status="Success"]',
@@ -65,6 +65,13 @@ describe('showPayPage', () => {
     expect(achFailed).toBeInTheDocument();
     expect(achFailed).toHaveAttribute('href', 'http://example.com/success');
     expect(achFailed).toHaveTextContent('Complete Payment (ACH - Failed)');
+
+    const paypalFailed = document.querySelector(
+      'a[data-payment-method="PAYPAL"][data-payment-status="Failed"]',
+    );
+    expect(paypalFailed).toBeInTheDocument();
+    expect(paypalFailed).toHaveAttribute('href', 'http://example.com/success');
+    expect(paypalFailed).toHaveTextContent('Complete Payment (PAYPAL - Failed)');
 
     const cancelLink = document.querySelector('a[href="https://example.com/cancel"]');
     expect(cancelLink).toBeInTheDocument();

@@ -43,7 +43,7 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
     ...(isAch && {
       ach_initiated_at: DateTime.now().toJSDate().toISOString(),
     }),
-    ...(isPaypal && !isFailed && {
+    ...(isPaypal && {
       paypal_initiated_at: DateTime.now().toJSDate().toISOString(),
     }),
   };
