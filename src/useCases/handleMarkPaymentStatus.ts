@@ -28,8 +28,13 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
     throw new InvalidRequestError("Token already marked as ACH");
   }
 
+  if (transaction.paypal_initiated_at) {
+    throw new InvalidRequestError("Token already marked as PAYPAL");
+  }
+
   const isFailed = paymentStatus === "Failed";
   const isAchSuccess = paymentMethod === "ACH" && !isFailed;
+  const isPaypalSuccess = paymentMethod === "PAYPAL" && !isFailed;
 
   const updatedTransaction: InitiatedTransaction = {
     ...transaction,
@@ -37,6 +42,9 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
     ...(isFailed && { failed_payment: true }),
     ...(isAchSuccess && {
       ach_initiated_at: DateTime.now().toJSDate().toISOString(),
+    }),
+    ...(isPaypalSuccess && {
+      paypal_initiated_at: DateTime.now().toJSDate().toISOString(),
     }),
   };
 

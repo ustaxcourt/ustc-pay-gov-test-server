@@ -14,5 +14,11 @@ export const resolveTransactionStatus = (
       .seconds;
     return elapsed < 15 ? "Received" : "Success";
   }
+  if (transaction.payment_type === "PAYPAL" && transaction.paypal_initiated_at) {
+    const elapsed = DateTime.now()
+      .diff(DateTime.fromISO(transaction.paypal_initiated_at), "seconds")
+      .seconds;
+    return elapsed < 15 ? "Received" : "Success";
+  }
   return "Success";
 };

@@ -27,14 +27,17 @@ describe('showPayPage', () => {
     // Normalize whitespace for robust matching
     const normalizedHtml = html.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
 
-    // There should be 4 anchor tags
+    // There should be 5 anchor tags (PAYPAL Success, PLASTIC_CARD Success, ACH Success, PLASTIC_CARD Failed, Cancel)
     const anchorMatches = normalizedHtml.match(/<a [^>]*>/g);
     expect(anchorMatches).not.toBeNull();
-    expect(anchorMatches!.length).toBe(4);
+    expect(anchorMatches!.length).toBe(5);
 
-    // Check the first three links for data attributes and href (attribute order agnostic)
+    // Check the links for data attributes and href (attribute order agnostic)
     expect(normalizedHtml).toMatch(
-      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Success"[^>]*>Complete Payment<\/a>/
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PAYPAL"[^>]*data-payment-status="Success"[^>]*>Complete Payment \(PAYPAL - Success\)<\/a>/
+    );
+    expect(normalizedHtml).toMatch(
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Success"[^>]*>Complete Payment \(Credit Card - Success\)<\/a>/
     );
     expect(normalizedHtml).toMatch(
       /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Success"[^>]*>Complete Payment \(ACH - Success\)<\/a>/
@@ -43,7 +46,7 @@ describe('showPayPage', () => {
       /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(Credit Card - Failed\)<\/a>/
     );
 
-    // The fourth link is cancel
+    // The last link is cancel
     expect(normalizedHtml).toMatch(/<a href="https:\/\/example.com\/cancel">Cancel Payment<\/a>/);
   });
 });

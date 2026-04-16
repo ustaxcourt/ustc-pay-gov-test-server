@@ -29,6 +29,7 @@ export type InitiatedTransaction = TransactionRequest & {
   payment_type?: PaymentType;
   failed_payment?: boolean;
   ach_initiated_at?: string;
+  paypal_initiated_at?: string;
 };
 
 export type CompletedTransaction = {
