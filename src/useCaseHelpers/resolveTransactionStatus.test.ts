@@ -69,9 +69,9 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH failed within 60 seconds", () => {
+  describe("ACH failed within 15 seconds", () => {
     it("returns Received", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 30 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: 10 }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
@@ -82,9 +82,9 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH failed at exactly 60 seconds", () => {
+  describe("ACH failed at exactly 15 seconds", () => {
     it("returns Failed", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 60 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: 15 }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",
@@ -95,9 +95,9 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("ACH failed after 60 seconds", () => {
+  describe("ACH failed after 15 seconds", () => {
     it("returns Failed", () => {
-      const achInitiatedAt = DateTime.now().minus({ seconds: 90 }).toJSDate().toISOString();
+      const achInitiatedAt = DateTime.now().minus({ seconds: 16 }).toJSDate().toISOString();
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "ACH",

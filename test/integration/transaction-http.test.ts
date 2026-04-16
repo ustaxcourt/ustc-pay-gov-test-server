@@ -309,7 +309,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Received status when ACH is marked failed within 60 seconds", async () => {
+    it("should return Received status when ACH is marked failed within 15 seconds", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const frozenNow = DateTime.now();
@@ -336,7 +336,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Failed status when ACH is marked failed after 60 seconds", async () => {
+    it("should return Failed status when ACH is marked failed after 15 seconds", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
@@ -344,7 +344,7 @@ describe("initiate transaction", () => {
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+        .mockReturnValue(DateTime.now().plus({ seconds: 16 }));
 
       try {
         const trackingResponse = await completeOnlineCollectionWithDetails(token);
@@ -462,7 +462,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Received status for ACH failed within 60 seconds via getDetails", async () => {
+    it("should return Received status for ACH failed within 15 seconds via getDetails", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const frozenNow = DateTime.now();
@@ -487,13 +487,13 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Failed status for ACH failed after 60 seconds via getDetails", async () => {
+    it("should return Failed status for ACH failed after 15 seconds via getDetails", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       await markPaymentStatus(token, "ACH", "Failed");
       const completeResponse = await completeOnlineCollectionWithDetails(token);
 
-      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(DateTime.now().plus({ seconds: 16 }));
 
       try {
         const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);

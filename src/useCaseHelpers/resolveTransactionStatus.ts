@@ -2,6 +2,8 @@ import { DateTime } from "luxon";
 import { InitiatedTransaction } from "../types/Transaction";
 import { TransactionStatus } from "../types/TransactionStatus";
 
+const ACH_THRESHOLD_SECONDS = 15;
+
 export const resolveTransactionStatus = (
   transaction: InitiatedTransaction
 ): TransactionStatus => {
@@ -10,9 +12,9 @@ export const resolveTransactionStatus = (
       .diff(DateTime.fromISO(transaction.ach_initiated_at), "seconds")
       .seconds;
     if (transaction.failed_payment) {
-      return elapsed < 60 ? "Received" : "Failed";
+      return elapsed < ACH_THRESHOLD_SECONDS ? "Received" : "Failed";
     }
-    return elapsed < 15 ? "Received" : "Success";
+    return elapsed < ACH_THRESHOLD_SECONDS ? "Received" : "Success";
   }
   if (transaction.failed_payment) {
     return "Failed";
