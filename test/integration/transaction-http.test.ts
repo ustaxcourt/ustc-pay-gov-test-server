@@ -337,7 +337,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it(`should return Failed status when ACH is marked failed after ${ACH_THRESHOLD_SECONDS} seconds`, async () => {
+    it(`should return Failed status when ACH is marked failed more than ${ACH_THRESHOLD_SECONDS} seconds after initiation`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
@@ -438,7 +438,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it(`should return Success status for ACH after ${ACH_THRESHOLD_SECONDS} seconds via getDetails`, async () => {
+    it(`should return Success status for ACH more than ${ACH_THRESHOLD_SECONDS} seconds after initiation via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       await markPaymentStatus(token, "ACH", "Success");
@@ -490,7 +490,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it(`should return Failed status for ACH failed after ${ACH_THRESHOLD_SECONDS} seconds via getDetails`, async () => {
+    it(`should return Failed status for ACH failed more than ${ACH_THRESHOLD_SECONDS} seconds after initiation via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       await markPaymentStatus(token, "ACH", "Failed");
