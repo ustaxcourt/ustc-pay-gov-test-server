@@ -155,7 +155,7 @@ describe("resolveTransactionStatus", () => {
   });
 
   describe("PAYPAL with no paypal_initiated_at", () => {
-    it("returns Success (PAYPAL marked failed path, paypal_initiated_at never set)", () => {
+    it("returns Success when paypal_initiated_at is not set", () => {
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "PAYPAL",
