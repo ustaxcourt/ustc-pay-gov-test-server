@@ -27,12 +27,12 @@ describe('showPayPage', () => {
     // Normalize whitespace for robust matching
     const normalizedHtml = html.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
 
-    // There should be 4 anchor tags
+    // There should be 5 anchor tags
     const anchorMatches = normalizedHtml.match(/<a [^>]*>/g);
     expect(anchorMatches).not.toBeNull();
-    expect(anchorMatches!.length).toBe(4);
+    expect(anchorMatches!.length).toBe(5);
 
-    // Check the first three links for data attributes and href (attribute order agnostic)
+    // Check the first four links for data attributes and href (attribute order agnostic)
     expect(normalizedHtml).toMatch(
       /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Success"[^>]*>Complete Payment<\/a>/
     );
@@ -42,8 +42,11 @@ describe('showPayPage', () => {
     expect(normalizedHtml).toMatch(
       /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(Credit Card - Failed\)<\/a>/
     );
+    expect(normalizedHtml).toMatch(
+      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(ACH - Failed\)<\/a>/
+    );
 
-    // The fourth link is cancel
+    // The fifth link is cancel
     expect(normalizedHtml).toMatch(/<a href="https:\/\/example.com\/cancel">Cancel Payment<\/a>/);
   });
 });

@@ -5,14 +5,17 @@ import { TransactionStatus } from "../types/TransactionStatus";
 export const resolveTransactionStatus = (
   transaction: InitiatedTransaction
 ): TransactionStatus => {
-  if (transaction.failed_payment) {
-    return "Failed";
-  }
   if (transaction.payment_type === "ACH" && transaction.ach_initiated_at) {
     const elapsed = DateTime.now()
       .diff(DateTime.fromISO(transaction.ach_initiated_at), "seconds")
       .seconds;
+    if (transaction.failed_payment) {
+      return elapsed < 60 ? "Received" : "Failed";
+    }
     return elapsed < 15 ? "Received" : "Success";
+  }
+  if (transaction.failed_payment) {
+    return "Failed";
   }
   return "Success";
 };

@@ -29,13 +29,13 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
   }
 
   const isFailed = paymentStatus === "Failed";
-  const isAchSuccess = paymentMethod === "ACH" && !isFailed;
+  const isAch = paymentMethod === "ACH";
 
   const updatedTransaction: InitiatedTransaction = {
     ...transaction,
     payment_type: paymentMethod,
     ...(isFailed && { failed_payment: true }),
-    ...(isAchSuccess && {
+    ...(isAch && {
       ach_initiated_at: DateTime.now().toJSDate().toISOString(),
     }),
   };
