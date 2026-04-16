@@ -33,7 +33,8 @@ jobs:
 
       - name: Install dependencies and build
         run: |
-          npm install -g npm@latest
+          echo "Node version: $(node -v)"
+          echo "NPM version: $(npm -v)"
           npm ci
           npm run build
 
