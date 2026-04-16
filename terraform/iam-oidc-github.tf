@@ -113,7 +113,7 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
         Resource = aws_secretsmanager_secret.access_token.arn
       },
 
-      #Backend state access (s3 and dynamodb)
+      # Backend state access (s3 with native locking via use_lockfile)
       {
         Effect = "Allow",
         Action = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject", "s3:ListBucket"],
@@ -121,17 +121,6 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "arn:aws:s3:::${local.tf_state_bucket_name}",
           "arn:aws:s3:::${local.tf_state_bucket_name}/*"
         ]
-      },
-      {
-        Effect = "Allow",
-        Action = [
-          "dynamodb:DescribeTable",
-          "dynamodb:GetItem",
-          "dynamodb:PutItem",
-          "dynamodb:UpdateItem",
-          "dynamodb:DeleteItem"
-        ],
-        Resource = "arn:aws:dynamodb:${var.aws_region}:${data.aws_caller_identity.current.account_id}:table/${local.tf_lock_table_name}"
       },
       {
         Effect = "Allow",

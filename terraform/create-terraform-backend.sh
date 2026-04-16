@@ -1,12 +1,12 @@
 #!/bin/bash
 
-# Script to create S3 bucket and DynamoDB table for Terraform state management
+# Script to create S3 bucket for Terraform state management
+# State locking is handled natively by S3 via use_lockfile = true (Terraform >= 1.10)
 # Usage: ./create-terraform-backend.sh
 
 set -e
 
 BUCKET_NAME="ustc-pay-gov-terraform-state"
-DYNAMODB_TABLE="ustc-pay-gov-terraform-locks"
 REGION="us-east-1"
 
 echo "Creating Terraform backend infrastructure..."
@@ -51,31 +51,8 @@ else
     echo "✓ S3 bucket '$BUCKET_NAME' created successfully"
 fi
 
-# Check if DynamoDB table exists
-echo "Checking if DynamoDB table '$DYNAMODB_TABLE' exists..."
-if aws dynamodb describe-table --table-name "$DYNAMODB_TABLE" --region "$REGION" >/dev/null 2>&1; then
-    echo "✓ DynamoDB table '$DYNAMODB_TABLE' already exists"
-else
-    echo "Creating DynamoDB table '$DYNAMODB_TABLE'..."
-    aws dynamodb create-table \
-        --table-name "$DYNAMODB_TABLE" \
-        --attribute-definitions AttributeName=LockID,AttributeType=S \
-        --key-schema AttributeName=LockID,KeyType=HASH \
-        --provisioned-throughput ReadCapacityUnits=5,WriteCapacityUnits=5 \
-        --region "$REGION"
-    
-    echo "Waiting for DynamoDB table to be active..."
-    aws dynamodb wait table-exists --table-name "$DYNAMODB_TABLE" --region "$REGION"
-    
-    echo "✓ DynamoDB table '$DYNAMODB_TABLE' created successfully"
-fi
-
 echo ""
 echo "✓ Terraform backend infrastructure is ready!"
 echo ""
 echo "You can now run:"
-echo "terraform init -backend-config=\"bucket=$BUCKET_NAME\" \\"
-echo "              -backend-config=\"key=ustc-pay-gov-test-server/terraform.tfstate\" \\"
-echo "              -backend-config=\"region=$REGION\" \\"
-echo "              -backend-config=\"dynamodb_table=$DYNAMODB_TABLE\" \\"
-echo "              -backend-config=\"encrypt=true\""
+echo "terraform init -backend-config=backend-dev.hcl"

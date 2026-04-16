@@ -2,7 +2,7 @@ name: PR Validate
 
 on:
   pull_request:
-    branches: [ main ]
+    branches: [main]
   workflow_dispatch:
 
 env:
@@ -37,7 +37,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '24'
+          node-version: "24"
 
       - name: Lint deploy workflow
         run: |
@@ -78,7 +78,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
-          terraform_version: 1.7.5
+          terraform_version: 1.14.8
           terraform_wrapper: false
 
       - name: Cache Terraform
@@ -127,4 +127,3 @@ jobs:
           echo '```' >> $GITHUB_STEP_SUMMARY
           tail -n 200 terraform/plan.out >> $GITHUB_STEP_SUMMARY || true
           echo '```' >> $GITHUB_STEP_SUMMARY
-
