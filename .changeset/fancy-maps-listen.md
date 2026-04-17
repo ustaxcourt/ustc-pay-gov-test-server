@@ -8,6 +8,5 @@ The pay page now shows a "Complete Payment (PAYPAL - Failed)" link. Clicking it 
 
 After a token is marked as PAYPAL Failed, `completeOnlineCollectionWithDetails` and `getDetails` return:
 
-- `transaction_status` of `Received` for the first 60 seconds after initiation
-- `transaction_status` of `Failed` after 60 seconds
-- `payment_type` of `PAYPAL` for both responses
+- `transaction_status` of `Failed`
+- `payment_type` of `PAYPAL`
