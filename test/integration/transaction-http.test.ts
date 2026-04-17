@@ -206,6 +206,7 @@ describe("initiate transaction", () => {
       const trackingResponse = await completeOnlineCollectionWithDetails(token);
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -377,6 +378,7 @@ describe("initiate transaction", () => {
       );
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
