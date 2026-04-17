@@ -124,44 +124,8 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("PAYPAL within 15 seconds", () => {
-    it("returns Received", () => {
-      const paypalInitiatedAt = DateTime.now().minus({ seconds: 5 }).toJSDate().toISOString();
-      const result = resolveTransactionStatus({
-        ...baseTransaction,
-        payment_type: "PAYPAL",
-        paypal_initiated_at: paypalInitiatedAt,
-      });
-      expect(result).toBe("Received");
-    });
-  });
-
-  describe("PAYPAL at exactly 15 seconds", () => {
+  describe("PAYPAL with no flags", () => {
     it("returns Success", () => {
-      const paypalInitiatedAt = DateTime.now().minus({ seconds: 15 }).toJSDate().toISOString();
-      const result = resolveTransactionStatus({
-        ...baseTransaction,
-        payment_type: "PAYPAL",
-        paypal_initiated_at: paypalInitiatedAt,
-      });
-      expect(result).toBe("Success");
-    });
-  });
-
-  describe("PAYPAL after 15 seconds", () => {
-    it("returns Success", () => {
-      const paypalInitiatedAt = DateTime.now().minus({ seconds: 16 }).toJSDate().toISOString();
-      const result = resolveTransactionStatus({
-        ...baseTransaction,
-        payment_type: "PAYPAL",
-        paypal_initiated_at: paypalInitiatedAt,
-      });
-      expect(result).toBe("Success");
-    });
-  });
-
-  describe("PAYPAL with no paypal_initiated_at", () => {
-    it("returns Success when paypal_initiated_at is not set", () => {
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "PAYPAL",
@@ -170,39 +134,11 @@ describe("resolveTransactionStatus", () => {
     });
   });
 
-  describe("PAYPAL failed within 60 seconds", () => {
-    it("returns Received", () => {
-      const paypalInitiatedAt = DateTime.now().minus({ seconds: 30 }).toJSDate().toISOString();
+  describe("PAYPAL with failed_payment", () => {
+    it("returns Failed immediately", () => {
       const result = resolveTransactionStatus({
         ...baseTransaction,
         payment_type: "PAYPAL",
-        paypal_initiated_at: paypalInitiatedAt,
-        failed_payment: true,
-      });
-      expect(result).toBe("Received");
-    });
-  });
-
-  describe("PAYPAL failed at exactly 60 seconds", () => {
-    it("returns Failed", () => {
-      const paypalInitiatedAt = DateTime.now().minus({ seconds: 60 }).toJSDate().toISOString();
-      const result = resolveTransactionStatus({
-        ...baseTransaction,
-        payment_type: "PAYPAL",
-        paypal_initiated_at: paypalInitiatedAt,
-        failed_payment: true,
-      });
-      expect(result).toBe("Failed");
-    });
-  });
-
-  describe("PAYPAL failed after 60 seconds", () => {
-    it("returns Failed", () => {
-      const paypalInitiatedAt = DateTime.now().minus({ seconds: 90 }).toJSDate().toISOString();
-      const result = resolveTransactionStatus({
-        ...baseTransaction,
-        payment_type: "PAYPAL",
-        paypal_initiated_at: paypalInitiatedAt,
         failed_payment: true,
       });
       expect(result).toBe("Failed");

@@ -113,7 +113,6 @@ describe('handleMarkPaymentStatus', () => {
       token: 'tok',
       url_success: 'success',
       payment_type: 'PAYPAL',
-      paypal_initiated_at: expect.any(String),
     });
     expect(result).toBe('success');
   });
@@ -143,7 +142,6 @@ describe('handleMarkPaymentStatus', () => {
       url_success: 'success',
       payment_type: 'PAYPAL',
       failed_payment: true,
-      paypal_initiated_at: expect.any(String),
     });
     expect(result).toBe('success');
   });
@@ -228,7 +226,6 @@ describe('handleMarkPaymentStatus', () => {
       token: 'tok',
       url_success: 'success',
       payment_type: 'PAYPAL',
-      paypal_initiated_at: new Date().toISOString(),
     });
     const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
     const appContext = {
@@ -247,12 +244,11 @@ describe('handleMarkPaymentStatus', () => {
     ).rejects.toThrow('Token already marked as PAYPAL');
   });
 
-  it('throws error if attempting to mark failed after PAYPAL was initiated', async () => {
+  it('throws error if attempting to mark failed after PAYPAL was selected', async () => {
     const getInitiatedTransaction = jest.fn().mockResolvedValue({
       token: 'tok',
       url_success: 'success',
       payment_type: 'PAYPAL',
-      paypal_initiated_at: new Date().toISOString(),
     });
     const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
     const appContext = {

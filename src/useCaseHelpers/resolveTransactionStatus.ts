@@ -15,16 +15,6 @@ export const resolveTransactionStatus = (
     if (elapsed < ACH_THRESHOLD_SECONDS) {
       return "Received";
     }
-    return transaction.failed_payment ? "Failed" : "Success";
-  }
-  if (transaction.payment_type === "PAYPAL" && transaction.paypal_initiated_at) {
-    const elapsed = DateTime.now()
-      .diff(DateTime.fromISO(transaction.paypal_initiated_at), "seconds")
-      .seconds;
-    if (transaction.failed_payment) {
-      return elapsed < 60 ? "Received" : "Failed";
-    }
-    return elapsed < 15 ? "Received" : "Success";
   }
   if (transaction.failed_payment) {
     return "Failed";
