@@ -36,7 +36,7 @@ describe('showPayPage', () => {
     );
     expect(paypalSuccess).toBeInTheDocument();
     expect(paypalSuccess).toHaveAttribute('href', 'http://example.com/success');
-    expect(paypalSuccess).toHaveTextContent('Complete Payment (PAYPAL - Success)');
+    expect(paypalSuccess).toHaveTextContent('Complete Payment (PayPal - Success)');
 
     const cardSuccess = document.querySelector(
       'a[data-payment-method="PLASTIC_CARD"][data-payment-status="Success"]',
@@ -71,7 +71,7 @@ describe('showPayPage', () => {
     );
     expect(paypalFailed).toBeInTheDocument();
     expect(paypalFailed).toHaveAttribute('href', 'http://example.com/success');
-    expect(paypalFailed).toHaveTextContent('Complete Payment (PAYPAL - Failed)');
+    expect(paypalFailed).toHaveTextContent('Complete Payment (PayPal - Failed)');
 
     const cancelLink = document.querySelector('a[href="https://example.com/cancel"]');
     expect(cancelLink).toBeInTheDocument();

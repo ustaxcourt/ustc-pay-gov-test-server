@@ -191,8 +191,8 @@ describe("initiate transaction", () => {
       expect(pageHtml).toContain("Complete Payment (ACH - Success)");
       expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
       expect(pageHtml).toContain("Complete Payment (ACH - Failed)");
-      expect(pageHtml).toContain("Complete Payment (PAYPAL - Success)");
-      expect(pageHtml).toContain("Complete Payment (PAYPAL - Failed)");
+      expect(pageHtml).toContain("Complete Payment (PayPal - Success)");
+      expect(pageHtml).toContain("Complete Payment (PayPal - Failed)");
       expect(pageHtml).toContain("Cancel Payment");
       expect(pageHtml).toContain('src="/scripts/override-links.js"');
       expect(pageHtml).toContain('href="https://example.com/success"');
@@ -691,8 +691,8 @@ describe("initiate transaction", () => {
       expect(body).toContain("Complete Payment (ACH - Success)");
       expect(body).toContain("Complete Payment (Credit Card - Failed)");
       expect(body).toContain("Complete Payment (ACH - Failed)");
-      expect(body).toContain("Complete Payment (PAYPAL - Success)");
-      expect(body).toContain("Complete Payment (PAYPAL - Failed)");
+      expect(body).toContain("Complete Payment (PayPal - Success)");
+      expect(body).toContain("Complete Payment (PayPal - Failed)");
       expect(body).toContain("Cancel Payment");
       expect(body).toContain('src="/scripts/override-links.js"');
       expect(body).toContain('href="https://example.com/success"');
