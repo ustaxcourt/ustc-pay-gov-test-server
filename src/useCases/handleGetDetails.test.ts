@@ -119,4 +119,36 @@ describe('handleGetDetails', () => {
       expect(transaction.payment_type).toBe('ACH');
     });
   });
+
+  describe('PAYPAL success', () => {
+    it('returns transaction_status: Success and payment_type: PAYPAL', async () => {
+      const appContext = makeAppContext(
+        { ...baseCompletedTransaction, payment_type: 'PAYPAL', transaction_status: 'Success' },
+        { token: 'tok', payment_type: 'PAYPAL' }
+      );
+
+      const xml = await handleGetDetails(appContext, { paygov_tracking_id: 'pgid' });
+      const parser = new XMLParser({ parseTagValue: false });
+      const transaction = parser.parse(xml).getDetailsResponse.transactions.transaction;
+
+      expect(transaction.transaction_status).toBe('Success');
+      expect(transaction.payment_type).toBe('PAYPAL');
+    });
+  });
+
+  describe('PAYPAL failed', () => {
+    it('returns transaction_status: Failed and payment_type: PAYPAL', async () => {
+      const appContext = makeAppContext(
+        { ...baseCompletedTransaction, payment_type: 'PAYPAL', transaction_status: 'Failed' },
+        { token: 'tok', payment_type: 'PAYPAL', failed_payment: true }
+      );
+
+      const xml = await handleGetDetails(appContext, { paygov_tracking_id: 'pgid' });
+      const parser = new XMLParser({ parseTagValue: false });
+      const transaction = parser.parse(xml).getDetailsResponse.transactions.transaction;
+
+      expect(transaction.transaction_status).toBe('Failed');
+      expect(transaction.payment_type).toBe('PAYPAL');
+    });
+  });
 });
