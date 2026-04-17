@@ -48,7 +48,7 @@ describe('completeTransaction', () => {
     });
   });
 
-  describe("payment_type: PAYPAL success", () => {
+  describe("payment_type: PAYPAL", () => {
     it('sets payment_type to PAYPAL when transaction.payment_type is PAYPAL', () => {
       const request: InitiatedTransaction = {
         ...baseRequest,
@@ -58,9 +58,7 @@ describe('completeTransaction', () => {
       expect(result.payment_type).toBe('PAYPAL');
       expect(result.paid).toBe(true);
     });
-  });
 
-  describe("payment_type: PAYPAL failed", () => {
     it('sets payment_type to PAYPAL and paid to false when failed_payment is set', () => {
       const request: InitiatedTransaction = {
         ...baseRequest,
