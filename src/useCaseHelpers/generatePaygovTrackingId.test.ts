@@ -1,4 +1,4 @@
-import { generatePaygovTrackingId } from "../../src/useCaseHelpers/generatePaygovTrackingId";
+import { generatePaygovTrackingId } from "./generatePaygovTrackingId";
 
 describe("generatePaygovTrackingId", () => {
   it("should return a 21-character string", () => {
