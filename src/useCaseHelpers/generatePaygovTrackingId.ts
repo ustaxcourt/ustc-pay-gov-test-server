@@ -1,10 +1,10 @@
 import { randomInt } from "crypto";
 
-const ALPHANUMERIC =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+const ALLOWED_CHARACTERS =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
 
 export const generatePaygovTrackingId = (): string => {
   return Array.from({ length: 21 }, () =>
-    ALPHANUMERIC[randomInt(ALPHANUMERIC.length)]
+    ALLOWED_CHARACTERS[randomInt(ALLOWED_CHARACTERS.length)]
   ).join("");
 };
