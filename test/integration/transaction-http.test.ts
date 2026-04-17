@@ -7,6 +7,7 @@ import {
   isoDateTimeRegex,
   yyyyMmDdRegex,
 } from "../../src/useCaseHelpers/dateFormats";
+import { ACH_THRESHOLD_SECONDS } from "../../src/useCaseHelpers/resolveTransactionStatus";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -256,7 +257,7 @@ describe("initiate transaction", () => {
   });
 
   describe("ACH payment", () => {
-    it("should return Received status within 15 seconds of ACH initiation", async () => {
+    it(`should return Received status within ${ACH_THRESHOLD_SECONDS} seconds of ACH initiation`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const frozenNow = DateTime.now();
@@ -283,7 +284,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Success status when ACH initiation is 16 seconds ago", async () => {
+    it(`should return Success status when ACH initiation is ${ACH_THRESHOLD_SECONDS + 1} seconds ago`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
@@ -291,7 +292,7 @@ describe("initiate transaction", () => {
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: 16 }));
+        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
 
       try {
         const trackingResponse = await completeOnlineCollectionWithDetails(token);
@@ -311,7 +312,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Received status when ACH is marked failed within 60 seconds", async () => {
+    it(`should return Received status when ACH is marked failed within ${ACH_THRESHOLD_SECONDS} seconds`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const frozenNow = DateTime.now();
@@ -338,7 +339,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Failed status when ACH is marked failed after 60 seconds", async () => {
+    it(`should return Failed status when ACH is marked failed more than ${ACH_THRESHOLD_SECONDS} seconds after initiation`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
@@ -346,7 +347,7 @@ describe("initiate transaction", () => {
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
 
       try {
         const trackingResponse = await completeOnlineCollectionWithDetails(token);
@@ -632,7 +633,7 @@ describe("initiate transaction", () => {
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
-    it("should return Received status for ACH within 15 seconds via getDetails", async () => {
+    it(`should return Received status for ACH within ${ACH_THRESHOLD_SECONDS} seconds via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const frozenNow = DateTime.now();
@@ -657,13 +658,15 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Success status for ACH after 15 seconds via getDetails", async () => {
+    it(`should return Success status for ACH more than ${ACH_THRESHOLD_SECONDS} seconds after initiation via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       await markPaymentStatus(token, "ACH", "Success");
       const completeResponse = await completeOnlineCollectionWithDetails(token);
 
-      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(DateTime.now().plus({ seconds: 16 }));
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
 
       try {
         const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
@@ -682,7 +685,7 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Received status for ACH failed within 60 seconds via getDetails", async () => {
+    it(`should return Received status for ACH failed within ${ACH_THRESHOLD_SECONDS} seconds via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const frozenNow = DateTime.now();
@@ -707,13 +710,15 @@ describe("initiate transaction", () => {
       }
     });
 
-    it("should return Failed status for ACH failed after 60 seconds via getDetails", async () => {
+    it(`should return Failed status for ACH failed more than ${ACH_THRESHOLD_SECONDS} seconds after initiation via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       await markPaymentStatus(token, "ACH", "Failed");
       const completeResponse = await completeOnlineCollectionWithDetails(token);
 
-      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(DateTime.now().plus({ seconds: 61 }));
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
 
       try {
         const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
