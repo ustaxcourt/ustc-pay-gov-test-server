@@ -15,10 +15,6 @@ export const resolveTransactionStatus = (
     if (elapsed < ACH_THRESHOLD_SECONDS) {
       return "Received";
     }
-    return transaction.failed_payment ? "Failed" : "Success";
   }
-  if (transaction.failed_payment) {
-    return "Failed";
-  }
-  return "Success";
+  return transaction.failed_payment ? "Failed" : "Success";
 };

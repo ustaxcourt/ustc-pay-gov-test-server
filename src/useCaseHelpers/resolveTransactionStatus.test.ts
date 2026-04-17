@@ -123,4 +123,14 @@ describe("resolveTransactionStatus", () => {
       expect(result).toBe("Success");
     });
   });
+
+  describe("PAYPAL with no flags", () => {
+    it("returns Success", () => {
+      const result = resolveTransactionStatus({
+        ...baseTransaction,
+        payment_type: "PAYPAL",
+      });
+      expect(result).toBe("Success");
+    });
+  });
 });

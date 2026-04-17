@@ -28,6 +28,10 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
     throw new InvalidRequestError("Token already marked as ACH");
   }
 
+  if (transaction.payment_type === "PAYPAL") {
+    throw new InvalidRequestError("Token already marked as PAYPAL");
+  }
+
   const isFailed = paymentStatus === "Failed";
   const isAch = paymentMethod === "ACH";
 

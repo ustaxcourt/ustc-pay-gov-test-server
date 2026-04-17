@@ -8,6 +8,7 @@ import {
   yyyyMmDdRegex,
 } from "../../src/useCaseHelpers/dateFormats";
 import { ACH_THRESHOLD_SECONDS } from "../../src/useCaseHelpers/resolveTransactionStatus";
+import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -190,6 +191,7 @@ describe("initiate transaction", () => {
       expect(pageHtml).toContain("Complete Payment (ACH - Success)");
       expect(pageHtml).toContain("Complete Payment (Credit Card - Failed)");
       expect(pageHtml).toContain("Complete Payment (ACH - Failed)");
+      expect(pageHtml).toContain("Complete Payment (PAYPAL - Success)");
       expect(pageHtml).toContain("Cancel Payment");
       expect(pageHtml).toContain('src="/scripts/override-links.js"');
       expect(pageHtml).toContain('href="https://example.com/success"');
@@ -570,6 +572,41 @@ describe("initiate transaction", () => {
       });
     });
 
+    describe("PAYPAL", () => {
+      it("should successfully mark a transaction as PAYPAL success", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const response = await markPaymentStatus(token, "PAYPAL", "Success");
+        expect(response.status).toBe(200);
+      });
+
+      it("should return an error when PAYPAL is marked a second time", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const firstResponse = await markPaymentStatus(token, "PAYPAL", "Success");
+        expect(firstResponse.status).toBe(200);
+
+        const secondResponse = await markPaymentStatus(token, "PAYPAL", "Success");
+        const errorMessage = await secondResponse.text();
+
+        expect(secondResponse.status).toBe(400);
+        expect(errorMessage).toBe("Token already marked as PAYPAL");
+      });
+
+      it("should return an error when marking failed after PAYPAL was selected", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const paypalResponse = await markPaymentStatus(token, "PAYPAL", "Success");
+        expect(paypalResponse.status).toBe(200);
+
+        const failedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+        const errorMessage = await failedResponse.text();
+
+        expect(failedResponse.status).toBe(400);
+        expect(errorMessage).toBe("Token already marked as PAYPAL");
+      });
+    });
+
     describe("PLASTIC_CARD", () => {
       it("should successfully mark a transaction as successful", async () => {
         const { token } = await startOnlineCollection(amount);
@@ -644,6 +681,7 @@ describe("initiate transaction", () => {
       expect(body).toContain("Complete Payment (ACH - Success)");
       expect(body).toContain("Complete Payment (Credit Card - Failed)");
       expect(body).toContain("Complete Payment (ACH - Failed)");
+      expect(body).toContain("Complete Payment (PAYPAL - Success)");
       expect(body).toContain("Cancel Payment");
       expect(body).toContain('src="/scripts/override-links.js"');
       expect(body).toContain('href="https://example.com/success"');
