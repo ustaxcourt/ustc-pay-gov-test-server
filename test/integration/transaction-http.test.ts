@@ -8,7 +8,7 @@ import {
   yyyyMmDdRegex,
 } from "../../src/useCaseHelpers/dateFormats";
 import { ACH_THRESHOLD_SECONDS } from "../../src/useCaseHelpers/resolveTransactionStatus";
-import { describe, beforeAll, afterAll, it, expect, jest } from "@jest/globals";
+import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -207,6 +207,7 @@ describe("initiate transaction", () => {
       const trackingResponse = await completeOnlineCollectionWithDetails(token);
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -378,6 +379,7 @@ describe("initiate transaction", () => {
       );
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -601,7 +603,7 @@ describe("initiate transaction", () => {
         expect(response.status).toBe(200);
       });
 
-      it("should return an error when marking failed after PAYPAL was initiated", async () => {
+      it("should return an error when marking failed after PAYPAL was selected", async () => {
         const { token } = await startOnlineCollection(amount);
 
         const paypalResponse = await markPaymentStatus(token, "PAYPAL", "Success");

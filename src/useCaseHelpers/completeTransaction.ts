@@ -1,6 +1,6 @@
 import { CompletedTransaction, InitiatedTransaction } from "../types/Transaction";
 import { DateTime } from "luxon";
-import { v4 as uuidv4 } from "uuid";
+import { generatePaygovTrackingId } from "./generatePaygovTrackingId";
 import { TransactionStatus } from "../types/TransactionStatus";
 
 export type CompleteTransaction = (
@@ -15,7 +15,7 @@ export const completeTransaction: CompleteTransaction = (transaction, options) =
   return {
     ...transaction,
     paid: transactionStatus === "Success",
-    paygov_tracking_id: uuidv4(),
+    paygov_tracking_id: generatePaygovTrackingId(),
     payment_date: now.toFormat("yyyy-MM-dd"),
     payment_type: transaction.payment_type ?? "PLASTIC_CARD",
     transaction_date: now.toJSDate().toISOString(),

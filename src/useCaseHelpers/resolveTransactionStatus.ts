@@ -16,8 +16,5 @@ export const resolveTransactionStatus = (
       return "Received";
     }
   }
-  if (transaction.failed_payment) {
-    return "Failed";
-  }
-  return "Success";
+  return transaction.failed_payment ? "Failed" : "Success";
 };
