@@ -1,13 +1,20 @@
-<html>
+<!doctype html>
+<html lang="en">
   <head>
     <title>Test Pay Page</title>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
   <body>
     <h1>This is a test payment page</h1>
 
     <p><a href="%%urlSuccess%%"
+          data-payment-method="PAYPAL"
+          data-payment-status="Success">Complete Payment (PAYPAL - Success)</a></p>
+
+    <p><a href="%%urlSuccess%%"
           data-payment-method="PLASTIC_CARD"
-          data-payment-status="Success">Complete Payment</a></p>
+          data-payment-status="Success">Complete Payment (Credit Card - Success)</a></p>
 
     <p><a href="%%urlSuccess%%"
           data-payment-method="ACH"

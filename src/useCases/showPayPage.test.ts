@@ -1,6 +1,7 @@
 
 import { showPayPage } from '../useCases/showPayPage';
-import { InvalidRequestError } from '../errors/InvalidRequestError';
+import '@testing-library/jest-dom';
+import { JSDOM } from 'jsdom';
 import fs from 'fs';
 import path from 'path';
 
@@ -24,29 +25,49 @@ describe('showPayPage', () => {
 
     const html = await showPayPage(appContext, { token: 'tok' });
 
-    // Normalize whitespace for robust matching
-    const normalizedHtml = html.replace(/\s+/g, ' ').replace(/>\s+</g, '><').trim();
+    const document = new JSDOM(html).window.document;
+    const links = document.querySelectorAll('a');
 
-    // There should be 5 anchor tags
-    const anchorMatches = normalizedHtml.match(/<a [^>]*>/g);
-    expect(anchorMatches).not.toBeNull();
-    expect(anchorMatches!.length).toBe(5);
+    // PAYPAL Success, PLASTIC_CARD Success, ACH Success, PLASTIC_CARD Failed, ACH Failed, Cancel
+    expect(links).toHaveLength(6);
 
-    // Check the first four links for data attributes and href (attribute order agnostic)
-    expect(normalizedHtml).toMatch(
-      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Success"[^>]*>Complete Payment<\/a>/
+    const paypalSuccess = document.querySelector(
+      'a[data-payment-method="PAYPAL"][data-payment-status="Success"]',
     );
-    expect(normalizedHtml).toMatch(
-      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Success"[^>]*>Complete Payment \(ACH - Success\)<\/a>/
-    );
-    expect(normalizedHtml).toMatch(
-      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="PLASTIC_CARD"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(Credit Card - Failed\)<\/a>/
-    );
-    expect(normalizedHtml).toMatch(
-      /<a[^>]*href="http:\/\/example.com\/success"[^>]*data-payment-method="ACH"[^>]*data-payment-status="Failed"[^>]*>Complete Payment \(ACH - Failed\)<\/a>/
-    );
+    expect(paypalSuccess).toBeInTheDocument();
+    expect(paypalSuccess).toHaveAttribute('href', 'http://example.com/success');
+    expect(paypalSuccess).toHaveTextContent('Complete Payment (PAYPAL - Success)');
 
-    // The fifth link is cancel
-    expect(normalizedHtml).toMatch(/<a href="https:\/\/example.com\/cancel">Cancel Payment<\/a>/);
+    const cardSuccess = document.querySelector(
+      'a[data-payment-method="PLASTIC_CARD"][data-payment-status="Success"]',
+    );
+    expect(cardSuccess).toBeInTheDocument();
+    expect(cardSuccess).toHaveAttribute('href', 'http://example.com/success');
+    expect(cardSuccess).toHaveTextContent('Complete Payment (Credit Card - Success)');
+
+    const achSuccess = document.querySelector(
+      'a[data-payment-method="ACH"][data-payment-status="Success"]',
+    );
+    expect(achSuccess).toBeInTheDocument();
+    expect(achSuccess).toHaveAttribute('href', 'http://example.com/success');
+    expect(achSuccess).toHaveTextContent('Complete Payment (ACH - Success)');
+
+    const cardFailed = document.querySelector(
+      'a[data-payment-method="PLASTIC_CARD"][data-payment-status="Failed"]',
+    );
+    expect(cardFailed).toBeInTheDocument();
+    expect(cardFailed).toHaveAttribute('href', 'http://example.com/success');
+    expect(cardFailed).toHaveTextContent('Complete Payment (Credit Card - Failed)');
+
+    const achFailed = document.querySelector(
+      'a[data-payment-method="ACH"][data-payment-status="Failed"]',
+    );
+    expect(achFailed).toBeInTheDocument();
+    expect(achFailed).toHaveAttribute('href', 'http://example.com/success');
+    expect(achFailed).toHaveTextContent('Complete Payment (ACH - Failed)');
+
+    const cancelLink = document.querySelector('a[href="https://example.com/cancel"]');
+    expect(cancelLink).toBeInTheDocument();
+    expect(cancelLink).toHaveTextContent('Cancel Payment');
   });
 });
