@@ -17,12 +17,6 @@ export const resolveTransactionStatus = (
     }
     return transaction.failed_payment ? "Failed" : "Success";
   }
-  if (transaction.payment_type === "PAYPAL" && transaction.paypal_initiated_at) {
-    const elapsed = DateTime.now()
-      .diff(DateTime.fromISO(transaction.paypal_initiated_at), "seconds")
-      .seconds;
-    return elapsed < 15 ? "Received" : "Success";
-  }
   if (transaction.failed_payment) {
     return "Failed";
   }
