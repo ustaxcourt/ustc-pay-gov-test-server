@@ -86,6 +86,18 @@ describe("initiate transaction", () => {
     return parser.parse(data);
   };
 
+  const toSoapEnvelope = (body: unknown) => {
+    const builder = new XMLBuilder(xmlOptions);
+    return builder.build({
+      "soapenv:Envelope": {
+        "soapenv:Header": {},
+        "soapenv:Body": body,
+        "@xmlns:soapenv": "http://schemas.xmlsoap.org/soap/envelope/",
+        "@xmlns:tcs": "http://fms.treas.gov/services/tcsonline_3_1",
+      },
+    });
+  };
+
   const startOnlineCollection = async (transactionAmount: string) => {
     const agencyTrackingId = uuidv4();
 
@@ -784,6 +796,372 @@ describe("initiate transaction", () => {
 
       expect(response.status).toBe(200);
       expect(body).toBe("no token found");
+    });
+  });
+
+  describe("getResourceLocal route", () => {
+    it("returns 403 when authentication header is present but invalid", async () => {
+      const response = await fetch(`${baseUrl}/wsdl/TCSOnlineService_3_1.wsdl`, {
+        headers: {
+          authentication: "Bearer wrong-token",
+        },
+      });
+
+      expect(response.status).toBe(403);
+      expect(await response.text()).toBe("Missing Authentication");
+    });
+
+    it("returns 500 when filename is unsupported", async () => {
+      const response = await fetch(`${baseUrl}/wsdl/unsupported.wsdl`, {
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+      });
+
+      expect(response.status).toBe(500);
+    });
+  });
+
+  describe("getScriptLocal route", () => {
+    it("serves script content", async () => {
+      const response = await fetch(`${baseUrl}/scripts/override-links.js`);
+
+      expect(response.status).toBe(200);
+      expect(response.headers.get("content-type")).toContain(
+        "application/javascript"
+      );
+      expect(await response.text()).toContain("No token found");
+    });
+
+    it("returns 404 for unsafe script path", async () => {
+      const response = await fetch(`${baseUrl}/scripts/test..js`);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("File not found");
+    });
+
+    it("returns 404 for missing script", async () => {
+      const response = await fetch(`${baseUrl}/scripts/missing-script.js`);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("File not found");
+    });
+
+    it("returns 404 when local lambda receives empty filename", async () => {
+      const { getScriptLocal } = await import("../../src/lambdas/getScriptLambda");
+      const send = jest.fn();
+      const status = jest.fn().mockReturnValue({ send });
+
+      await getScriptLocal(
+        { params: { file: "" } } as any,
+        { status, send } as any
+      );
+
+      expect(status).toHaveBeenCalledWith(404);
+      expect(send).toHaveBeenCalledWith("File not found");
+    });
+  });
+
+  describe("handleSoapRequestLocal route", () => {
+    it("returns 400 for unsupported SOAP action", async () => {
+      const response = await fetch(`${baseUrl}/wsdl`, {
+        method: "POST",
+        body: toSoapEnvelope({
+          "tcs:unsupportedAction": {
+            payload: { hello: "world" },
+          },
+        }),
+        headers: {
+          "Content-type": "application/soap+xml",
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+      });
+
+      expect(response.status).toBe(400);
+      expect(await response.text()).toBe("Could not find correct API");
+    });
+  });
+
+  describe("api gateway getPayPageLambda.handler", () => {
+    it("returns 400 when token is missing", async () => {
+      const { handler: getPayPageHandler } = await import("../../src/lambdas/getPayPageLambda");
+      const response = await getPayPageHandler({
+        queryStringParameters: undefined,
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toBe("No token found");
+    });
+
+    it("returns 200 when token exists", async () => {
+      const {
+        handler: getPayPageHandler,
+        lambdaAppContext: getPayPageLambdaAppContext,
+      } = await import("../../src/lambdas/getPayPageLambda");
+      const token = `token-${uuidv4()}`;
+      (getPayPageLambdaAppContext.files as Record<string, string>)[
+        `requests/${token}.json`
+      ] = JSON.stringify({
+        url_success: "https://example.com/success",
+        url_cancel: "https://example.com/cancel",
+      });
+
+      const response = await getPayPageHandler({
+        queryStringParameters: { token },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.headers).toEqual({
+        "Content-Type": "text/html; charset=UTF-8",
+      });
+      expect(response.body).toContain("Complete Payment");
+    });
+
+    it("returns 500 when token does not exist", async () => {
+      const { handler: getPayPageHandler } = await import("../../src/lambdas/getPayPageLambda");
+      const response = await getPayPageHandler({
+        queryStringParameters: { token: "missing-token" },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(500);
+      expect(response.body).toBe("error has occurred");
+    });
+  });
+
+  describe("api gateway getResourceLambda.handler", () => {
+    it("returns 403 when headers are missing", async () => {
+      const { handler: getResourceHandler } = await import("../../src/lambdas/getResourceLambda");
+      const response = await getResourceHandler({
+        headers: undefined,
+        pathParameters: { filename: "TCSOnlineService_3_1.wsdl" },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toBe("Missing Authentication");
+    });
+
+    it("returns 200 for existing resource", async () => {
+      const { handler: getResourceHandler } = await import("../../src/lambdas/getResourceLambda");
+      const response = await getResourceHandler({
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+        pathParameters: { filename: "TCSOnlineService_3_1.wsdl" },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toBe("todo: we need to make this file in filesystem");
+    });
+
+    it("returns 404 for missing resource", async () => {
+      const { handler: getResourceHandler } = await import("../../src/lambdas/getResourceLambda");
+      await expect(
+        getResourceHandler({
+          headers: {
+            authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+          },
+          pathParameters: { filename: "does-not-exist.wsdl" },
+        } as unknown as AWSLambda.APIGatewayProxyEvent)
+      ).rejects.toBe("Not found");
+    });
+  });
+
+  describe("api gateway getScriptLambda.handler", () => {
+    it("returns 404 when pathParameters are missing", async () => {
+      const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
+      const response = await getScriptHandler({
+        pathParameters: null,
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toBe("File not found");
+    });
+
+    it("returns 404 for unsafe script path", async () => {
+      const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
+      const response = await getScriptHandler({
+        pathParameters: { file: "../../etc/passwd" },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toBe("File not found");
+    });
+
+    it("returns 404 when reading script throws", async () => {
+      const fs = require("fs");
+      const readSpy = jest
+        .spyOn(fs, "readFileSync")
+        .mockImplementationOnce(() => {
+          throw new Error("read failed");
+        });
+
+      const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
+      const response = await getScriptHandler({
+        pathParameters: { file: "override-links.js" },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toBe("File not found");
+      readSpy.mockRestore();
+    });
+  });
+
+  describe("api gateway handleSoapRequestLambda.handler", () => {
+    it("returns 403 when headers are missing", async () => {
+      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+      const response = await handleSoapRequestHandler({
+        headers: undefined,
+        body: toSoapEnvelope({
+          "tcs:getDetails": {
+            getDetailsRequest: {
+              tcs_app_id: tcsAppId,
+              paygov_tracking_id: "abc",
+            },
+          },
+        }),
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(403);
+      expect(response.body).toBe("Missing Authentication");
+    });
+
+    it("returns 400 when body is missing", async () => {
+      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+      const response = await handleSoapRequestHandler({
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+        body: null,
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toBe("Missing body");
+    });
+
+    it("returns 400 for unsupported SOAP action", async () => {
+      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+      const response = await handleSoapRequestHandler({
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+        body: toSoapEnvelope({
+          "tcs:unsupportedAction": {
+            payload: { test: "value" },
+          },
+        }),
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toBe("Could not find correct API");
+    });
+
+    it("returns 200 for completeOnlineCollection action", async () => {
+      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+
+      const startResponse = await handleSoapRequestHandler({
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+        body: toSoapEnvelope({
+          "tcs:startOnlineCollection": {
+            startOnlineCollectionRequest: {
+              tcs_app_id: tcsAppId,
+              agency_tracking_id: uuidv4(),
+              transaction_type: "Sale",
+              transaction_amount: amount,
+              language: "en",
+              url_success: "https://example.com/success",
+              url_cancel: "https://example.com/cancel",
+            },
+          },
+        }),
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      const startTokenMatch = startResponse.body.match(/<token>([^<]+)<\/token>/);
+      expect(startResponse.statusCode).toBe(200);
+      expect(startTokenMatch).toBeTruthy();
+      const token = startTokenMatch![1];
+
+      const response = await handleSoapRequestHandler({
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+        body: toSoapEnvelope({
+          "tcs:completeOnlineCollection": {
+            completeOnlineCollectionRequest: {
+              token,
+            },
+          },
+        }),
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.body).toContain("paygov_tracking_id");
+    });
+  });
+
+  describe("api gateway markPaymentStatusLambda.handler", () => {
+    it("returns 400 for invalid payment method", async () => {
+      const { handler: markPaymentStatusHandler } = await import("../../src/lambdas/markPaymentStatusLambda");
+      const response = await markPaymentStatusHandler({
+        pathParameters: {
+          paymentMethod: "INVALID_METHOD",
+          paymentStatus: "Success",
+        },
+        queryStringParameters: {
+          token: "token-123",
+        },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(400);
+      expect(response.body).toBe(
+        JSON.stringify({ message: "Invalid payment method: INVALID_METHOD" })
+      );
+    });
+
+    it("returns 200 for valid request", async () => {
+      const token = `token-${uuidv4()}`;
+      const {
+        handler: markPaymentStatusHandler,
+        lambdaAppContext: markPaymentStatusLambdaAppContext,
+      } = await import("../../src/lambdas/markPaymentStatusLambda");
+      (markPaymentStatusLambdaAppContext.files as Record<string, string>)[
+        `requests/${token}.json`
+      ] = JSON.stringify({
+        token,
+        url_success: "https://example.com/success",
+        url_cancel: "https://example.com/cancel",
+      });
+
+      const response = await markPaymentStatusHandler({
+        pathParameters: {
+          paymentMethod: "PLASTIC_CARD",
+          paymentStatus: "Success",
+        },
+        queryStringParameters: {
+          token,
+        },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(200);
+      expect(response.headers).toEqual({ "Content-Type": "application/json" });
+      expect(JSON.parse(response.body)).toEqual({
+        redirectUrl: "https://example.com/success",
+      });
+    });
+
+    it("returns 500 for unknown token", async () => {
+      const { handler: markPaymentStatusHandler } = await import("../../src/lambdas/markPaymentStatusLambda");
+      const response = await markPaymentStatusHandler({
+        pathParameters: {
+          paymentMethod: "PLASTIC_CARD",
+          paymentStatus: "Success",
+        },
+        queryStringParameters: {
+          token: "missing-token",
+        },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(500);
+      expect(response.body).toBe("error has occurred");
     });
   });
 });
