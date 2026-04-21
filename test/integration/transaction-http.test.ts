@@ -9,6 +9,7 @@ import {
 } from "../../src/useCaseHelpers/dateFormats";
 import { ACH_THRESHOLD_SECONDS } from "../../src/useCaseHelpers/resolveTransactionStatus";
 import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
+import { NotFoundError } from "../../src/errors/NotFoundError";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -143,7 +144,7 @@ describe("initiate transaction", () => {
       }
     }
 
-    throw new Error(
+    throw new NotFoundError(
       "Unable to generate a stable paygov_tracking_id without leading/trailing spaces"
     );
   };
