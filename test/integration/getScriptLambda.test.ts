@@ -1,4 +1,4 @@
-import { getScriptLocal } from "../../src/lambdas/getScriptLambda";
+import { handler } from "../../src/lambdas/getScriptLambda";
 import { describe, expect, it } from "@jest/globals";
 
 describe("getScriptLocal integration", () => {
@@ -8,7 +8,7 @@ describe("getScriptLocal integration", () => {
     } as unknown as AWSLambda.APIGatewayProxyEvent);
 
   it("serves the override script", async () => {
-    const response = await getScriptLocal(makeEvent("override-links.js"));
+    const response = await handler(makeEvent("override-links.js"));
 
     expect(response.statusCode).toBe(200);
     expect(response.headers).toEqual({
@@ -22,7 +22,7 @@ describe("getScriptLocal integration", () => {
   });
 
   it("returns 404 when the script file does not exist", async () => {
-    const response = await getScriptLocal(makeEvent("missing-script.js"));
+    const response = await handler(makeEvent("missing-script.js"));
 
     expect(response.statusCode).toBe(404);
     expect(response.body).toBe("File not found");
