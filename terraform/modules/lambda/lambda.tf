@@ -33,16 +33,6 @@ data "archive_file" "lambda_pay_page_zip" {
   }
 }
 
-# Common environment variables for all Lambda functions
-locals {
-  lambda_environment = {
-    BASE_URL     = var.base_url != "" ? var.base_url : var.custom_domain
-    BUCKET_NAME  = var.s3_bucket_id
-    ACCESS_TOKEN = var.access_token
-    NODE_ENV     = var.node_env
-  }
-}
-
 data "archive_file" "lambda_script_zip" {
   type        = "zip"
   output_path = "${path.root}/lambda-script-deployment.zip"
@@ -60,6 +50,16 @@ data "archive_file" "lambda_mark_payment_status_zip" {
   source {
     content  = file("${path.root}/lambda-mark-payment-status-bundled.js")
     filename = "src/lambdas/markPaymentStatusLambda.js"
+  }
+}
+
+# Common environment variables for all Lambda functions
+locals {
+  lambda_environment = {
+    BASE_URL     = var.base_url != "" ? var.base_url : var.custom_domain
+    BUCKET_NAME  = var.s3_bucket_id
+    ACCESS_TOKEN = var.access_token
+    NODE_ENV     = var.node_env
   }
 }
 

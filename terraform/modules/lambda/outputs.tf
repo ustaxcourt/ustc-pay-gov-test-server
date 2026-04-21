@@ -47,8 +47,3 @@ output "mark_payment_status_invoke_arn" {
   description = "Invoke ARN of the mark_payment_status Lambda function"
   value       = aws_lambda_function.mark_payment_status.invoke_arn
 }
-
-output "lambda_get_script_arn" {
-  description = "ARN of the get_script Lambda function"
-  value       = aws_lambda_function.get_script.arn
-}

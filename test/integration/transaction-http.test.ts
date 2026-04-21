@@ -351,7 +351,10 @@ describe("initiate transaction", () => {
     it(`should return Received status within ${ACH_THRESHOLD_SECONDS} seconds of ACH initiation`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const frozenNow = DateTime.now();
+      const frozenNow = DateTime.fromISO("2026-01-01T00:00:00.000Z");
+      if (!frozenNow.isValid) {
+        throw new Error("Invalid DateTime for mocking");
+      }
       const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
       try {
