@@ -75,15 +75,13 @@ curl -s "http://localhost:3366/pay?token={token}"
 
 The rendered page should include these links:
 
-```html
-<p>
-  <a href="https://client.app/success"
-    >Complete Payment (Credit Card - Failed)</a
-  >
-</p>
-<p><a href="https://client.app/success">Complete Payment</a></p>
-<p><a href="https://client.app/cancel">Cancel Payment</a></p>
-```
+- Complete Payment (PayPal - Success) → `https://client.app/success`
+- Complete Payment (Credit Card - Success) → `https://client.app/success`
+- Complete Payment (ACH - Success) → `https://client.app/success`
+- Complete Payment (Credit Card - Failed) → `https://client.app/success`
+- Complete Payment (ACH - Failed) → `https://client.app/success`
+- Complete Payment (PayPal - Failed) → `https://client.app/success`
+- Cancel Payment → `https://client.app/cancel`
 
 Behavior note:
 
