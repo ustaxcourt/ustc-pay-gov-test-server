@@ -1010,13 +1010,16 @@ describe("initiate transaction", () => {
         .mockImplementationOnce(() => {
           throw new Error("read failed");
         });
-      jest.spyOn(console, "log").mockImplementation(() => undefined);
+      const consoleErrorSpy = jest
+        .spyOn(console, "error")
+        .mockImplementation(() => undefined);
 
       const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
       const response = await getScriptHandler({
         pathParameters: { file: "override-links.js" },
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
+      expect(consoleErrorSpy).toHaveBeenCalled();
       expect(response.statusCode).toBe(500);
       expect(response.body).toBe("error has occurred");
       expect(response.headers).toEqual({

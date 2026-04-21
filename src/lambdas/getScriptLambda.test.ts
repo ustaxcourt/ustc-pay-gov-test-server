@@ -174,10 +174,13 @@ describe("handler", () => {
     jest.spyOn(fs, "readFileSync").mockImplementation(() => {
       throw new Error("read failed");
     });
-    jest.spyOn(console, "log").mockImplementation(() => undefined);
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
     const result = await handler(makeEvent("test.js"));
 
+    expect(consoleErrorSpy).toHaveBeenCalled();
     expect(result).toEqual({
       statusCode: 500,
       body: "error has occurred",
