@@ -7,7 +7,8 @@ import { handleLambdaError, handleLocalError } from "./handleError";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
 import { AppContext } from "../types/AppContext";
 
-const parser = new XMLParser(xmlOptions);
+export const parser = new XMLParser(xmlOptions);
+export const lambdaAppContext = createAppContext();
 
 async function handleSoapRequest(
   appContext: AppContext,
@@ -76,13 +77,12 @@ export const handler = async (
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
   try {
-    const appContext = createAppContext();
     authenticateRequest(event.headers);
     parseRequest(event.body);
 
     const soapRequest = event.body;
 
-    const result = await handleSoapRequest(appContext, soapRequest!);
+    const result = await handleSoapRequest(lambdaAppContext, soapRequest!);
     return {
       statusCode: 200,
       body: result,

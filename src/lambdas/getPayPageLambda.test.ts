@@ -1,10 +1,19 @@
-import { v4 as uuidv4 } from "uuid";
-import { handler as getPayPageHandler, getPayPageLambda } from "./getPayPageLambda";
-import * as appContextModule from "../appContext";
+import {
+  getPayPageLambda,
+  handler,
+  lambdaAppContext,
+} from "./getPayPageLambda";
 import type { Request, Response } from "express";
 
 describe("getPayPageLambda.handler", () => {
+  let originalUseCases: any;
+
+  beforeEach(() => {
+    originalUseCases = (lambdaAppContext as any).useCases;
+  });
+
   afterEach(() => {
+    (lambdaAppContext as any).useCases = originalUseCases;
     jest.restoreAllMocks();
   });
 
@@ -45,7 +54,7 @@ describe("getPayPageLambda.handler", () => {
   });
 
   it("should return 400 when token is missing", async () => {
-    const response = await getPayPageHandler({} as AWSLambda.APIGatewayProxyEvent);
+    const response = await handler({} as AWSLambda.APIGatewayProxyEvent);
 
     expect(response.statusCode).toBe(400);
     expect(response.body).toBe("No token found");
@@ -53,13 +62,10 @@ describe("getPayPageLambda.handler", () => {
 
   it("should return 200 and html when token is provided", async () => {
     const showPayPage = jest.fn().mockResolvedValue("<html>pay page</html>");
-    jest.spyOn(appContextModule, "createAppContext").mockReturnValue({
-      useCases: () => ({
-        showPayPage,
-      }),
-    } as unknown as ReturnType<typeof appContextModule.createAppContext>);
-
-    const response = await getPayPageHandler({
+    (lambdaAppContext as any).useCases = () => ({
+      showPayPage,
+    });
+    const response = await handler({
       queryStringParameters: {
         token: "valid-token",
       },
@@ -70,23 +76,21 @@ describe("getPayPageLambda.handler", () => {
       "Content-Type": "text/html; charset=UTF-8",
     });
     expect(response.body).toBe("<html>pay page</html>");
-    expect(showPayPage).toHaveBeenCalledWith(expect.anything(), {
+    expect(showPayPage).toHaveBeenCalledWith(lambdaAppContext, {
       token: "valid-token",
     });
   });
 
   it("should return 500 when getPayPage throws", async () => {
     const showPayPage = jest.fn().mockRejectedValue(new Error("boom"));
-    jest.spyOn(appContextModule, "createAppContext").mockReturnValue({
-      useCases: () => ({
-        showPayPage,
-      }),
-    } as unknown as ReturnType<typeof appContextModule.createAppContext>);
+    (lambdaAppContext as any).useCases = () => ({
+      showPayPage,
+    });
     jest.spyOn(console, "log").mockImplementation(() => undefined);
 
-    const response = await getPayPageHandler({
+    const response = await handler({
       queryStringParameters: {
-        token: `token-${uuidv4()}`,
+        token: "token-123",
       },
     } as unknown as AWSLambda.APIGatewayProxyEvent);
 

@@ -2,6 +2,8 @@ import { Request, Response } from "express";
 import { createAppContext } from "../appContext";
 import { AppContext } from "../types/AppContext";
 
+export const lambdaAppContext = createAppContext();
+
 async function getPayPage(appContext: AppContext, token: string) {
   return appContext.useCases().showPayPage(appContext, { token });
 }
@@ -17,8 +19,6 @@ export async function getPayPageLambda(req: Request, res: Response) {
 export async function handler(
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> {
-  const appContext = createAppContext();
-
   if (
     !event.queryStringParameters?.token ||
     typeof event.queryStringParameters.token !== "string"
@@ -30,7 +30,7 @@ export async function handler(
   }
   try {
     const result = await getPayPage(
-      appContext,
+      lambdaAppContext,
       event.queryStringParameters.token
     );
     return {

@@ -5,6 +5,8 @@ import { handleLocalError } from "./handleError";
 import { isPaymentType, isMarkablePaymentStatus } from "../types/Transaction";
 import { createAppContext } from "../appContext";
 
+export const lambdaAppContext = createAppContext();
+
 export async function markPaymentStatusLambda(req: Request, res: Response) {
   try {
     const { paymentMethod, paymentStatus } = req.params;
@@ -39,7 +41,6 @@ export async function markPaymentStatusLambda(req: Request, res: Response) {
 export async function handler(
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
-  const appContext = createAppContext();
   const { paymentMethod, paymentStatus } = event.pathParameters || {};
   const token = event.queryStringParameters?.token;
 
@@ -56,9 +57,9 @@ export async function handler(
   }
 
   try {
-    const redirectUrl = await appContext
+    const redirectUrl = await lambdaAppContext
       .useCases()
-      .handleMarkPaymentStatus(appContext, {
+      .handleMarkPaymentStatus(lambdaAppContext, {
         token,
         paymentMethod,
         paymentStatus,

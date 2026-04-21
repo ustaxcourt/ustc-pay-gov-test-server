@@ -1,10 +1,9 @@
 import type { Request, Response } from "express";
-import { createAppContext } from "../appContext";
-import { handler, markPaymentStatusLambda } from "./markPaymentStatusLambda";
-
-jest.mock("../appContext", () => ({
-  createAppContext: jest.fn(),
-}));
+import {
+  handler,
+  lambdaAppContext,
+  markPaymentStatusLambda,
+} from "./markPaymentStatusLambda";
 
 describe("markPaymentStatusLambda", () => {
   let req: Partial<Request>;
@@ -24,6 +23,7 @@ describe("markPaymentStatusLambda", () => {
     statusSpy = jest.fn().mockReturnThis();
     jsonSpy = jest.fn();
     sendSpy = jest.fn();
+
     appContext = {
       useCases: () => ({
         handleMarkPaymentStatus,
@@ -128,8 +128,7 @@ describe("markPaymentStatusLambda", () => {
   });
 
   describe("api gateway handler", () => {
-    const mockedCreateAppContext =
-      createAppContext as jest.MockedFunction<typeof createAppContext>;
+    let originalUseCases: any;
 
     const makeEvent = (
       paymentMethod?: string,
@@ -145,17 +144,18 @@ describe("markPaymentStatusLambda", () => {
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
     beforeEach(() => {
-      mockedCreateAppContext.mockReset();
+      originalUseCases = (lambdaAppContext as any).useCases;
+    });
+
+    afterEach(() => {
+      (lambdaAppContext as any).useCases = originalUseCases;
     });
 
     it("returns 400 when token is missing", async () => {
       const mockHandle = jest.fn();
-      mockedCreateAppContext.mockReturnValue({
-        useCases: () => ({
-          handleMarkPaymentStatus: mockHandle,
-        }),
-      } as any);
-
+      (lambdaAppContext as any).useCases = () => ({
+        handleMarkPaymentStatus: mockHandle,
+        });
       const result = await handler(makeEvent("PLASTIC_CARD", "Failed"));
 
       expect(result.statusCode).toBe(400);
@@ -185,12 +185,9 @@ describe("markPaymentStatusLambda", () => {
 
     it("returns redirectUrl when params are valid", async () => {
       const mockHandle = jest.fn().mockResolvedValue("http://redirect.url");
-      mockedCreateAppContext.mockReturnValue({
-        useCases: () => ({
-          handleMarkPaymentStatus: mockHandle,
-        }),
-      } as any);
-
+      (lambdaAppContext as any).useCases = () => ({
+        handleMarkPaymentStatus: mockHandle,
+      });
       const result = await handler(makeEvent("PLASTIC_CARD", "Failed", "tok"));
 
       expect(mockHandle).toHaveBeenCalledWith(expect.any(Object), {
@@ -203,6 +200,20 @@ describe("markPaymentStatusLambda", () => {
       expect(result.body).toBe(
         JSON.stringify({ redirectUrl: "http://redirect.url" })
       );
+    });
+
+    it("returns 500 when handler use case throws", async () => {
+      const mockHandle = jest.fn().mockRejectedValue(new Error("boom"));
+      jest.spyOn(console, "log").mockImplementation(() => undefined);
+      (lambdaAppContext as any).useCases = () => ({
+        handleMarkPaymentStatus: mockHandle,
+      });
+
+      const result = await handler(makeEvent("PLASTIC_CARD", "Failed", "tok"));
+
+      expect(result.statusCode).toBe(500);
+      expect(result.body).toBe("error has occurred");
+      expect(mockHandle).toHaveBeenCalledTimes(1);
     });
   });
 });
