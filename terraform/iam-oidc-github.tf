@@ -125,19 +125,19 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       {
         Effect = "Allow",
         Action = [
-            "logs:DescribeLogGroups",
-            "logs:ListTagsForResource"
+          "logs:DescribeLogGroups",
+          "logs:ListTagsForResource"
         ],
         Resource = "*"
       },
       {
         Effect = "Allow",
         Action = [
-            "s3:Get*",
-            "s3:List*"
+          "s3:Get*",
+          "s3:List*"
         ],
-        Resource = "arn:aws:s3:::${local.bucket_name}"           
-        
+        Resource = "arn:aws:s3:::${local.bucket_name}"
+
       }
     ]
   })
