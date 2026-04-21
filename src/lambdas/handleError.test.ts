@@ -23,4 +23,35 @@ describe("handleLambdaError", () => {
   it("throws an error if the statuscode is not present", () => {
     expect(() => handleLambdaError(internalServerError)).toThrow();
   });
+
+  it("throws an error if the statuscode is 500 or higher", () => {
+    const serverError = { statusCode: 500, message: "server failure" };
+    expect(() => handleLambdaError(serverError)).toThrow(serverError as any);
+  });
+});
+
+describe("handleLocalError", () => {
+  it("uses err.statusCode when present", () => {
+    const status = jest.fn().mockReturnThis();
+    const send = jest.fn();
+    const res = { status, send } as unknown as Response;
+    const err = { statusCode: 403, message: "forbidden" };
+
+    handleLocalError(err, res);
+
+    expect(status).toHaveBeenCalledWith(403);
+    expect(send).toHaveBeenCalledWith("forbidden");
+  });
+
+  it("defaults to 500 when err.statusCode is missing", () => {
+    const status = jest.fn().mockReturnThis();
+    const send = jest.fn();
+    const res = { status, send } as unknown as Response;
+    const err = { message: "generic error" };
+
+    handleLocalError(err, res);
+
+    expect(status).toHaveBeenCalledWith(500);
+    expect(send).toHaveBeenCalledWith("generic error");
+  });
 });
