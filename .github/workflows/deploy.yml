@@ -95,6 +95,11 @@ jobs:
           echo "Terraform plan failed with exit code ${{ steps.plan.outputs.exitcode }}"
           exit 1
 
+      - name: Upload pay page static assets
+        run: |
+          aws s3 cp terraform/static/html/pay.html s3://dev-ustc-pay-gov-test-server/html/pay.html
+          aws s3 cp terraform/static/html/scripts/override-links.js s3://dev-ustc-pay-gov-test-server/html/scripts/override-links.js
+
       - name: Terraform apply
         if: steps.plan.outputs.exitcode == '2'
         working-directory: terraform
