@@ -128,15 +128,3 @@ variable "tf_lock_table_name" {
   type        = string
   default     = ""
 }
-
-variable "lambda_mark_payment_status_invoke_arn" {
-  description = "Invoke ARN of the mark_payment_status Lambda function"
-  type        = string
-  default     = ""
-}
-
-variable "lambda_get_script_invoke_arn" {
-  description = "Invoke ARN of the get_script Lambda function"
-  type        = string
-  default     = ""
-}
