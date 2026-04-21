@@ -9,6 +9,20 @@ echo "🔨 Building Lambda functions for deployment..."
 # Change to project root directory
 cd "$(dirname "$0")/.."
 
+do_esbuild() {
+  local input_file="$1"
+  local output_file="$2"
+  echo "  📦 Bundling $input_file to $output_file..."
+  npx esbuild "$input_file" \
+    --bundle \
+    --platform=node \
+    --target=node18 \
+    --format=cjs \
+    --outfile="$output_file" \
+    --external:aws-sdk
+  bundled_files+=("$output_file")
+}
+
 # Clean previous builds
 echo "🧹 Cleaning previous builds..."
 rm -rf dist/
@@ -21,58 +35,17 @@ if [ ! -d "node_modules" ]; then
     npm ci --production=false
 fi
 
+# Initialize bundled Lambda files array (populated by do_esbuild)
+bundled_files=()
+
 # Bundle each Lambda function individually using esbuild
 echo "📦 Bundling Lambda functions with esbuild..."
-
-# Bundle SOAP API Lambda
-echo "  📦 Bundling handleSoapRequestLambda..."
-npx esbuild src/lambdas/handleSoapRequestLambda.ts \
-  --bundle \
-  --platform=node \
-  --target=node18 \
-  --format=cjs \
-  --outfile=terraform/lambda-soap-api-bundled.js \
-  --external:aws-sdk
-
-# Bundle Resource Lambda
-echo "  📦 Bundling getResourceLambda..."
-npx esbuild src/lambdas/getResourceLambda.ts \
-  --bundle \
-  --platform=node \
-  --target=node18 \
-  --format=cjs \
-  --outfile=terraform/lambda-resource-bundled.js \
-  --external:aws-sdk
-
-# Bundle Pay Page Lambda
-echo "  📦 Bundling getPayPageLambda..."
-npx esbuild src/lambdas/getPayPageLambda.ts \
-  --bundle \
-  --platform=node \
-  --target=node18 \
-  --format=cjs \
-  --outfile=terraform/lambda-pay-page-bundled.js \
-  --external:aws-sdk
-
-# Bundle Script Lambda
-echo "  📦 Bundling getScriptLambda..."
-npx esbuild src/lambdas/getScriptLambda.ts \
-  --bundle \
-  --platform=node \
-  --target=node18 \
-  --format=cjs \
-  --outfile=terraform/lambda-script-bundled.js \
-  --external:aws-sdk
-
-# Bundle Mark Payment Status Lambda
-echo "  📦 Bundling markPaymentStatusLambda..."
-npx esbuild src/lambdas/markPaymentStatusLambda.ts \
-  --bundle \
-  --platform=node \
-  --target=node18 \
-  --format=cjs \
-  --outfile=terraform/lambda-mark-payment-status-bundled.js \
-  --external:aws-sdk
+do_esbuild src/lambdas/handleSoapRequestLambda.ts terraform/lambda-soap-api-bundled.js
+do_esbuild src/lambdas/getResourceLambda.ts terraform/lambda-resource-bundled.js
+do_esbuild src/lambdas/getResourceLambda.ts terraform/lambda-resource-bundled.js
+do_esbuild src/lambdas/getPayPageLambda.ts terraform/lambda-pay-page-bundled.js
+do_esbuild src/lambdas/getScriptLambda.ts terraform/lambda-script-bundled.js
+do_esbuild src/lambdas/markPaymentStatusLambda.ts terraform/lambda-mark-payment-status-bundled.js
 
 # Copy static files if they exist
 if [ -d "src/static" ]; then
@@ -83,8 +56,6 @@ fi
 
 echo "✅ Build completed successfully!"
 echo "📦 Bundled Lambda functions ready:"
-echo "  - terraform/lambda-soap-api-bundled.js"
-echo "  - terraform/lambda-resource-bundled.js"
-echo "  - terraform/lambda-pay-page-bundled.js"
-echo "  - terraform/lambda-script-bundled.js"
-echo "  - terraform/lambda-mark-payment-status-bundled.js"
+for file in "${bundled_files[@]}"; do
+    echo "  - $file"
+done

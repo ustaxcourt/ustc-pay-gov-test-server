@@ -1,3 +1,5 @@
+import { describe, expect, it } from "@jest/globals";
+
 describe("test resources", () => {
   const baseUrl = process.env.BASE_URL;
   const resourcesToCheck = [
