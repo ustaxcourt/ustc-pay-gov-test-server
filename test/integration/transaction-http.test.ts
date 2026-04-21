@@ -16,6 +16,7 @@ const toMoneyString = (value: string | number) =>
 const xmlOptions = {
   ignoreAttributes: false,
   attributeNamePrefix: "@",
+  trimValues: false,
   format: true,
 };
 
@@ -128,6 +129,25 @@ describe("initiate transaction", () => {
     ].completeOnlineCollectionWithDetailsResponse;
   };
 
+  const completeOnlineCollectionWithDetailsStableTrackingId = async (
+    token: string
+  ) => {
+    for (let attempt = 0; attempt < 5; attempt += 1) {
+      const result = await completeOnlineCollectionWithDetails(token);
+      const trackingId = String(result.paygov_tracking_id ?? "");
+
+      // SOAP parsing can normalize leading/trailing whitespace in text nodes.
+      // Retry until we get a tracking id without edge spaces for deterministic lookups.
+      if (trackingId === trackingId.trim()) {
+        return result;
+      }
+    }
+
+    throw new Error(
+      "Unable to generate a stable paygov_tracking_id without leading/trailing spaces"
+    );
+  };
+
   const markPaymentStatus = async (
     token: string,
     paymentMethod: string,
@@ -140,7 +160,10 @@ describe("initiate transaction", () => {
   };
 
   const getDetails = async (paygovTrackingId: string) => {
-    for (let attempt = 0; attempt < 3; attempt += 1) {
+    const retryDelaysMs = [25, 50, 100];
+    let lastRetryableError: Error | undefined;
+
+    for (let attempt = 0; attempt <= retryDelaysMs.length; attempt += 1) {
       try {
         const response = await postSoapRequest({
           "tcs:getDetails": {
@@ -166,18 +189,25 @@ describe("initiate transaction", () => {
           : detailsResponse.transactions.transaction;
       } catch (error) {
         if (
-          attempt === 2 ||
           !(error instanceof Error) ||
           !error.message.includes("Could not find file")
         ) {
           throw error;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, 0));
+        lastRetryableError = error;
+
+        if (attempt === retryDelaysMs.length) {
+          break;
+        }
+
+        await new Promise((resolve) => setTimeout(resolve, retryDelaysMs[attempt]));
       }
     }
 
-    throw new Error("Unreachable getDetails retry state");
+    throw new Error(
+      `getDetails retries exhausted for paygov_tracking_id=${paygovTrackingId}. Last error: ${lastRetryableError?.message ?? "unknown"}`
+    );
   };
 
   describe("wsdl", () => {
@@ -233,7 +263,7 @@ describe("initiate transaction", () => {
       const trackingResponse = await completeOnlineCollectionWithDetails(token);
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{1,21}$/);
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -256,7 +286,7 @@ describe("initiate transaction", () => {
       const trackingResponse = await completeOnlineCollectionWithDetails(token);
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{1,21}$/);
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -415,13 +445,14 @@ describe("initiate transaction", () => {
   describe("handleGetDetails", () => {
     it("should find the details of a successful transaction via getDetails api", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
-      const completeResponse = await completeOnlineCollectionWithDetails(token);
+      const completeResponse =
+        await completeOnlineCollectionWithDetailsStableTrackingId(token);
       const trackingResponse = await getDetails(
         completeResponse.paygov_tracking_id
       );
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{1,21}$/);
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -440,7 +471,8 @@ describe("initiate transaction", () => {
       const markFailedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
       expect(markFailedResponse.status).toBe(200);
 
-      const completeResponse = await completeOnlineCollectionWithDetails(token);
+      const completeResponse =
+        await completeOnlineCollectionWithDetailsStableTrackingId(token);
       const trackingResponse = await getDetails(
         completeResponse.paygov_tracking_id
       );
@@ -466,7 +498,8 @@ describe("initiate transaction", () => {
 
       try {
         await markPaymentStatus(token, "ACH", "Success");
-        const completeResponse = await completeOnlineCollectionWithDetails(token);
+        const completeResponse =
+          await completeOnlineCollectionWithDetailsStableTrackingId(token);
         const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
 
         expect(trackingResponse.transaction_status).toBe("Received");
@@ -486,7 +519,8 @@ describe("initiate transaction", () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       await markPaymentStatus(token, "ACH", "Success");
-      const completeResponse = await completeOnlineCollectionWithDetails(token);
+      const completeResponse =
+        await completeOnlineCollectionWithDetailsStableTrackingId(token);
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
@@ -522,7 +556,8 @@ describe("initiate transaction", () => {
         );
         expect(markAchFailedResponse.status).toBe(200);
 
-        const completeResponse = await completeOnlineCollectionWithDetails(token);
+        const completeResponse =
+          await completeOnlineCollectionWithDetailsStableTrackingId(token);
         const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
 
         expect(trackingResponse.transaction_status).toBe("Received");
@@ -542,7 +577,8 @@ describe("initiate transaction", () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       await markPaymentStatus(token, "ACH", "Failed");
-      const completeResponse = await completeOnlineCollectionWithDetails(token);
+      const completeResponse =
+        await completeOnlineCollectionWithDetailsStableTrackingId(token);
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
