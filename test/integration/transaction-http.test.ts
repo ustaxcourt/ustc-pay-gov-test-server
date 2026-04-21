@@ -218,7 +218,7 @@ describe("initiate transaction", () => {
       }
     }
 
-    throw new Error(
+    throw new NotFoundError(
       `getDetails retries exhausted for paygov_tracking_id=${paygovTrackingId}. Last error: ${lastRetryableError?.message ?? "unknown"}`
     );
   };
@@ -889,6 +889,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toBe("No token found");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
     it("returns 200 when token exists", async () => {
@@ -923,6 +926,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(500);
       expect(response.body).toBe("error has occurred");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
   });
 
@@ -936,6 +942,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(403);
       expect(response.body).toBe("Missing Authentication");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
     it("returns 200 for existing resource", async () => {
@@ -949,6 +958,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(200);
       expect(response.body).toBe("todo: we need to make this file in filesystem");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
     it("returns 404 for missing resource", async () => {
@@ -973,6 +985,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toBe("File not found");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
     it("returns 404 for unsafe script path", async () => {
@@ -983,23 +998,30 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(404);
       expect(response.body).toBe("File not found");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
-    it("returns 404 when reading script throws", async () => {
+    it("returns 500 when reading script throws", async () => {
       const fs = require("fs");
       const readSpy = jest
         .spyOn(fs, "readFileSync")
         .mockImplementationOnce(() => {
           throw new Error("read failed");
         });
+      jest.spyOn(console, "log").mockImplementation(() => undefined);
 
       const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
       const response = await getScriptHandler({
         pathParameters: { file: "override-links.js" },
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
-      expect(response.statusCode).toBe(404);
-      expect(response.body).toBe("File not found");
+      expect(response.statusCode).toBe(500);
+      expect(response.body).toBe("error has occurred");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
       readSpy.mockRestore();
     });
   });
@@ -1021,6 +1043,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(403);
       expect(response.body).toBe("Missing Authentication");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
     it("returns 400 when body is missing", async () => {
@@ -1034,6 +1059,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toBe("Missing body");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
     it("returns 400 for unsupported SOAP action", async () => {
@@ -1051,6 +1079,9 @@ describe("initiate transaction", () => {
 
       expect(response.statusCode).toBe(400);
       expect(response.body).toBe("Could not find correct API");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
 
     it("returns 200 for completeOnlineCollection action", async () => {
@@ -1077,6 +1108,9 @@ describe("initiate transaction", () => {
 
       const startTokenMatch = startResponse.body.match(/<token>([^<]+)<\/token>/);
       expect(startResponse.statusCode).toBe(200);
+      expect(startResponse.headers).toEqual({
+        "Content-Type": "application/xml; charset=UTF-8",
+      });
       expect(startTokenMatch).toBeTruthy();
       const token = startTokenMatch![1];
 
@@ -1094,6 +1128,9 @@ describe("initiate transaction", () => {
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
       expect(response.statusCode).toBe(200);
+      expect(response.headers).toEqual({
+        "Content-Type": "application/xml; charset=UTF-8",
+      });
       expect(response.body).toContain("paygov_tracking_id");
     });
   });
@@ -1112,6 +1149,7 @@ describe("initiate transaction", () => {
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
       expect(response.statusCode).toBe(400);
+      expect(response.headers).toEqual({ "Content-Type": "application/json" });
       expect(response.body).toBe(
         JSON.stringify({ message: "Invalid payment method: INVALID_METHOD" })
       );
@@ -1161,7 +1199,8 @@ describe("initiate transaction", () => {
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
       expect(response.statusCode).toBe(500);
-      expect(response.body).toBe("error has occurred");
+      expect(response.headers).toEqual({ "Content-Type": "application/json" });
+      expect(response.body).toBe(JSON.stringify({ message: "error has occurred" }));
     });
   });
 });

@@ -58,6 +58,9 @@ describe("getPayPageLambda.handler", () => {
 
     expect(response.statusCode).toBe(400);
     expect(response.body).toBe("No token found");
+    expect(response.headers).toEqual({
+      "Content-Type": "text/plain; charset=UTF-8",
+    });
   });
 
   it("should return 200 and html when token is provided", async () => {
@@ -86,7 +89,7 @@ describe("getPayPageLambda.handler", () => {
     (lambdaAppContext as any).useCases = () => ({
       showPayPage,
     });
-    jest.spyOn(console, "log").mockImplementation(() => undefined);
+    jest.spyOn(console, "error").mockImplementation(() => undefined);
 
     const response = await handler({
       queryStringParameters: {
@@ -96,6 +99,9 @@ describe("getPayPageLambda.handler", () => {
 
     expect(response.statusCode).toBe(500);
     expect(response.body).toBe("error has occurred");
+    expect(response.headers).toEqual({
+      "Content-Type": "text/plain; charset=UTF-8",
+    });
     expect(showPayPage).toHaveBeenCalledTimes(1);
   });
 });

@@ -159,6 +159,7 @@ describe("markPaymentStatusLambda", () => {
       const result = await handler(makeEvent("PLASTIC_CARD", "Failed"));
 
       expect(result.statusCode).toBe(400);
+      expect(result.headers).toEqual({ "Content-Type": "application/json" });
       expect(result.body).toBe(JSON.stringify({ message: "No token found" }));
       expect(mockHandle).not.toHaveBeenCalled();
     });
@@ -167,6 +168,7 @@ describe("markPaymentStatusLambda", () => {
       const result = await handler(makeEvent("NOT_VALID", "Failed", "tok"));
 
       expect(result.statusCode).toBe(400);
+      expect(result.headers).toEqual({ "Content-Type": "application/json" });
       expect(result.body).toBe(
         JSON.stringify({ message: "Invalid payment method: NOT_VALID" })
       );
@@ -178,6 +180,7 @@ describe("markPaymentStatusLambda", () => {
       );
 
       expect(result.statusCode).toBe(400);
+      expect(result.headers).toEqual({ "Content-Type": "application/json" });
       expect(result.body).toBe(
         JSON.stringify({ message: "Invalid payment status: NOT_VALID" })
       );
@@ -212,7 +215,8 @@ describe("markPaymentStatusLambda", () => {
       const result = await handler(makeEvent("PLASTIC_CARD", "Failed", "tok"));
 
       expect(result.statusCode).toBe(500);
-      expect(result.body).toBe("error has occurred");
+      expect(result.headers).toEqual({ "Content-Type": "application/json" });
+      expect(result.body).toBe(JSON.stringify({ message: "error has occurred" }));
       expect(mockHandle).toHaveBeenCalledTimes(1);
     });
   });
