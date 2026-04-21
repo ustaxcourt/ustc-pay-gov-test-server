@@ -2,35 +2,62 @@ import { Request, Response } from "express";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
 import { handleLocalError } from "./handleError";
-import { isPaymentType, isMarkablePaymentStatus } from "../types/Transaction";
+import {
+  isPaymentType,
+  isMarkablePaymentStatus,
+  MarkablePaymentStatus,
+  PaymentType,
+} from "../types/Transaction";
 import { createAppContext } from "../appContext";
+import { AppContext } from "../types/AppContext";
 
 export const lambdaAppContext = createAppContext();
 
+type MarkPaymentStatusRequest = {
+  token: string;
+  paymentMethod: PaymentType;
+  paymentStatus: MarkablePaymentStatus;
+};
+
+const validateMarkPaymentStatusRequest = (
+  paymentMethod: string | undefined,
+  paymentStatus: string | undefined,
+  token: unknown
+): MarkPaymentStatusRequest => {
+  if (!token || typeof token !== "string") {
+    throw new InvalidRequestError("No token found");
+  }
+
+  if (!isPaymentType(paymentMethod)) {
+    throw new InvalidRequestError(`Invalid payment method: ${paymentMethod}`);
+  }
+
+  if (!isMarkablePaymentStatus(paymentStatus)) {
+    throw new InvalidRequestError(`Invalid payment status: ${paymentStatus}`);
+  }
+
+  return {
+    token,
+    paymentMethod,
+    paymentStatus,
+  };
+};
+
+const markPaymentStatus = async (
+  appContext: AppContext,
+  request: MarkPaymentStatusRequest
+) => {
+  return appContext.useCases().handleMarkPaymentStatus(appContext, request);
+};
+
 export async function markPaymentStatusLambda(req: Request, res: Response) {
   try {
-    const { paymentMethod, paymentStatus } = req.params;
-    const { token } = req.query;
-
-    if (!token || typeof token !== "string") {
-      throw new InvalidRequestError("No token found");
-    }
-
-    if (!isPaymentType(paymentMethod)) {
-      throw new InvalidRequestError(`Invalid payment method: ${paymentMethod}`);
-    }
-
-    if (!isMarkablePaymentStatus(paymentStatus)) {
-      throw new InvalidRequestError(`Invalid payment status: ${paymentStatus}`);
-    }
-
-    const urlSuccess = await res.locals.appContext
-      .useCases()
-      .handleMarkPaymentStatus(res.locals.appContext, {
-        token,
-        paymentMethod,
-        paymentStatus,
-      });
+    const request = validateMarkPaymentStatusRequest(
+      req.params.paymentMethod,
+      req.params.paymentStatus,
+      req.query.token
+    );
+    const urlSuccess = await markPaymentStatus(res.locals.appContext, request);
 
     res.status(200).json({ redirectUrl: urlSuccess });
   } catch (err) {
@@ -41,35 +68,27 @@ export async function markPaymentStatusLambda(req: Request, res: Response) {
 export async function handler(
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
-  const { paymentMethod, paymentStatus } = event.pathParameters || {};
-  const token = event.queryStringParameters?.token;
-
-  if (!token || typeof token !== "string") {
-    return { statusCode: 400, body: JSON.stringify({ message: "No token found" }) };
-  }
-
-  if (!isPaymentType(paymentMethod)) {
-    return { statusCode: 400, body: JSON.stringify({ message: `Invalid payment method: ${paymentMethod}` }) };
-  }
-
-  if (!isMarkablePaymentStatus(paymentStatus)) {
-    return { statusCode: 400, body: JSON.stringify({ message: `Invalid payment status: ${paymentStatus}` }) };
-  }
-
   try {
-    const redirectUrl = await lambdaAppContext
-      .useCases()
-      .handleMarkPaymentStatus(lambdaAppContext, {
-        token,
-        paymentMethod,
-        paymentStatus,
-      });
+    const request = validateMarkPaymentStatusRequest(
+      event.pathParameters?.paymentMethod,
+      event.pathParameters?.paymentStatus,
+      event.queryStringParameters?.token
+    );
+    const redirectUrl = await markPaymentStatus(lambdaAppContext, request);
+
     return {
       statusCode: 200,
       body: JSON.stringify({ redirectUrl }),
       headers: { "Content-Type": "application/json" },
     };
   } catch (err) {
+    if (err instanceof InvalidRequestError) {
+      return {
+        statusCode: 400,
+        body: JSON.stringify({ message: err.message }),
+      };
+    }
+
     console.log(err);
     return { statusCode: 500, body: "error has occurred" };
   }
