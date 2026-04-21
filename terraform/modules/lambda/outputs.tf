@@ -27,3 +27,28 @@ output "pay_page_invoke_arn" {
   description = "Invoke ARN of the pay_page Lambda function"
   value       = aws_lambda_function.pay_page.invoke_arn
 }
+
+output "get_script_function_name" {
+  description = "Name of the get_script Lambda function"
+  value       = aws_lambda_function.get_script.function_name
+}
+
+output "get_script_invoke_arn" {
+  description = "Invoke ARN of the get_script Lambda function"
+  value       = aws_lambda_function.get_script.invoke_arn
+}
+
+output "mark_payment_status_function_name" {
+  description = "Name of the mark_payment_status Lambda function"
+  value       = aws_lambda_function.mark_payment_status.function_name
+}
+
+output "mark_payment_status_invoke_arn" {
+  description = "Invoke ARN of the mark_payment_status Lambda function"
+  value       = aws_lambda_function.mark_payment_status.invoke_arn
+}
+
+output "lambda_get_script_arn" {
+  description = "ARN of the get_script Lambda function"
+  value       = aws_lambda_function.get_script.arn
+}

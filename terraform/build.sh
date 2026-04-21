@@ -34,7 +34,7 @@ npx esbuild src/lambdas/handleSoapRequestLambda.ts \
   --outfile=terraform/lambda-soap-api-bundled.js \
   --external:aws-sdk
 
-# Bundle Resource Lambda  
+# Bundle Resource Lambda
 echo "  📦 Bundling getResourceLambda..."
 npx esbuild src/lambdas/getResourceLambda.ts \
   --bundle \
@@ -54,6 +54,26 @@ npx esbuild src/lambdas/getPayPageLambda.ts \
   --outfile=terraform/lambda-pay-page-bundled.js \
   --external:aws-sdk
 
+# Bundle Script Lambda
+echo "  📦 Bundling getScriptLambda..."
+npx esbuild src/lambdas/getScriptLambda.ts \
+  --bundle \
+  --platform=node \
+  --target=node18 \
+  --format=cjs \
+  --outfile=terraform/lambda-script-bundled.js \
+  --external:aws-sdk
+
+# Bundle Mark Payment Status Lambda
+echo "  📦 Bundling markPaymentStatusLambda..."
+npx esbuild src/lambdas/markPaymentStatusLambda.ts \
+  --bundle \
+  --platform=node \
+  --target=node18 \
+  --format=cjs \
+  --outfile=terraform/lambda-mark-payment-status-bundled.js \
+  --external:aws-sdk
+
 # Copy static files if they exist
 if [ -d "src/static" ]; then
     echo "📄 Copying static files..."
@@ -64,5 +84,7 @@ fi
 echo "✅ Build completed successfully!"
 echo "📦 Bundled Lambda functions ready:"
 echo "  - terraform/lambda-soap-api-bundled.js"
-echo "  - terraform/lambda-resource-bundled.js"  
+echo "  - terraform/lambda-resource-bundled.js"
 echo "  - terraform/lambda-pay-page-bundled.js"
+echo "  - terraform/lambda-script-bundled.js"
+echo "  - terraform/lambda-mark-payment-status-bundled.js"

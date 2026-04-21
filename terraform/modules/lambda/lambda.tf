@@ -43,6 +43,26 @@ locals {
   }
 }
 
+data "archive_file" "lambda_script_zip" {
+  type        = "zip"
+  output_path = "${path.root}/lambda-script-deployment.zip"
+
+  source {
+    content  = file("${path.root}/lambda-script-bundled.js")
+    filename = "src/lambdas/getScriptLambda.js"
+  }
+}
+
+data "archive_file" "lambda_mark_payment_status_zip" {
+  type        = "zip"
+  output_path = "${path.root}/lambda-mark-payment-status-deployment.zip"
+
+  source {
+    content  = file("${path.root}/lambda-mark-payment-status-bundled.js")
+    filename = "src/lambdas/markPaymentStatusLambda.js"
+  }
+}
+
 # Lambda function: soap_api
 resource "aws_lambda_function" "soap_api" {
   filename         = data.archive_file.lambda_soap_api_zip.output_path
@@ -109,6 +129,48 @@ resource "aws_lambda_function" "pay_page" {
   tags = var.common_tags
 }
 
+resource "aws_lambda_function" "get_script" {
+  filename         = data.archive_file.lambda_script_zip.output_path
+  function_name    = "${var.project_name}-${var.environment}-get-script"
+  role             = var.lambda_execution_role_arn
+  handler          = "src/lambdas/getScriptLambda.handler"
+  source_code_hash = data.archive_file.lambda_script_zip.output_base64sha256
+  runtime          = var.lambda_runtime
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory_size
+
+  environment {
+    variables = local.lambda_environment
+  }
+
+  depends_on = [
+    aws_cloudwatch_log_group.get_script,
+  ]
+
+  tags = var.common_tags
+}
+
+resource "aws_lambda_function" "mark_payment_status" {
+  filename         = data.archive_file.lambda_mark_payment_status_zip.output_path
+  function_name    = "${var.project_name}-${var.environment}-mark-payment-status"
+  role             = var.lambda_execution_role_arn
+  handler          = "src/lambdas/markPaymentStatusLambda.handler"
+  source_code_hash = data.archive_file.lambda_mark_payment_status_zip.output_base64sha256
+  runtime          = var.lambda_runtime
+  timeout          = var.lambda_timeout
+  memory_size      = var.lambda_memory_size
+
+  environment {
+    variables = local.lambda_environment
+  }
+
+  depends_on = [
+    aws_cloudwatch_log_group.mark_payment_status,
+  ]
+
+  tags = var.common_tags
+}
+
 # CloudWatch Log Groups for Lambda functions
 resource "aws_cloudwatch_log_group" "soap_api" {
   name              = "/aws/lambda/${var.project_name}-${var.environment}-soap-api"
@@ -124,6 +186,18 @@ resource "aws_cloudwatch_log_group" "soap_resource" {
 
 resource "aws_cloudwatch_log_group" "pay_page" {
   name              = "/aws/lambda/${var.project_name}-${var.environment}-pay-page"
+  retention_in_days = 14
+  tags              = var.common_tags
+}
+
+resource "aws_cloudwatch_log_group" "get_script" {
+  name              = "/aws/lambda/${var.project_name}-${var.environment}-get-script"
+  retention_in_days = 14
+  tags              = var.common_tags
+}
+
+resource "aws_cloudwatch_log_group" "mark_payment_status" {
+  name              = "/aws/lambda/${var.project_name}-${var.environment}-mark-payment-status"
   retention_in_days = 14
   tags              = var.common_tags
 }

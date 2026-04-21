@@ -1,56 +1,30 @@
-import { Server } from "http";
-import { AddressInfo } from "net";
+import { getScriptLocal } from "../../src/lambdas/getScriptLambda";
+import { describe, expect, it } from "@jest/globals";
 
-describe("getScriptLocal", () => {
-  let server: Server;
-  let baseUrl: string;
+describe("getScriptLocal integration", () => {
+  const makeEvent = (file: string) =>
+    ({
+      pathParameters: { file },
+    } as unknown as AWSLambda.APIGatewayProxyEvent);
 
-  beforeAll(async () => {
-    process.env.NODE_ENV = "local";
-    const { app } = await import("../../src/app");
-    server = await new Promise<Server>((resolve, reject) => {
-      const listeningServer = app.listen(0, () => {
-        resolve(listeningServer);
-      });
-      listeningServer.once("error", reject);
+  it("serves the override script", async () => {
+    const response = await getScriptLocal(makeEvent("override-links.js"));
+
+    expect(response.statusCode).toBe(200);
+    expect(response.headers).toEqual({
+      "Content-Type": "application/javascript",
     });
-    const address = server.address() as AddressInfo;
-    baseUrl = `http://127.0.0.1:${address.port}`;
-  });
-
-  afterAll(async () => {
-    await new Promise<void>((resolve, reject) => {
-      server.close((error) => {
-        if (error) {
-          reject(error);
-          return;
-        }
-
-        resolve();
-      });
-    });
-  });
-
-  it("serves the override script without authentication", async () => {
-    const response = await fetch(
-      `${baseUrl}/scripts/override-links.js`
+    expect(response.body).toContain("a[data-payment-method][data-payment-status]");
+    expect(response.body).toContain(
+      "/pay/${encodeURIComponent(method)}/${encodeURIComponent(status)}?token=${encodeURIComponent(token)}"
     );
-    const body = await response.text();
-
-    expect(response.status).toBe(200);
-    expect(response.headers.get("content-type")).toContain(
-      "application/javascript"
-    );
-    expect(body).toContain('a[data-payment-method][data-payment-status]');
-    expect(body).toContain('/pay/${encodeURIComponent(method)}/${encodeURIComponent(status)}?token=${encodeURIComponent(token)}');
-    expect(body).toContain('No token found');
+    expect(response.body).toContain("No token found");
   });
 
   it("returns 404 when the script file does not exist", async () => {
-    const response = await fetch(`${baseUrl}/scripts/missing-script.js`);
-    const body = await response.text();
+    const response = await getScriptLocal(makeEvent("missing-script.js"));
 
-    expect(response.status).toBe(404);
-    expect(body).toBe("File not found");
+    expect(response.statusCode).toBe(404);
+    expect(response.body).toBe("File not found");
   });
 });

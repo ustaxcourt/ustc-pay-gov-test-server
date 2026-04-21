@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import path from "path";
 import { existsSync, readFileSync } from "fs";
+import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 
 // Path traversal protection:
 // ensures the filename is a simple name without directory components
@@ -50,18 +51,24 @@ const resolveScriptPath = (filename: string) => {
   return candidatePaths.find((candidatePath) => existsSync(candidatePath));
 };
 
-export const getScriptLocal = async (req: Request, res: Response) => {
-  try {
-    const scriptPath = resolveScriptPath(req.params.file || "");
+export async function getScriptLocal(
+  event: APIGatewayProxyEvent
+): Promise<APIGatewayProxyResult> {
+  const filename = event.pathParameters?.file || "";
+  const scriptPath = resolveScriptPath(filename);
 
-    if (!scriptPath) {
-      throw new Error("File not found");
-    }
-
-    const content = readFileSync(scriptPath, "utf-8");
-    res.setHeader("Content-Type", "application/javascript");
-    res.send(content);
-  } catch (_err) {
-    res.status(404).send("File not found");
+  if (!scriptPath) {
+    return { statusCode: 404, body: "File not found" };
   }
-};
+
+  try {
+    const content = readFileSync(scriptPath, "utf-8");
+    return {
+      statusCode: 200,
+      body: content,
+      headers: { "Content-Type": "application/javascript" },
+    };
+  } catch (_err) {
+    return { statusCode: 404, body: "File not found" };
+  }
+}

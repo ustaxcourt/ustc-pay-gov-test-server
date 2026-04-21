@@ -1,5 +1,10 @@
 import type { Request, Response } from "express";
-import { markPaymentStatusLambda } from "./markPaymentStatusLambda";
+import { createAppContext } from "../appContext";
+import { handler, markPaymentStatusLambda } from "./markPaymentStatusLambda";
+
+jest.mock("../appContext", () => ({
+  createAppContext: jest.fn(),
+}));
 
 describe("markPaymentStatusLambda", () => {
   let req: Partial<Request>;
@@ -119,6 +124,85 @@ describe("markPaymentStatusLambda", () => {
       );
       expect(statusSpy).toHaveBeenCalledWith(200);
       expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl: "http://redirect.url" });
+    });
+  });
+
+  describe("api gateway handler", () => {
+    const mockedCreateAppContext =
+      createAppContext as jest.MockedFunction<typeof createAppContext>;
+
+    const makeEvent = (
+      paymentMethod?: string,
+      paymentStatus?: string,
+      token?: string
+    ) =>
+      ({
+        pathParameters: {
+          paymentMethod,
+          paymentStatus,
+        },
+        queryStringParameters: token ? { token } : undefined,
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+    beforeEach(() => {
+      mockedCreateAppContext.mockReset();
+    });
+
+    it("returns 400 when token is missing", async () => {
+      const mockHandle = jest.fn();
+      mockedCreateAppContext.mockReturnValue({
+        useCases: () => ({
+          handleMarkPaymentStatus: mockHandle,
+        }),
+      } as any);
+
+      const result = await handler(makeEvent("PLASTIC_CARD", "Failed"));
+
+      expect(result.statusCode).toBe(400);
+      expect(result.body).toBe(JSON.stringify({ message: "No token found" }));
+      expect(mockHandle).not.toHaveBeenCalled();
+    });
+
+    it("returns 400 for invalid payment method", async () => {
+      const result = await handler(makeEvent("NOT_VALID", "Failed", "tok"));
+
+      expect(result.statusCode).toBe(400);
+      expect(result.body).toBe(
+        JSON.stringify({ message: "Invalid payment method: NOT_VALID" })
+      );
+    });
+
+    it("returns 400 for invalid payment status", async () => {
+      const result = await handler(
+        makeEvent("PLASTIC_CARD", "NOT_VALID", "tok")
+      );
+
+      expect(result.statusCode).toBe(400);
+      expect(result.body).toBe(
+        JSON.stringify({ message: "Invalid payment status: NOT_VALID" })
+      );
+    });
+
+    it("returns redirectUrl when params are valid", async () => {
+      const mockHandle = jest.fn().mockResolvedValue("http://redirect.url");
+      mockedCreateAppContext.mockReturnValue({
+        useCases: () => ({
+          handleMarkPaymentStatus: mockHandle,
+        }),
+      } as any);
+
+      const result = await handler(makeEvent("PLASTIC_CARD", "Failed", "tok"));
+
+      expect(mockHandle).toHaveBeenCalledWith(expect.any(Object), {
+        token: "tok",
+        paymentMethod: "PLASTIC_CARD",
+        paymentStatus: "Failed",
+      });
+      expect(result.statusCode).toBe(200);
+      expect(result.headers).toEqual({ "Content-Type": "application/json" });
+      expect(result.body).toBe(
+        JSON.stringify({ redirectUrl: "http://redirect.url" })
+      );
     });
   });
 });
