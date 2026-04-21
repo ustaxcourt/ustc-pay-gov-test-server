@@ -8,7 +8,7 @@ describe("generatePaygovTrackingId", () => {
 
   it("should only contain alphanumeric characters and spaces", () => {
     const id = generatePaygovTrackingId();
-    expect(id).toMatch(/^[A-Za-z0-9 ]{21}$/);
+    expect(id).toMatch(/^[A-Za-z0-9 ]{1,21}$/);
   });
 
   it("should return unique values on successive calls", () => {

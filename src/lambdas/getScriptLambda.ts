@@ -51,7 +51,23 @@ const resolveScriptPath = (filename: string) => {
   return candidatePaths.find((candidatePath) => existsSync(candidatePath));
 };
 
-export async function getScriptLocal(
+export const getScriptLocal = async (req: Request, res: Response) => {
+  try {
+    const scriptPath = resolveScriptPath(req.params.file || "");
+
+    if (!scriptPath) {
+      throw new Error("File not found");
+    }
+
+    const content = readFileSync(scriptPath, "utf-8");
+    res.setHeader("Content-Type", "application/javascript");
+    res.send(content);
+  } catch (_err) {
+    res.status(404).send("File not found");
+  }
+};
+
+export async function handler(
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
   const filename = event.pathParameters?.file || "";
