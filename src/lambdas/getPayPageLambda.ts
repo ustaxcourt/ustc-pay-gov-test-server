@@ -19,6 +19,9 @@ export async function getPayPageLambda(req: Request, res: Response) {
 export async function handler(
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> {
+  const htmlHeaders = { "Content-Type": "text/html; charset=UTF-8" };
+  const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
+
   if (
     !event.queryStringParameters?.token ||
     typeof event.queryStringParameters.token !== "string"
@@ -26,6 +29,7 @@ export async function handler(
     return {
       statusCode: 400,
       body: "No token found",
+      headers: textHeaders,
     };
   }
   try {
@@ -36,15 +40,14 @@ export async function handler(
     return {
       statusCode: 200,
       body: result,
-      headers: {
-        "Content-Type": "text/html; charset=UTF-8",
-      },
+      headers: htmlHeaders,
     };
   } catch (err) {
-    console.log(err);
+    console.error(err);
     return {
       statusCode: 500,
       body: "error has occurred",
+      headers: textHeaders,
     };
   }
 }

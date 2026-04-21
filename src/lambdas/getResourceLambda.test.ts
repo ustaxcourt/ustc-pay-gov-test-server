@@ -79,7 +79,11 @@ describe("handler", () => {
     expect(lambdaGetResourceUseCase).toHaveBeenCalledWith(lambdaAppContext, {
       filename: "test.txt",
     });
-    expect(result).toEqual({ statusCode: 200, body: "lambda-resource" });
+    expect(result).toEqual({
+      statusCode: 200,
+      body: "lambda-resource",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
     const { handleLambdaError } = require("./handleError");
     expect(handleLambdaError).not.toHaveBeenCalled();
   });

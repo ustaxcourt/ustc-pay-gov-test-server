@@ -14,6 +14,9 @@ describe("handleLambdaError", () => {
   it("returns an object with the statusCode if the statusCode is less than 400", () => {
     const handledError = handleLambdaError(unauthorizedError);
     expect(handledError.statusCode).toBe(403);
+    expect(handledError.headers).toEqual({
+      "Content-Type": "text/plain; charset=UTF-8",
+    });
   });
 
   it("does not throw an error if the status code is less than 500", () => {

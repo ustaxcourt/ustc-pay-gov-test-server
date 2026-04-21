@@ -68,6 +68,8 @@ export async function markPaymentStatusLambda(req: Request, res: Response) {
 export async function handler(
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
+  const jsonHeaders = { "Content-Type": "application/json" };
+
   try {
     const request = validateMarkPaymentStatusRequest(
       event.pathParameters?.paymentMethod,
@@ -79,17 +81,22 @@ export async function handler(
     return {
       statusCode: 200,
       body: JSON.stringify({ redirectUrl }),
-      headers: { "Content-Type": "application/json" },
+      headers: jsonHeaders,
     };
   } catch (err) {
     if (err instanceof InvalidRequestError) {
       return {
         statusCode: 400,
         body: JSON.stringify({ message: err.message }),
+        headers: jsonHeaders,
       };
     }
 
-    console.log(err);
-    return { statusCode: 500, body: "error has occurred" };
+    console.error(err);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: "error has occurred" }),
+      headers: jsonHeaders,
+    };
   }
 }

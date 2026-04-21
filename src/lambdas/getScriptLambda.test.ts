@@ -106,7 +106,11 @@ describe("handler", () => {
 
     const result = await handler(makeEvent("missing.js"));
 
-    expect(result).toEqual({ statusCode: 404, body: "File not found" });
+    expect(result).toEqual({
+      statusCode: 404,
+      body: "File not found",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 
   it("returns 404 for an empty filename", async () => {
@@ -115,7 +119,11 @@ describe("handler", () => {
     const result = await handler(makeEvent(""));
 
     expect(existsSpy).not.toHaveBeenCalled();
-    expect(result).toEqual({ statusCode: 404, body: "File not found" });
+    expect(result).toEqual({
+      statusCode: 404,
+      body: "File not found",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 
   it("returns 404 when pathParameters is null", async () => {
@@ -124,7 +132,11 @@ describe("handler", () => {
     const result = await handler(makeEvent());
 
     expect(existsSpy).not.toHaveBeenCalled();
-    expect(result).toEqual({ statusCode: 404, body: "File not found" });
+    expect(result).toEqual({
+      statusCode: 404,
+      body: "File not found",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 
   it("returns 404 for path traversal filenames", async () => {
@@ -133,7 +145,11 @@ describe("handler", () => {
     const result = await handler(makeEvent("../../etc/passwd"));
 
     expect(existsSpy).not.toHaveBeenCalled();
-    expect(result).toEqual({ statusCode: 404, body: "File not found" });
+    expect(result).toEqual({
+      statusCode: 404,
+      body: "File not found",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 
   it("returns 404 for filenames containing double dots", async () => {
@@ -142,10 +158,14 @@ describe("handler", () => {
     const result = await handler(makeEvent("test..js"));
 
     expect(existsSpy).not.toHaveBeenCalled();
-    expect(result).toEqual({ statusCode: 404, body: "File not found" });
+    expect(result).toEqual({
+      statusCode: 404,
+      body: "File not found",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 
-  it("returns 404 when reading an existing file throws", async () => {
+  it("returns 500 when reading an existing file throws", async () => {
     const scriptPath = path.resolve(
       __dirname,
       "../../src/static/html/scripts/test.js"
@@ -154,9 +174,14 @@ describe("handler", () => {
     jest.spyOn(fs, "readFileSync").mockImplementation(() => {
       throw new Error("read failed");
     });
+    jest.spyOn(console, "log").mockImplementation(() => undefined);
 
     const result = await handler(makeEvent("test.js"));
 
-    expect(result).toEqual({ statusCode: 404, body: "File not found" });
+    expect(result).toEqual({
+      statusCode: 500,
+      body: "error has occurred",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 });

@@ -215,7 +215,11 @@ describe("handler", () => {
     expect(lambdaHandleGetDetails).toHaveBeenCalledWith(lambdaAppContext, {
       paygovTrackingId: "tracking-123",
     });
-    expect(result).toEqual({ statusCode: 200, body: "lambda-soap" });
+    expect(result).toEqual({
+      statusCode: 200,
+      body: "lambda-soap",
+      headers: { "Content-Type": "application/xml; charset=UTF-8" },
+    });
     const { handleLambdaError } = require("./handleError");
     expect(handleLambdaError).not.toHaveBeenCalled();
   });
@@ -247,7 +251,11 @@ describe("handler", () => {
     expect(handleStartOnlineCollection).toHaveBeenCalledWith(lambdaAppContext, {
       token: "token-123",
     });
-    expect(result).toEqual({ statusCode: 200, body: "start-lambda-response" });
+    expect(result).toEqual({
+      statusCode: 200,
+      body: "start-lambda-response",
+      headers: { "Content-Type": "application/xml; charset=UTF-8" },
+    });
   });
 
   it("should route completeOnlineCollection in handler", async () => {
@@ -269,7 +277,11 @@ describe("handler", () => {
         token: "token-123",
       }
     );
-    expect(result).toEqual({ statusCode: 200, body: "complete-lambda-response" });
+    expect(result).toEqual({
+      statusCode: 200,
+      body: "complete-lambda-response",
+      headers: { "Content-Type": "application/xml; charset=UTF-8" },
+    });
   });
 
   it("should route completeOnlineCollectionWithDetails in handler", async () => {
@@ -294,6 +306,7 @@ describe("handler", () => {
     expect(result).toEqual({
       statusCode: 200,
       body: "complete-details-lambda-response",
+      headers: { "Content-Type": "application/xml; charset=UTF-8" },
     });
   });
 

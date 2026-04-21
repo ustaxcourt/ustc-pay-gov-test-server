@@ -76,6 +76,8 @@ export const parseRequest = (requestBody?: string | null) => {
 export const handler = async (
   event: AWSLambda.APIGatewayProxyEvent
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
+  const xmlHeaders = { "Content-Type": "application/xml; charset=UTF-8" };
+
   try {
     authenticateRequest(event.headers);
     parseRequest(event.body);
@@ -86,8 +88,10 @@ export const handler = async (
     return {
       statusCode: 200,
       body: result,
+      headers: xmlHeaders,
     };
   } catch (err) {
+    console.error(err);
     return handleLambdaError(err);
   }
 };

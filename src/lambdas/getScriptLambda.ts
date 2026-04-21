@@ -70,11 +70,14 @@ export const getScriptLocal = async (req: Request, res: Response) => {
 export async function handler(
   event: APIGatewayProxyEvent
 ): Promise<APIGatewayProxyResult> {
+  const scriptHeaders = { "Content-Type": "application/javascript" };
+  const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
+
   const filename = event.pathParameters?.file || "";
   const scriptPath = resolveScriptPath(filename);
 
   if (!scriptPath) {
-    return { statusCode: 404, body: "File not found" };
+    return { statusCode: 404, body: "File not found", headers: textHeaders };
   }
 
   try {
@@ -82,9 +85,10 @@ export async function handler(
     return {
       statusCode: 200,
       body: content,
-      headers: { "Content-Type": "application/javascript" },
+      headers: scriptHeaders,
     };
-  } catch (_err) {
-    return { statusCode: 404, body: "File not found" };
+  } catch (err) {
+    console.error(err);
+    return { statusCode: 500, body: "error has occurred", headers: textHeaders };
   }
 }
