@@ -222,6 +222,29 @@ describe("initiate transaction", () => {
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
+    it("should process a successful PLASTIC_CARD transaction when token is explicitly marked success", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const markSuccessResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Success");
+      expect(markSuccessResponse.status).toBe(200);
+
+      const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+      expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
+      expect(trackingResponse.transaction_status).toBe("Success");
+      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+      expect(trackingResponse.number_of_installments).toBe(1);
+      expect(trackingResponse.payment_date).toBe(today);
+      expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
+      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
+    });
+
     it("should process a failed transaction when token is marked failed", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 

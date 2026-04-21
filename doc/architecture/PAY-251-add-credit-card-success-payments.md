@@ -27,6 +27,7 @@ What changes in PAY-251:
 
 - Add explicit verification artifacts (documentation and tests)
 - Strengthen regression coverage for `PLASTIC_CARD` + `Success`
+- Add missing deployment work for Lambda, API Gateway, GitHub Actions, and S3-backed static assets
 
 What does not change:
 
@@ -64,79 +65,394 @@ For `PLASTIC_CARD` + `Success`, we expect no ACH timing branch and no failed fla
 
 ---
 
-## Steps
+## Implementation Plan
 
-### 1. Confirm pay page metadata
+This section is the code-level implementation plan for the ticket. Each subsection lists the file to edit, the approximate line to start from, and the concrete code shape to add or verify.
 
-Verify the link in `src/static/html/pay.html` has:
+### 1. Confirm the pay page entry already exists
 
-- `data-payment-method="PLASTIC_CARD"`
-- `data-payment-status="Success"`
-- `href="%%urlSuccess%%"`
+File and line target:
 
-### 2. Confirm client-side POST routing
+- `src/static/html/pay.html` around line `17`
 
-Verify `src/static/html/scripts/override-links.js`:
+Code to verify:
 
-- reads method/status from data attributes
-- posts to `/pay/:paymentMethod/:paymentStatus?token=...`
-- correctly forms `/pay/PLASTIC_CARD/Success?token=...` for this case
+```html
+<p>
+  <a
+    href="%%urlSuccess%%"
+    data-payment-method="PLASTIC_CARD"
+    data-payment-status="Success"
+    >Complete Payment (Credit Card - Success)</a
+  >
+</p>
+```
 
-### 3. Confirm API route and validation
+Implementation note:
 
-Verify:
+- No code change is required here unless the anchor text or data attributes drifted.
 
-- `src/app.ts` exposes `POST /pay/:paymentMethod/:paymentStatus`
-- `src/lambdas/markPaymentStatusLambda.ts` validates token, payment method, and status
-- successful requests return HTTP 200 with `{ redirectUrl }`
+### 2. Confirm the browser posts to the mark-payment endpoint
 
-### 4. Confirm persistence logic for credit-card success
+File and line target:
 
-Verify `src/useCases/handleMarkPaymentStatus.ts`:
+- `src/static/html/scripts/override-links.js` around the `fetch(`/pay/...`)` call
 
-- writes `payment_type: "PLASTIC_CARD"`
-- does not set `failed_payment` when status is `Success`
-- returns `url_success`
+Code to verify:
 
-### 5. Confirm downstream status resolution
+```javascript
+const response = await fetch(
+  `/pay/${encodeURIComponent(method)}/${encodeURIComponent(
+    status,
+  )}?token=${encodeURIComponent(token)}`,
+  { method: "POST" },
+);
+```
 
-Verify `src/useCaseHelpers/resolveTransactionStatus.ts` ensures this path resolves to `Success`.
+Implementation note:
 
-### 6. Add lambda regression test
+- No code change is required here if the existing click handler already posts `PLASTIC_CARD` and `Success` correctly.
 
-Add explicit test in `src/lambdas/markPaymentStatusLambda.test.ts` for:
+### 3. Confirm the local application route and backend status behavior
 
-- `paymentMethod: "PLASTIC_CARD"`
-- `paymentStatus: "Success"`
-- expected `200` plus `{ redirectUrl }`
+Files and line targets:
 
-### 7. Validate with targeted tests
+- `src/app.ts` around line `38`
+- `src/lambdas/markPaymentStatusLambda.ts` around line `6`
+- `src/useCases/handleMarkPaymentStatus.ts` at the `updatedTransaction` assignment
+- `src/useCaseHelpers/resolveTransactionStatus.ts` at the final return
 
-Run:
+Code to verify in `src/app.ts`:
+
+```ts
+app.post("/pay/:paymentMethod/:paymentStatus", markPaymentStatusLambda);
+```
+
+Code to verify in `src/lambdas/markPaymentStatusLambda.ts`:
+
+```ts
+if (!isPaymentType(paymentMethod)) {
+  throw new InvalidRequestError(`Invalid payment method: ${paymentMethod}`);
+}
+
+if (!isMarkablePaymentStatus(paymentStatus)) {
+  throw new InvalidRequestError(`Invalid payment status: ${paymentStatus}`);
+}
+```
+
+Implementation note:
+
+- For `PLASTIC_CARD` + `Success`, the transaction should persist `payment_type: "PLASTIC_CARD"` without `failed_payment`, and `resolveTransactionStatus` should ultimately return `Success`.
+
+### 4. Add deployed Lambda support for the pay-page flow
+
+Files and line targets:
+
+- `terraform/modules/lambda/lambda.tf` starting near line `26` for archive blocks
+- `terraform/modules/lambda/lambda.tf` starting near line `91` for function resources
+- `src/lambdas/getPayPageLambda.ts` around line `17` already has an AWS handler
+- `src/lambdas/getScriptLambda.ts` currently only exposes `getScriptLocal` around line `53`
+- `src/lambdas/markPaymentStatusLambda.ts` currently only exposes the Express handler around line `6`
+
+Implementation changes:
+
+1. Add archive blocks and `aws_lambda_function` resources for:
+   - `getScriptLambda`
+   - `markPaymentStatusLambda`
+2. Add matching CloudWatch log groups.
+3. Add AWS Lambda handlers in source files if the handler export does not exist yet.
+
+Code shape to add in Terraform:
+
+```hcl
+data "archive_file" "lambda_script_zip" {
+  type        = "zip"
+  output_path = "${path.root}/lambda-script-deployment.zip"
+
+  source {
+    content  = file("${path.root}/lambda-script-bundled.js")
+    filename = "src/lambdas/getScriptLambda.js"
+  }
+}
+```
+
+```hcl
+data "archive_file" "lambda_mark_payment_status_zip" {
+  type        = "zip"
+  output_path = "${path.root}/lambda-mark-payment-status-deployment.zip"
+
+  source {
+    content  = file("${path.root}/lambda-mark-payment-status-bundled.js")
+    filename = "src/lambdas/markPaymentStatusLambda.js"
+  }
+}
+```
+
+### 5. Expose the missing deployed endpoints in API Gateway
+
+File and line target:
+
+- `terraform/modules/api-gateway/api-gateway.tf` starting near line `29`
+- `terraform/modules/api-gateway/api-gateway.tf` starting near line `89`
+
+Implementation changes:
+
+1. Add API Gateway resources for:
+   - `/scripts`
+   - `/scripts/{file}`
+   - `/pay/{paymentMethod}`
+   - `/pay/{paymentMethod}/{paymentStatus}`
+2. Add methods/integrations for:
+   - `GET /scripts/{file}`
+   - `POST /pay/{paymentMethod}/{paymentStatus}`
+3. Update deployment dependencies and redeployment triggers.
+
+Code shape to add:
+
+```hcl
+resource "aws_api_gateway_method" "mark_payment_status_post" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.pay_payment_status.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+```
+
+```hcl
+resource "aws_api_gateway_integration" "mark_payment_status_post" {
+  rest_api_id             = aws_api_gateway_rest_api.main.id
+  resource_id             = aws_api_gateway_resource.pay_payment_status.id
+  http_method             = aws_api_gateway_method.mark_payment_status_post.http_method
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.mark_payment_status_invoke_arn
+}
+```
+
+### 6. Update the deployment workflow to upload static assets
+
+File and line target:
+
+- `.github/workflows/deploy.yml` after `Terraform apply` around line `98`
+
+Implementation changes:
+
+1. Keep the existing build and Terraform apply steps.
+2. Add an S3 upload step after apply for:
+   - `terraform/static/html/pay.html`
+   - `terraform/static/html/scripts/override-links.js`
+
+Code shape to add:
+
+```yaml
+- name: Upload pay page static assets
+  run: |
+    aws s3 cp terraform/static/html/pay.html s3://dev-ustc-pay-gov-test-server/html/pay.html
+    aws s3 cp terraform/static/html/scripts/override-links.js s3://dev-ustc-pay-gov-test-server/html/scripts/override-links.js
+```
+
+### 7. Add an explicit PLASTIC_CARD success test
+
+Files and line targets:
+
+- `test/integration/transaction-http.test.ts` after the existing success test near line `204`
+- `src/lambdas/markPaymentStatusLambda.test.ts` after the valid request test near line `106` if unit-level coverage is also desired
+
+Implementation change made in this branch:
+
+- Added an integration test that explicitly marks the token with `PLASTIC_CARD` + `Success` and then asserts the completed transaction returns `transaction_status: "Success"` and `payment_type: "PLASTIC_CARD"`.
+
+Code added in `test/integration/transaction-http.test.ts`:
+
+```ts
+it("should process a successful PLASTIC_CARD transaction when token is explicitly marked success", async () => {
+  const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+  const markSuccessResponse = await markPaymentStatus(
+    token,
+    "PLASTIC_CARD",
+    "Success",
+  );
+  expect(markSuccessResponse.status).toBe(200);
+
+  const trackingResponse = await completeOnlineCollectionWithDetails(token);
+
+  expect(trackingResponse.transaction_status).toBe("Success");
+  expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+  expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+});
+```
+
+If you also want the unit test, add it here:
+
+- `src/lambdas/markPaymentStatusLambda.test.ts` after the existing valid request test near line `106`
+
+### 8. Validation commands
+
+Run these after implementation:
 
 ```bash
 npm test -- --runInBand src/useCases/showPayPage.test.ts src/useCases/handleMarkPaymentStatus.test.ts src/lambdas/markPaymentStatusLambda.test.ts src/useCases/handleGetDetails.test.ts
 ```
 
-Expected: all tests pass.
+```bash
+NODE_ENV=local jest --runInBand test/integration/transaction-http.test.ts
+```
 
 ---
 
-## Verification Evidence
+## Code Change Summary By Section
 
-- `showPayPage` test verifies the Credit Card success link exists and points to success URL
-- `handleMarkPaymentStatus` test verifies `PLASTIC_CARD` + `Success` persistence behavior
-- `markPaymentStatusLambda` test verifies route params are forwarded and success JSON is returned
-- `handleGetDetails` plus resolver behavior confirms final transaction status is `Success`
+| Section                       | Files to Review                                                                                                                                     | Expected Edit                                                    |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| 1. Pay page entry             | `src/static/html/pay.html`                                                                                                                          | Usually none                                                     |
+| 2. Browser routing            | `src/static/html/scripts/override-links.js`                                                                                                         | Usually none                                                     |
+| 3. Lambda/use case path       | `src/app.ts`, `src/lambdas/markPaymentStatusLambda.ts`, `src/useCases/handleMarkPaymentStatus.ts`, `src/useCaseHelpers/resolveTransactionStatus.ts` | Usually none in app logic                                        |
+| 4. Terraform Lambda packaging | `terraform/modules/lambda/lambda.tf`, `src/lambdas/getPayPageLambda.ts`, `src/lambdas/getScriptLambda.ts`, `src/lambdas/markPaymentStatusLambda.ts` | Add or extend deployed Lambda support                            |
+| 5. API Gateway exposure       | `terraform/modules/api-gateway/api-gateway.tf`                                                                                                      | Add `/scripts/{file}` and `/pay/{paymentMethod}/{paymentStatus}` |
+| 6. Regression coverage        | `src/lambdas/markPaymentStatusLambda.test.ts`                                                                                                       | Add explicit success test if missing                             |
+| 7. GitHub Actions deploy      | `.github/workflows/deploy.yml`                                                                                                                      | Add S3 static asset deployment step                              |
+| 8. Validation                 | test command only                                                                                                                                   | No code edit                                                     |
+
+---
+
+## Deployment Runbook (Lambda + Terraform Static Files)
+
+This rollout must deploy both Lambda code and static files used by the pay page flow.
+
+### Pre-deploy checks
+
+1. Confirm source static files contain PAY-251 behavior:
+
+- `src/static/html/pay.html` includes `Complete Payment (Credit Card - Success)` with:
+  - `data-payment-method="PLASTIC_CARD"`
+  - `data-payment-status="Success"`
+- `src/static/html/scripts/override-links.js` posts to `/pay/:paymentMethod/:paymentStatus?token=...`
+- `terraform/modules/lambda/lambda.tf` includes deployed Lambda resources for:
+  - `src/lambdas/getPayPageLambda.ts`
+  - `src/lambdas/getScriptLambda.ts`
+  - `src/lambdas/markPaymentStatusLambda.ts`
+- `terraform/modules/api-gateway/api-gateway.tf` includes deployed routes for:
+  - `GET /pay`
+  - `GET /scripts/{file}`
+  - `POST /pay/{paymentMethod}/{paymentStatus}`
+- `.github/workflows/deploy.yml` includes static asset upload after infrastructure deploy
+
+2. Confirm tests are green:
+
+```bash
+npm test -- --runInBand src/useCases/showPayPage.test.ts src/useCases/handleMarkPaymentStatus.test.ts src/lambdas/markPaymentStatusLambda.test.ts src/useCases/handleGetDetails.test.ts
+```
+
+### Package Lambda + static artifacts
+
+From repo root:
+
+```bash
+cd terraform
+./build.sh
+```
+
+Expected build outputs:
+
+- Lambda bundles:
+  - `terraform/lambda-soap-api-bundled.js`
+  - `terraform/lambda-resource-bundled.js`
+  - `terraform/lambda-pay-page-bundled.js`
+  - bundled artifact for `src/lambdas/getScriptLambda.ts`
+  - bundled artifact for `src/lambdas/markPaymentStatusLambda.ts`
+- Terraform static copies:
+  - `terraform/static/html/pay.html`
+  - `terraform/static/html/scripts/override-links.js`
+
+### Deploy Lambda and infrastructure changes
+
+```bash
+cd terraform
+./deploy.sh dev
+```
+
+Notes:
+
+- `deploy.sh` runs `build.sh`, then `terraform plan` and `terraform apply`
+- This should update Lambda packages and API Gateway wiring for:
+  - `GET /pay`
+  - `GET /scripts/{file}`
+  - `POST /pay/{paymentMethod}/{paymentStatus}`
+
+### Upload static files to S3 (required)
+
+The deployed runtime reads static files from S3 (`NODE_ENV=development` uses `getFileS3`), so static content must be synced after changes.
+
+Option A: existing project script (dev bucket)
+
+```bash
+npm run copy-files
+```
+
+Option B: explicit upload command
+
+```bash
+aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive
+```
+
+Minimum required objects for this feature:
+
+- `html/pay.html`
+- `html/scripts/override-links.js`
+
+Workflow requirement:
+
+- `.github/workflows/deploy.yml` should perform this upload automatically so Lambda deployment and static asset deployment stay in sync
+
+### Post-deploy verification: Credit Card Success flow
+
+1. Open pay page with a valid token:
+
+- `GET /pay?token=<token>`
+
+2. On the page, click:
+
+- `Complete Payment (Credit Card - Success)`
+
+3. Verify network call:
+
+- `POST /pay/PLASTIC_CARD/Success?token=<token>` returns `200` with `{ redirectUrl }`
+
+4. Verify resulting details flow:
+
+- downstream `getDetails` resolves transaction status to `Success`
+
+5. Quick smoke checks for static serving:
+
+- `GET /pay?token=<token>` returns HTML containing `Complete Payment (Credit Card - Success)`
+- `GET /scripts/override-links.js` returns JavaScript with POST logic
+
+### Rollback guidance
+
+If regression is detected:
+
+1. Re-deploy previous Lambda artifact revision
+2. Re-upload previous versions of:
+
+- `html/pay.html`
+- `html/scripts/override-links.js`
+
+3. Re-run post-deploy verification steps above
 
 ---
 
 ## Files Touched (PAY-251)
 
-| File                                                           | Action                                              | Status |
-| -------------------------------------------------------------- | --------------------------------------------------- | ------ |
-| `src/lambdas/markPaymentStatusLambda.test.ts`                  | Add explicit `PLASTIC_CARD` + `Success` lambda test | Done   |
-| `doc/architecture/PAY-251-add-credit-card-success-payments.md` | Reformat and document verified plan/evidence        | Done   |
+| File                                                           | Action                                              | Status     |
+| -------------------------------------------------------------- | --------------------------------------------------- | ---------- |
+| `src/lambdas/markPaymentStatusLambda.test.ts`                  | Add explicit `PLASTIC_CARD` + `Success` lambda test | Done       |
+| `doc/architecture/PAY-251-add-credit-card-success-payments.md` | Reformat and document verified plan/evidence        | Done       |
+| `terraform/modules/lambda/lambda.tf`                           | Add deployed Lambda resources for pay page flow     | Planned    |
+| `terraform/modules/api-gateway/api-gateway.tf`                 | Add deployed script and mark-payment endpoints      | Planned    |
+| `.github/workflows/deploy.yml`                                 | Add static asset deployment to S3                   | Planned    |
+| `terraform/static/html/pay.html`                               | Static pay page artifact included in deploy runbook | Referenced |
+| `terraform/static/html/scripts/override-links.js`              | Static script artifact included in deploy runbook   | Referenced |
 
 ---
 
