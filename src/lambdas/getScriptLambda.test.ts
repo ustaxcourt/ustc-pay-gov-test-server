@@ -144,4 +144,19 @@ describe("handler", () => {
     expect(existsSpy).not.toHaveBeenCalled();
     expect(result).toEqual({ statusCode: 404, body: "File not found" });
   });
+
+  it("returns 404 when reading an existing file throws", async () => {
+    const scriptPath = path.resolve(
+      __dirname,
+      "../../src/static/html/scripts/test.js"
+    );
+    jest.spyOn(fs, "existsSync").mockImplementation((p) => p === scriptPath);
+    jest.spyOn(fs, "readFileSync").mockImplementation(() => {
+      throw new Error("read failed");
+    });
+
+    const result = await handler(makeEvent("test.js"));
+
+    expect(result).toEqual({ statusCode: 404, body: "File not found" });
+  });
 });
