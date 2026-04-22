@@ -188,7 +188,7 @@ it("updates transaction with PLASTIC_CARD success", async () => {
     url_success: "https://success.url",
   });
   const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
-  
+
   const appContext = {
     persistenceGateway: () => ({
       getInitiatedTransaction,
@@ -209,7 +209,7 @@ it("updates transaction with PLASTIC_CARD success", async () => {
     payment_type: "PLASTIC_CARD",
     // Note: no failed_payment flag, no timestamp
   });
-  
+
   expect(result).toBe("https://success.url");
 });
 ```
@@ -330,37 +330,3 @@ npm test
 
 ---
 
-## What NOT to Do
-
-❌ **Do NOT refactor Lambda handlers**  
-❌ **Do NOT change Terraform modules**  
-❌ **Do NOT modify GitHub Actions workflows**  
-❌ **Do NOT remove PayPal or ACH logic**  
-❌ **Do NOT change ACH thresholds**  
-❌ **Do NOT add new Lambda functions**  
-❌ **Do NOT change persistence schema**  
-
----
-
-## Done Criteria
-
-✅ Integration test verifies the complete PLASTIC_CARD Success flow with completeOnlineCollectionWithDetails  
-✅ Integration test verifies the complete PLASTIC_CARD Success flow with getDetails  
-✅ Unit test verifies the marking logic  
-✅ Status resolution test confirms Success is returned  
-✅ HTML link is verified  
-✅ All tests pass  
-✅ No breaking changes  
-✅ No scope creep  
-
----
-
-## Estimated Effort
-
-- **Code reviews**: ~30 minutes
-- **Test implementation**: ~45 minutes
-- **Test execution**: ~15 minutes
-- **Code review & fixes**: ~20 minutes
-- **Total**: ~1.5-2 hours
-
-Simple and focused. ✓
