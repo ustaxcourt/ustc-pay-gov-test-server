@@ -10,6 +10,7 @@ import {
 import { ACH_THRESHOLD_SECONDS } from "../../src/useCaseHelpers/resolveTransactionStatus";
 import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { NotFoundError } from "../../src/errors/NotFoundError";
+import { paygovTrackingIdRegex } from "../../src/useCaseHelpers/generatePaygovTrackingId";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -468,7 +469,7 @@ describe("initiate transaction", () => {
       );
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
+      expect(trackingResponse.paygov_tracking_id).toMatch(paygovTrackingIdRegex);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
