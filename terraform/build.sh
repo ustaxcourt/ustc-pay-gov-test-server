@@ -42,7 +42,6 @@ bundled_files=()
 echo "📦 Bundling Lambda functions with esbuild..."
 do_esbuild src/lambdas/handleSoapRequestLambda.ts terraform/lambda-soap-api-bundled.js
 do_esbuild src/lambdas/getResourceLambda.ts terraform/lambda-resource-bundled.js
-do_esbuild src/lambdas/getResourceLambda.ts terraform/lambda-resource-bundled.js
 do_esbuild src/lambdas/getPayPageLambda.ts terraform/lambda-pay-page-bundled.js
 do_esbuild src/lambdas/getScriptLambda.ts terraform/lambda-script-bundled.js
 do_esbuild src/lambdas/markPaymentStatusLambda.ts terraform/lambda-mark-payment-status-bundled.js

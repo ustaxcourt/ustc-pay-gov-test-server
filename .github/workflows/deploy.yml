@@ -95,12 +95,18 @@ jobs:
           echo "Terraform plan failed with exit code ${{ steps.plan.outputs.exitcode }}"
           exit 1
 
-      - name: Upload pay page static assets
-        run: |
-          aws s3 cp terraform/static/html/pay.html s3://dev-ustc-pay-gov-test-server/html/pay.html
-          aws s3 cp terraform/static/html/scripts/override-links.js s3://dev-ustc-pay-gov-test-server/html/scripts/override-links.js
-
       - name: Terraform apply
         if: steps.plan.outputs.exitcode == '2'
         working-directory: terraform
         run: terraform apply -input=false -auto-approve -lock-timeout=2m
+
+      - name: Resolve static asset bucket
+        id: static-assets
+        working-directory: terraform
+        run: |
+          echo "bucket=$(terraform output -raw s3_bucket_name)" >> "$GITHUB_OUTPUT"
+
+      - name: Upload pay page static assets
+        run: |
+          aws s3 cp terraform/static/html/pay.html s3://${{ steps.static-assets.outputs.bucket }}/html/pay.html
+          aws s3 cp terraform/static/html/scripts/override-links.js s3://${{ steps.static-assets.outputs.bucket }}/html/scripts/override-links.js

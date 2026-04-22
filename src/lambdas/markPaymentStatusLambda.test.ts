@@ -9,6 +9,7 @@ describe("markPaymentStatusLambda", () => {
   let req: Partial<Request>;
   let res: Partial<Response>;
   let handleMarkPaymentStatus: jest.Mock;
+  let consoleErrorSpy: jest.SpyInstance;
   let statusSpy: jest.Mock;
   let jsonSpy: jest.Mock;
   let sendSpy: jest.Mock;
@@ -20,6 +21,7 @@ describe("markPaymentStatusLambda", () => {
 
   beforeEach(() => {
     handleMarkPaymentStatus = jest.fn();
+    consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
     statusSpy = jest.fn().mockReturnThis();
     jsonSpy = jest.fn();
     sendSpy = jest.fn();
@@ -46,6 +48,10 @@ describe("markPaymentStatusLambda", () => {
         appContext,
       },
     };
+  });
+
+  afterEach(() => {
+    consoleErrorSpy.mockRestore();
   });
 
   describe("token validation", () => {
@@ -207,7 +213,6 @@ describe("markPaymentStatusLambda", () => {
 
     it("returns 500 when handler use case throws", async () => {
       const mockHandle = jest.fn().mockRejectedValue(new Error("boom"));
-      jest.spyOn(console, "log").mockImplementation(() => undefined);
       (lambdaAppContext as any).useCases = () => ({
         handleMarkPaymentStatus: mockHandle,
       });
@@ -218,6 +223,7 @@ describe("markPaymentStatusLambda", () => {
       expect(result.headers).toEqual({ "Content-Type": "application/json" });
       expect(result.body).toBe(JSON.stringify({ message: "error has occurred" }));
       expect(mockHandle).toHaveBeenCalledTimes(1);
+      expect(consoleErrorSpy).toHaveBeenCalled();
     });
   });
 });

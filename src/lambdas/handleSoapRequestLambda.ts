@@ -91,7 +91,6 @@ export const handler = async (
       headers: xmlHeaders,
     };
   } catch (err) {
-    console.error(err);
     return handleLambdaError(err);
   }
 };
