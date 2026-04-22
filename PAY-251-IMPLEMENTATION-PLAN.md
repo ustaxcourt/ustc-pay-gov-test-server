@@ -1,3 +1,5 @@
+THIS IS A TEMP FILE ONLY HERE TO HAVE BETTER CLARITY DURING SSTORY. WILL LATER RMEOVE
+
 # PAY-251: Credit Card Success Payments - Implementation Plan
 
 ## Objective
