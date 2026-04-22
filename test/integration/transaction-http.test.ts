@@ -149,16 +149,22 @@ describe("initiate transaction", () => {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const result = await completeOnlineCollectionWithDetails(token);
       const trackingId = String(result.paygov_tracking_id ?? "");
+      const trimmedTrackingId = trackingId.trim();
 
       // SOAP parsing can normalize leading/trailing whitespace in text nodes.
-      // Retry until we get a tracking id without edge spaces for deterministic lookups.
-      if (trackingId === trackingId.trim()) {
+      // Retry until we get a non-empty, valid tracking id without edge spaces
+      // for deterministic lookups.
+      if (
+        trimmedTrackingId.length > 0 &&
+        trackingId === trimmedTrackingId &&
+        paygovTrackingIdRegex.test(trimmedTrackingId)
+      ) {
         return result;
       }
     }
 
     throw new NotFoundError(
-      "Unable to generate a stable paygov_tracking_id without leading/trailing spaces"
+      "Unable to generate a stable valid paygov_tracking_id without leading/trailing spaces"
     );
   };
 
@@ -815,14 +821,15 @@ describe("initiate transaction", () => {
       expect(await response.text()).toBe("Missing Authentication");
     });
 
-    it("returns 500 when filename is unsupported", async () => {
+    it("returns 404 when filename is unsupported", async () => {
       const response = await fetch(`${baseUrl}/wsdl/unsupported.wsdl`, {
         headers: {
           authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
         },
       });
 
-      expect(response.status).toBe(500);
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("Not found");
     });
   });
 
@@ -961,22 +968,30 @@ describe("initiate transaction", () => {
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
       expect(response.statusCode).toBe(200);
-      expect(response.body).toBe("todo: we need to make this file in filesystem");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
+      expect(typeof response.body).toBe("string");
+      expect(response.body.length).toBeGreaterThan(0);
+      expect(response.body).toMatch(/<\?xml|<definitions\b|<wsdl:definitions\b/i);
+      expect(response.headers).toEqual(
+        expect.objectContaining({
+          "Content-Type": expect.stringMatching(/xml|wsdl|text\/plain/i),
+        })
+      );
     });
 
     it("returns 404 for missing resource", async () => {
       const { handler: getResourceHandler } = await import("../../src/lambdas/getResourceLambda");
-      await expect(
-        getResourceHandler({
-          headers: {
-            authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
-          },
-          pathParameters: { filename: "does-not-exist.wsdl" },
-        } as unknown as AWSLambda.APIGatewayProxyEvent)
-      ).rejects.toBe("Not found");
+      const response = await getResourceHandler({
+        headers: {
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+        pathParameters: { filename: "does-not-exist.wsdl" },
+      } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+      expect(response.statusCode).toBe(404);
+      expect(response.body).toBe("Not found");
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
     });
   });
 
@@ -1193,7 +1208,7 @@ describe("initiate transaction", () => {
       });
     });
 
-    it("returns 500 for unknown token", async () => {
+    it("returns 404 for unknown token", async () => {
       const { handler: markPaymentStatusHandler } = await import("../../src/lambdas/markPaymentStatusLambda");
       const response = await markPaymentStatusHandler({
         pathParameters: {
@@ -1205,9 +1220,11 @@ describe("initiate transaction", () => {
         },
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
-      expect(response.statusCode).toBe(500);
+      expect(response.statusCode).toBe(404);
       expect(response.headers).toEqual({ "Content-Type": "application/json" });
-      expect(response.body).toBe(JSON.stringify({ message: "error has occurred" }));
+      expect(response.body).toBe(
+        JSON.stringify({ message: "Could not find file" })
+      );
     });
   });
 });

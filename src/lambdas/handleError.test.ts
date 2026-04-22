@@ -11,9 +11,10 @@ const internalServerError = new Error(
 );
 
 describe("handleLambdaError", () => {
-  it("returns an object with the statusCode if the statusCode is less than 400", () => {
+  it("returns an object with the statusCode if the statusCode is less than 500", () => {
     const handledError = handleLambdaError(unauthorizedError);
     expect(handledError.statusCode).toBe(403);
+    expect(handledError.body).toBe("you are not authorized to fail");
     expect(handledError.headers).toEqual({
       "Content-Type": "text/plain; charset=UTF-8",
     });
@@ -23,13 +24,26 @@ describe("handleLambdaError", () => {
     expect(() => handleLambdaError(unauthorizedError)).not.toThrow();
   });
 
-  it("throws an error if the statuscode is not present", () => {
-    expect(() => handleLambdaError(internalServerError)).toThrow();
+  it("returns 500 when the statusCode is not present", () => {
+    const handledError = handleLambdaError(internalServerError);
+
+    expect(handledError.statusCode).toBe(500);
+    expect(handledError.body).toBe("this is a generic error without a status code");
   });
 
-  it("throws an error if the statuscode is 500 or higher", () => {
+  it("returns statusCode 500 when the statusCode is 500 or higher", () => {
     const serverError = { statusCode: 500, message: "server failure" };
-    expect(() => handleLambdaError(serverError)).toThrow(serverError as any);
+    const handledError = handleLambdaError(serverError);
+
+    expect(handledError.statusCode).toBe(500);
+    expect(handledError.body).toBe("server failure");
+  });
+
+  it("uses a safe fallback message for non-error values", () => {
+    const handledError = handleLambdaError({ statusCode: 500 });
+
+    expect(handledError.statusCode).toBe(500);
+    expect(handledError.body).toBe("Internal Server Error");
   });
 });
 

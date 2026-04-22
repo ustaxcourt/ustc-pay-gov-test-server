@@ -4,6 +4,7 @@ import {
   lambdaAppContext,
   markPaymentStatusLambda,
 } from "./markPaymentStatusLambda";
+import { NotFoundError } from "../errors/NotFoundError";
 
 describe("markPaymentStatusLambda", () => {
   let req: Partial<Request>;
@@ -224,6 +225,23 @@ describe("markPaymentStatusLambda", () => {
       expect(result.body).toBe(JSON.stringify({ message: "error has occurred" }));
       expect(mockHandle).toHaveBeenCalledTimes(1);
       expect(consoleErrorSpy).toHaveBeenCalled();
+    });
+
+    it("returns statusCode from domain errors", async () => {
+      const notFoundError = new NotFoundError("Could not find file");
+      const mockHandle = jest.fn().mockRejectedValue(notFoundError);
+      (lambdaAppContext as any).useCases = () => ({
+        handleMarkPaymentStatus: mockHandle,
+      });
+
+      const result = await handler(makeEvent("PLASTIC_CARD", "Failed", "tok"));
+
+      expect(result.statusCode).toBe(404);
+      expect(result.headers).toEqual({ "Content-Type": "application/json" });
+      expect(result.body).toBe(
+        JSON.stringify({ message: "Could not find file" })
+      );
+      expect(consoleErrorSpy).not.toHaveBeenCalled();
     });
   });
 });

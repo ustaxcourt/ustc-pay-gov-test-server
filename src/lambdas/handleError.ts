@@ -6,14 +6,24 @@ export const handleLambdaError = (
   const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
 
   console.error(`responding with an error`, err);
-  if (err.statusCode && err.statusCode < 500) {
-    return {
-      statusCode: err.statusCode,
-      body: err.message,
-      headers: textHeaders,
-    };
-  }
-  throw err;
+  const statusCode =
+    typeof err?.statusCode === "number" &&
+    err.statusCode >= 100 &&
+    err.statusCode <= 599
+      ? err.statusCode
+      : 500;
+  const message =
+    typeof err?.message === "string"
+      ? err.message
+      : typeof err === "string"
+        ? err
+        : "Internal Server Error";
+
+  return {
+    statusCode,
+    body: message,
+    headers: textHeaders,
+  };
 };
 
 export const handleLocalError = (err: any, res: Response) => {

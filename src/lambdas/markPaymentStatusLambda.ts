@@ -84,18 +84,29 @@ export async function handler(
       headers: jsonHeaders,
     };
   } catch (err) {
-    if (err instanceof InvalidRequestError) {
-      return {
-        statusCode: 400,
-        body: JSON.stringify({ message: err.message }),
-        headers: jsonHeaders,
-      };
+    const statusCode =
+      typeof (err as any)?.statusCode === "number" &&
+      (err as any).statusCode >= 100 &&
+      (err as any).statusCode <= 599
+        ? (err as any).statusCode
+        : 500;
+
+    const message =
+      statusCode >= 500
+        ? "error has occurred"
+        : err instanceof Error
+          ? err.message
+          : typeof err === "string"
+            ? err
+            : "error has occurred";
+
+    if (statusCode >= 500) {
+      console.error(err);
     }
 
-    console.error(err);
     return {
-      statusCode: 500,
-      body: JSON.stringify({ message: "error has occurred" }),
+      statusCode,
+      body: JSON.stringify({ message }),
       headers: jsonHeaders,
     };
   }
