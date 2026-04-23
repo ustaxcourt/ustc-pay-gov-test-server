@@ -73,29 +73,33 @@ Copy the `<token>` from the SOAP response.
 curl -s "http://localhost:3366/pay?token={token}"
 ```
 
-The rendered page should include these links:
+The rendered page should include links similar to:
 
-```html
-<p>
-  <a href="https://client.app/success"
-    >Complete Payment (Credit Card - Failed)</a
-  >
-</p>
-<p><a href="https://client.app/success">Complete Payment</a></p>
-<p><a href="https://client.app/cancel">Cancel Payment</a></p>
-```
+- Complete Payment (PayPal - Success)
+- Complete Payment (Credit Card - Success)
+- Complete Payment (ACH - Success)
+- Complete Payment (Credit Card - Failed)
+- Complete Payment (ACH - Failed)
+- Complete Payment (PayPal - Failed)
+- Cancel Payment
 
 Behavior note:
 
 - If you click `Complete Payment (Credit Card - Failed)` on the pay page, the browser flow already marks the token as failed.
 - If you click `Complete Payment` or `Cancel Payment`, token status is not marked failed.
 
-### 3) Optional: Mark that token as failed
+### 3) Optional: Mark token status
 
 Use this curl command only if you did not already click `Complete Payment (Credit Card - Failed)` on the pay page.
 
 ```bash
-curl -s -X POST "http://localhost:3366/pay/fail?token={token}"
+curl -s -X POST "http://localhost:3366/pay/:paymentMethod/:paymentStatus?token=:token"
+```
+
+Examples:
+
+```bash
+curl -s -X POST "http://localhost:3366/pay/PLASTIC_CARD/Failed?token=c132251f9feb4364a39664debcd199bb"
 ```
 
 ### 4) Complete with details
