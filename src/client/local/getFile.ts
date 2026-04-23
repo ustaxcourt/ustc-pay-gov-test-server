@@ -16,7 +16,11 @@ export const getFileLocal: GetFile = async (appContext, filename) => {
       "../../../src/static",
       filename
     );
-    return readFileSync(resolvedPath, "utf-8");
+    try {
+      return readFileSync(resolvedPath, "utf-8");
+    } catch {
+      throw new NotFoundError("Could not find file");
+    }
   }
 
   if (filename.substring(0, 5) === "wsdl/") {

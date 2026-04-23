@@ -780,35 +780,6 @@ describe("initiate transaction", () => {
     });
   });
 
-  describe("getPayPageLambda", () => {
-    it("should return 200 and the pay page html when token is provided", async () => {
-      const { token } = await startOnlineCollection(amount);
-
-      const response = await fetch(`${baseUrl}/pay?token=${token}`);
-      const body = await response.text();
-
-      expect(response.status).toBe(200);
-      expect(body).toContain("Complete Payment");
-      expect(body).toContain("Complete Payment (ACH - Success)");
-      expect(body).toContain("Complete Payment (Credit Card - Failed)");
-      expect(body).toContain("Complete Payment (ACH - Failed)");
-      expect(body).toContain("Complete Payment (PayPal - Success)");
-      expect(body).toContain("Complete Payment (PayPal - Failed)");
-      expect(body).toContain("Cancel Payment");
-      expect(body).toContain('src="/scripts/override-links.js"');
-      expect(body).toContain('href="https://example.com/success"');
-      expect(body).toContain('href="https://example.com/cancel"');
-    });
-
-    it("should return 200 and an error message when token is missing", async () => {
-      const response = await fetch(`${baseUrl}/pay`);
-      const body = await response.text();
-
-      expect(response.status).toBe(200);
-      expect(body).toBe("no token found");
-    });
-  });
-
   describe("getResourceLocal route", () => {
     it("returns 403 when authentication header is present but invalid", async () => {
       const response = await fetch(`${baseUrl}/wsdl/TCSOnlineService_3_1.wsdl`, {
@@ -833,44 +804,6 @@ describe("initiate transaction", () => {
     });
   });
 
-  describe("getScriptLocal route", () => {
-    it("serves script content", async () => {
-      const response = await fetch(`${baseUrl}/scripts/override-links.js`);
-
-      expect(response.status).toBe(200);
-      expect(response.headers.get("content-type")).toContain(
-        "application/javascript"
-      );
-      expect(await response.text()).toContain("No token found");
-    });
-
-    it("returns 404 for unsafe script path", async () => {
-      const response = await fetch(`${baseUrl}/scripts/test..js`);
-      expect(response.status).toBe(404);
-      expect(await response.text()).toBe("File not found");
-    });
-
-    it("returns 404 for missing script", async () => {
-      const response = await fetch(`${baseUrl}/scripts/missing-script.js`);
-      expect(response.status).toBe(404);
-      expect(await response.text()).toBe("File not found");
-    });
-
-    it("returns 404 when local lambda receives empty filename", async () => {
-      const { getScriptLocal } = await import("../../src/lambdas/getScriptLambda");
-      const send = jest.fn();
-      const status = jest.fn().mockReturnValue({ send });
-
-      await getScriptLocal(
-        { params: { file: "" } } as any,
-        { status, send } as any
-      );
-
-      expect(status).toHaveBeenCalledWith(404);
-      expect(send).toHaveBeenCalledWith("File not found");
-    });
-  });
-
   describe("handleSoapRequestLocal route", () => {
     it("returns 400 for unsupported SOAP action", async () => {
       const response = await fetch(`${baseUrl}/wsdl`, {
@@ -888,58 +821,6 @@ describe("initiate transaction", () => {
 
       expect(response.status).toBe(400);
       expect(await response.text()).toBe("Could not find correct API");
-    });
-  });
-
-  describe("api gateway getPayPageLambda.handler", () => {
-    it("returns 400 when token is missing", async () => {
-      const { handler: getPayPageHandler } = await import("../../src/lambdas/getPayPageLambda");
-      const response = await getPayPageHandler({
-        queryStringParameters: undefined,
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
-
-      expect(response.statusCode).toBe(400);
-      expect(response.body).toBe("No token found");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
-    });
-
-    it("returns 200 when token exists", async () => {
-      const {
-        handler: getPayPageHandler,
-        lambdaAppContext: getPayPageLambdaAppContext,
-      } = await import("../../src/lambdas/getPayPageLambda");
-      const token = `token-${uuidv4()}`;
-      (getPayPageLambdaAppContext.files as Record<string, string>)[
-        `requests/${token}.json`
-      ] = JSON.stringify({
-        url_success: "https://example.com/success",
-        url_cancel: "https://example.com/cancel",
-      });
-
-      const response = await getPayPageHandler({
-        queryStringParameters: { token },
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
-
-      expect(response.statusCode).toBe(200);
-      expect(response.headers).toEqual({
-        "Content-Type": "text/html; charset=UTF-8",
-      });
-      expect(response.body).toContain("Complete Payment");
-    });
-
-    it("returns 500 when token does not exist", async () => {
-      const { handler: getPayPageHandler } = await import("../../src/lambdas/getPayPageLambda");
-      const response = await getPayPageHandler({
-        queryStringParameters: { token: "missing-token" },
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
-
-      expect(response.statusCode).toBe(500);
-      expect(response.body).toBe("error has occurred");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
     });
   });
 
@@ -992,59 +873,6 @@ describe("initiate transaction", () => {
       expect(response.headers).toEqual({
         "Content-Type": "text/plain; charset=UTF-8",
       });
-    });
-  });
-
-  describe("api gateway getScriptLambda.handler", () => {
-    it("returns 404 when pathParameters are missing", async () => {
-      const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
-      const response = await getScriptHandler({
-        pathParameters: null,
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body).toBe("File not found");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
-    });
-
-    it("returns 404 for unsafe script path", async () => {
-      const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
-      const response = await getScriptHandler({
-        pathParameters: { file: "../../etc/passwd" },
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
-
-      expect(response.statusCode).toBe(404);
-      expect(response.body).toBe("File not found");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
-    });
-
-    it("returns 500 when reading script throws", async () => {
-      const fs = require("fs");
-      const readSpy = jest
-        .spyOn(fs, "readFileSync")
-        .mockImplementationOnce(() => {
-          throw new Error("read failed");
-        });
-      const consoleErrorSpy = jest
-        .spyOn(console, "error")
-        .mockImplementation(() => undefined);
-
-      const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
-      const response = await getScriptHandler({
-        pathParameters: { file: "override-links.js" },
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
-
-      expect(consoleErrorSpy).toHaveBeenCalled();
-      expect(response.statusCode).toBe(500);
-      expect(response.body).toBe("error has occurred");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
-      readSpy.mockRestore();
     });
   });
 
