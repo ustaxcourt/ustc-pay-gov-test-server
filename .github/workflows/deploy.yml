@@ -108,5 +108,4 @@ jobs:
 
       - name: Upload pay page static assets
         run: |
-          aws s3 cp terraform/static/html/pay.html s3://${{ steps.static-assets.outputs.bucket }}/html/pay.html
-          aws s3 cp terraform/static/html/scripts/override-links.js s3://${{ steps.static-assets.outputs.bucket }}/html/scripts/override-links.js
+          aws s3 sync src/static/html s3://${{ steps.static-assets.outputs.bucket }}/html

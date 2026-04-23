@@ -6,3 +6,6 @@ coverage/
 dist/
 .env*
 resources/
+
+# Ignore Terraform static assets
+terraform/static
