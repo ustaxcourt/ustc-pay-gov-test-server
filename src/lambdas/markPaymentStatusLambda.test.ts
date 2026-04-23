@@ -120,5 +120,64 @@ describe("markPaymentStatusLambda", () => {
       expect(statusSpy).toHaveBeenCalledWith(200);
       expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl: "http://redirect.url" });
     });
+
+    it("should handle PLASTIC_CARD Success status", async () => {
+      req.query = { token: "tok123" };
+      req.params!.paymentStatus = "Success";
+      handleMarkPaymentStatus.mockResolvedValue("https://success.example.com");
+
+      await markPaymentStatusLambda(req as Request, res as Response);
+
+      expect(handleMarkPaymentStatus).toHaveBeenCalledWith(
+        appContext,
+        {
+          token: "tok123",
+          paymentMethod: "PLASTIC_CARD",
+          paymentStatus: "Success",
+        }
+      );
+      expect(statusSpy).toHaveBeenCalledWith(200);
+      expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl: "https://success.example.com" });
+    });
+
+    it("should handle ACH Success status", async () => {
+      req.query = { token: "ach_tok" };
+      req.params!.paymentMethod = "ACH";
+      req.params!.paymentStatus = "Success";
+      handleMarkPaymentStatus.mockResolvedValue("https://ach-success.example.com");
+
+      await markPaymentStatusLambda(req as Request, res as Response);
+
+      expect(handleMarkPaymentStatus).toHaveBeenCalledWith(
+        appContext,
+        {
+          token: "ach_tok",
+          paymentMethod: "ACH",
+          paymentStatus: "Success",
+        }
+      );
+      expect(statusSpy).toHaveBeenCalledWith(200);
+      expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl: "https://ach-success.example.com" });
+    });
+
+    it("should handle PAYPAL Success status", async () => {
+      req.query = { token: "paypal_tok" };
+      req.params!.paymentMethod = "PAYPAL";
+      req.params!.paymentStatus = "Success";
+      handleMarkPaymentStatus.mockResolvedValue("https://paypal-success.example.com");
+
+      await markPaymentStatusLambda(req as Request, res as Response);
+
+      expect(handleMarkPaymentStatus).toHaveBeenCalledWith(
+        appContext,
+        {
+          token: "paypal_tok",
+          paymentMethod: "PAYPAL",
+          paymentStatus: "Success",
+        }
+      );
+      expect(statusSpy).toHaveBeenCalledWith(200);
+      expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl: "https://paypal-success.example.com" });
+    });
   });
 });
