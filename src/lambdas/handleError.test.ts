@@ -28,7 +28,7 @@ describe("handleLambdaError", () => {
     const handledError = handleLambdaError(internalServerError);
 
     expect(handledError.statusCode).toBe(500);
-    expect(handledError.body).toBe("this is a generic error without a status code");
+    expect(handledError.body).toBe("Internal Server Error");
   });
 
   it("returns statusCode 500 when the statusCode is 500 or higher", () => {
@@ -36,7 +36,7 @@ describe("handleLambdaError", () => {
     const handledError = handleLambdaError(serverError);
 
     expect(handledError.statusCode).toBe(500);
-    expect(handledError.body).toBe("server failure");
+    expect(handledError.body).toBe("Internal Server Error");
   });
 
   it("uses a safe fallback message for non-error values", () => {

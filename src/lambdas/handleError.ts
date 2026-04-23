@@ -4,20 +4,26 @@ export const handleLambdaError = (
   err: any
 ): AWSLambda.APIGatewayProxyResult => {
   const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
-
-  console.error(`responding with an error`, err);
   const statusCode =
     typeof err?.statusCode === "number" &&
     err.statusCode >= 100 &&
     err.statusCode <= 599
       ? err.statusCode
       : 500;
-  const message =
-    typeof err?.message === "string"
-      ? err.message
-      : typeof err === "string"
+
+  let message: string;
+  if (statusCode >= 500) {
+    // Only log server errors
+    console.error(`responding with an error`, err);
+    message = "Internal Server Error";
+  } else {
+    message =
+      typeof err?.message === "string"
+        ? err.message
+        : typeof err === "string"
         ? err
-        : "Internal Server Error";
+        : "Error";
+  }
 
   return {
     statusCode,
