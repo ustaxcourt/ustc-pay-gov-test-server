@@ -418,10 +418,11 @@ describe("initiate transaction", () => {
     it("should resolve PLASTIC_CARD Success to Success status in getDetails", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      await markPaymentStatus(token, "PLASTIC_CARD", "Success");
+      const markPaymentStatusResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Success");
       const completeResponse = await completeOnlineCollectionWithDetails(token);
       const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
 
+      expect(markPaymentStatusResponse.status).toBe(200);
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
