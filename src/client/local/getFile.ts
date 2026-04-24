@@ -3,13 +3,17 @@ import { readFileSync } from "fs";
 import { NotFoundError } from "../../errors/NotFoundError";
 import { GetFile } from "../../types/GetFile";
 
+const hasParentTraversalSegment = (filename: string): boolean => {
+  return filename.split(/[\\/]+/).includes("..");
+};
+
 export const getFileLocal: GetFile = async (appContext, filename) => {
   if (
     filename.substring(0, 5) === "html/" ||
     filename.substring(0, 5) === "wsdl/"
   ) {
     const staticRoot = path.resolve(__dirname, "../../../src/static");
-    if (path.isAbsolute(filename)) {
+    if (path.isAbsolute(filename) || hasParentTraversalSegment(filename)) {
       throw new NotFoundError("Could not find file");
     }
 
