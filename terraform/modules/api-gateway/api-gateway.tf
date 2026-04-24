@@ -89,7 +89,6 @@ resource "aws_api_gateway_integration" "get_script_get" {
   uri                     = var.get_script_invoke_arn
 }
 
-# Methods and Integrations for mark_payment_status (POST /pay/{paymentMethod}/{paymentStatus})
 resource "aws_api_gateway_method" "soap_api_post" {
   rest_api_id   = aws_api_gateway_rest_api.main.id
   resource_id   = aws_api_gateway_resource.wsdl.id

@@ -4,7 +4,7 @@ import { getPayPageLambda } from "./lambdas/getPayPageLambda";
 import { handleSoapRequestLocal } from "./lambdas/handleSoapRequestLambda";
 import { createAppContext } from "./appContext";
 import { getScriptLocal } from "./lambdas/getScriptLambda";
-import { markPaymentStatusLambda } from "./lambdas/markPaymentStatusLambda";
+import { markPaymentStatusLocal } from "./lambdas/markPaymentStatusLambda";
 
 const appContext = createAppContext();
 const app = express();
@@ -35,7 +35,7 @@ app.get("/pay", getPayPageLambda);
 app.get("/scripts/:file", getScriptLocal);
 app.get("/:file", getResourceLocal);
 // Handles all payment method/status combinations (e.g. PLASTIC_CARD/Failed, ACH/Success)
-app.post("/pay/:paymentMethod/:paymentStatus", markPaymentStatusLambda);
+app.post("/pay/:paymentMethod/:paymentStatus", markPaymentStatusLocal);
 
 app.post("/wsdl", handleSoapRequestLocal);
 

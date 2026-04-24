@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createAppContext } from "../appContext";
 import { AppContext } from "../types/AppContext";
+import { handleLambdaError } from "./handleError";
 
 export const lambdaAppContext = createAppContext();
 
@@ -17,7 +18,7 @@ export async function getPayPageLambda(req: Request, res: Response) {
 }
 
 export async function handler(
-  event: AWSLambda.APIGatewayProxyEvent
+  event: AWSLambda.APIGatewayProxyEvent,
 ): Promise<AWSLambda.APIGatewayProxyResult> {
   const htmlHeaders = { "Content-Type": "text/html; charset=UTF-8" };
   const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
@@ -35,7 +36,7 @@ export async function handler(
   try {
     const result = await getPayPage(
       lambdaAppContext,
-      event.queryStringParameters.token
+      event.queryStringParameters.token,
     );
     return {
       statusCode: 200,
@@ -43,11 +44,6 @@ export async function handler(
       headers: htmlHeaders,
     };
   } catch (err) {
-    console.error(err);
-    return {
-      statusCode: 500,
-      body: "error has occurred",
-      headers: textHeaders,
-    };
+    return handleLambdaError(err);
   }
 }

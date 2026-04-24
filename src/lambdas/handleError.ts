@@ -1,7 +1,7 @@
 import { Response } from "express";
 
 export const handleLambdaError = (
-  err: any
+  err: any,
 ): AWSLambda.APIGatewayProxyResult => {
   const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
   const statusCode =

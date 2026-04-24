@@ -1,12 +1,13 @@
 import { Request, Response } from "express";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
-import { handleLocalError } from "./handleError";
+import { handleLambdaError, handleLocalError } from "./handleError";
 import {
   isPaymentType,
   isMarkablePaymentStatus,
   MarkablePaymentStatus,
   PaymentType,
+  VALID_PAYMENT_TYPES,
 } from "../types/Transaction";
 import { createAppContext } from "../appContext";
 import { AppContext } from "../types/AppContext";
@@ -19,10 +20,17 @@ type MarkPaymentStatusRequest = {
   paymentStatus: MarkablePaymentStatus;
 };
 
+const markPaymentStatus = async (
+  appContext: AppContext,
+  request: MarkPaymentStatusRequest,
+) => {
+  return appContext.useCases().handleMarkPaymentStatus(appContext, request);
+};
+
 const validateMarkPaymentStatusRequest = (
   paymentMethod: string | undefined,
   paymentStatus: string | undefined,
-  token: unknown
+  token: unknown,
 ): MarkPaymentStatusRequest => {
   if (!token || typeof token !== "string") {
     throw new InvalidRequestError("No token found");
@@ -43,21 +51,21 @@ const validateMarkPaymentStatusRequest = (
   };
 };
 
-const markPaymentStatus = async (
-  appContext: AppContext,
-  request: MarkPaymentStatusRequest
-) => {
-  return appContext.useCases().handleMarkPaymentStatus(appContext, request);
-};
-
-export async function markPaymentStatusLambda(req: Request, res: Response) {
+export async function markPaymentStatusLocal(req: Request, res: Response) {
   try {
-    const request = validateMarkPaymentStatusRequest(
-      req.params.paymentMethod,
-      req.params.paymentStatus,
-      req.query.token
+    const { paymentMethod, paymentStatus } = req.params;
+    const { token } = req.query;
+
+    const validatedRequest = validateMarkPaymentStatusRequest(
+      paymentMethod,
+      paymentStatus,
+      token,
     );
-    const urlSuccess = await markPaymentStatus(res.locals.appContext, request);
+
+    const urlSuccess = await markPaymentStatus(
+      res.locals.appContext,
+      validatedRequest,
+    );
 
     res.status(200).json({ redirectUrl: urlSuccess });
   } catch (err) {
@@ -66,48 +74,29 @@ export async function markPaymentStatusLambda(req: Request, res: Response) {
 }
 
 export async function handler(
-  event: APIGatewayProxyEvent
+  event: APIGatewayProxyEvent,
 ): Promise<APIGatewayProxyResult> {
-  const jsonHeaders = { "Content-Type": "application/json" };
-
   try {
-    const request = validateMarkPaymentStatusRequest(
-      event.pathParameters?.paymentMethod,
-      event.pathParameters?.paymentStatus,
-      event.queryStringParameters?.token
+    const { paymentMethod, paymentStatus } = event.pathParameters || {};
+    const { token } = event.queryStringParameters || {};
+
+    const validatedRequest = validateMarkPaymentStatusRequest(
+      paymentMethod,
+      paymentStatus,
+      token,
     );
-    const redirectUrl = await markPaymentStatus(lambdaAppContext, request);
+
+    const redirectUrl = await markPaymentStatus(
+      lambdaAppContext,
+      validatedRequest,
+    );
 
     return {
       statusCode: 200,
       body: JSON.stringify({ redirectUrl }),
-      headers: jsonHeaders,
+      headers: { "Content-Type": "application/json" },
     };
   } catch (err) {
-    const statusCode =
-      typeof (err as any)?.statusCode === "number" &&
-      (err as any).statusCode >= 100 &&
-      (err as any).statusCode <= 599
-        ? (err as any).statusCode
-        : 500;
-
-    const message =
-      statusCode >= 500
-        ? "error has occurred"
-        : err instanceof Error
-          ? err.message
-          : typeof err === "string"
-            ? err
-            : "error has occurred";
-
-    if (statusCode >= 500) {
-      console.error(err);
-    }
-
-    return {
-      statusCode,
-      body: JSON.stringify({ message }),
-      headers: jsonHeaders,
-    };
+    return handleLambdaError(err);
   }
 }

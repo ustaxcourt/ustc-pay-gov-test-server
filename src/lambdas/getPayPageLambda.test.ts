@@ -98,7 +98,7 @@ describe("getPayPageLambda.handler", () => {
     } as unknown as AWSLambda.APIGatewayProxyEvent);
 
     expect(response.statusCode).toBe(500);
-    expect(response.body).toBe("error has occurred");
+    expect(response.body).toBe("Internal Server Error");
     expect(response.headers).toEqual({
       "Content-Type": "text/plain; charset=UTF-8",
     });

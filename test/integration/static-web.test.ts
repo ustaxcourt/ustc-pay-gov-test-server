@@ -118,7 +118,9 @@ describe("static web", () => {
       it("serves script content", async () => {
         const response = await fetch(`${baseUrl}/scripts/override-links.js`);
         expect(response.status).toBe(200);
-        expect(response.headers.get("content-type")).toContain("application/javascript");
+        expect(response.headers.get("content-type")).toContain(
+          "application/javascript",
+        );
         const text = await response.text();
         expect(typeof text).toBe("string");
         expect(text.length).toBeGreaterThan(0);
@@ -137,15 +139,23 @@ describe("static web", () => {
       });
 
       it("returns 404 when local lambda receives empty filename", async () => {
-        const { getScriptLocal } = await import("../../src/lambdas/getScriptLambda");
+        const { getScriptLocal } = await import(
+          "../../src/lambdas/getScriptLambda"
+        );
         const send = jest.fn();
         const set = jest.fn().mockReturnThis();
         const status = jest.fn().mockReturnValue({ set, send });
-        const appContext = { useCases: () => ({ showScript: jest.fn().mockRejectedValue(new Error("File not found") as never) }) };
+        const appContext = {
+          useCases: () => ({
+            showScript: jest
+              .fn()
+              .mockRejectedValue(new Error("File not found") as never),
+          }),
+        };
 
         await getScriptLocal(
           { params: { file: "" } } as any,
-          { status, set, send, locals: { appContext } } as any
+          { status, set, send, locals: { appContext } } as any,
         );
 
         expect(status).toHaveBeenCalledWith(404);
@@ -157,7 +167,9 @@ describe("static web", () => {
   describe("api gateway", () => {
     describe("getPayPageLambda.handler", () => {
       it("returns 400 when token is missing", async () => {
-        const { handler: getPayPageHandler } = await import("../../src/lambdas/getPayPageLambda");
+        const { handler: getPayPageHandler } = await import(
+          "../../src/lambdas/getPayPageLambda"
+        );
         const response = await getPayPageHandler({
           queryStringParameters: undefined,
         } as unknown as AWSLambda.APIGatewayProxyEvent);
@@ -193,14 +205,16 @@ describe("static web", () => {
         expect(response.body).toContain("Complete Payment");
       });
 
-      it("returns 500 when token does not exist", async () => {
-        const { handler: getPayPageHandler } = await import("../../src/lambdas/getPayPageLambda");
+      it("returns 404 when token does not exist", async () => {
+        const { handler: getPayPageHandler } = await import(
+          "../../src/lambdas/getPayPageLambda"
+        );
         const response = await getPayPageHandler({
           queryStringParameters: { token: "missing-token" },
         } as unknown as AWSLambda.APIGatewayProxyEvent);
 
-        expect(response.statusCode).toBe(500);
-        expect(response.body).toBe("error has occurred");
+        expect(response.statusCode).toBe(404);
+        expect(response.body).toBe("Could not find file");
         expect(response.headers).toEqual({
           "Content-Type": "text/plain; charset=UTF-8",
         });
@@ -209,7 +223,9 @@ describe("static web", () => {
 
     describe("getScriptLambda.handler", () => {
       it("returns 404 when pathParameters are missing", async () => {
-        const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
+        const { handler: getScriptHandler } = await import(
+          "../../src/lambdas/getScriptLambda"
+        );
         const response = await getScriptHandler({
           pathParameters: null,
         } as unknown as AWSLambda.APIGatewayProxyEvent);
@@ -222,7 +238,9 @@ describe("static web", () => {
       });
 
       it("returns 404 for unsafe script path", async () => {
-        const { handler: getScriptHandler } = await import("../../src/lambdas/getScriptLambda");
+        const { handler: getScriptHandler } = await import(
+          "../../src/lambdas/getScriptLambda"
+        );
         const response = await getScriptHandler({
           pathParameters: { file: "../../etc/passwd" },
         } as unknown as AWSLambda.APIGatewayProxyEvent);
@@ -235,13 +253,20 @@ describe("static web", () => {
       });
 
       it("returns 500 when showScript throws", async () => {
-        const { handler: getScriptHandler, lambdaAppContext } = await import("../../src/lambdas/getScriptLambda");
+        const { handler: getScriptHandler, lambdaAppContext } = await import(
+          "../../src/lambdas/getScriptLambda"
+        );
         const error = new Error("read failed");
         (error as any).statusCode = 500;
-        jest.spyOn(lambdaAppContext, "useCases").mockImplementation(() => ({
-          showScript: jest.fn().mockRejectedValue(error as never) as any,
-        }) as any);
-        const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+        jest.spyOn(lambdaAppContext, "useCases").mockImplementation(
+          () =>
+            ({
+              showScript: jest.fn().mockRejectedValue(error as never) as any,
+            } as any),
+        );
+        const consoleErrorSpy = jest
+          .spyOn(console, "error")
+          .mockImplementation(() => undefined);
 
         const response = await getScriptHandler({
           pathParameters: { file: "override-links.js" },
@@ -249,7 +274,7 @@ describe("static web", () => {
 
         expect(consoleErrorSpy).toHaveBeenCalled();
         expect(response.statusCode).toBe(500);
-        expect(response.body).toBe("error has occurred");
+        expect(response.body).toBe("Internal Server Error");
         expect(response.headers).toEqual({
           "Content-Type": "text/plain; charset=UTF-8",
         });
@@ -257,4 +282,3 @@ describe("static web", () => {
     });
   });
 });
-

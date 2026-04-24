@@ -6,7 +6,10 @@ import { AppContext } from "../types/AppContext";
 
 export const lambdaAppContext = createAppContext();
 
-export const getResource = async (appContext: AppContext, filename?: string) => {
+export const getResource = async (
+  appContext: AppContext,
+  filename?: string,
+) => {
   return appContext.useCases().getResource(appContext, { filename });
 };
 
@@ -22,14 +25,14 @@ export const getResourceLocal = async (req: Request, res: Response) => {
 };
 
 export const handler = async (
-  event: AWSLambda.APIGatewayProxyEvent
+  event: AWSLambda.APIGatewayProxyEvent,
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
   const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
   try {
     authenticateRequest(event.headers);
     const result = await getResource(
       lambdaAppContext,
-      event.pathParameters?.filename
+      event.pathParameters?.filename,
     );
     return {
       statusCode: 200,

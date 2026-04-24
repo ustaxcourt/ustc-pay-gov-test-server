@@ -153,7 +153,7 @@ describe("initiate transaction", () => {
   };
 
   const completeOnlineCollectionWithDetailsStableTrackingId = async (
-    token: string
+    token: string,
   ) => {
     for (let attempt = 0; attempt < 5; attempt += 1) {
       const result = await completeOnlineCollectionWithDetails(token);
@@ -173,18 +173,18 @@ describe("initiate transaction", () => {
     }
 
     throw new NotFoundError(
-      "Unable to generate a stable valid paygov_tracking_id without leading/trailing spaces"
+      "Unable to generate a stable valid paygov_tracking_id without leading/trailing spaces",
     );
   };
 
   const markPaymentStatus = async (
     token: string,
     paymentMethod: string,
-    paymentStatus: string
+    paymentStatus: string,
   ) => {
     return fetch(
       `${baseUrl}/pay/${paymentMethod}/${paymentStatus}?token=${token}`,
-      { method: "POST" }
+      { method: "POST" },
     );
   };
 
@@ -209,7 +209,7 @@ describe("initiate transaction", () => {
 
         if (!detailsResponse) {
           throw new Error(
-            `Unexpected getDetails SOAP response: ${JSON.stringify(response)}`
+            `Unexpected getDetails SOAP response: ${JSON.stringify(response)}`,
           );
         }
 
@@ -230,12 +230,16 @@ describe("initiate transaction", () => {
           break;
         }
 
-        await new Promise((resolve) => setTimeout(resolve, retryDelaysMs[attempt]));
+        await new Promise((resolve) =>
+          setTimeout(resolve, retryDelaysMs[attempt]),
+        );
       }
     }
 
     throw new NotFoundError(
-      `getDetails retries exhausted for paygov_tracking_id=${paygovTrackingId}. Last error: ${lastRetryableError?.message ?? "unknown"}`
+      `getDetails retries exhausted for paygov_tracking_id=${paygovTrackingId}. Last error: ${
+        lastRetryableError?.message ?? "unknown"
+      }`,
     );
   };
 
@@ -303,13 +307,19 @@ describe("initiate transaction", () => {
       expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
       expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
-      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
+      expect(trackingResponse).not.toHaveProperty(
+        "shipping_address_return_message",
+      );
     });
 
     it("should process a successful PLASTIC_CARD transaction when token is explicitly marked success", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const markSuccessResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Success");
+      const markSuccessResponse = await markPaymentStatus(
+        token,
+        "PLASTIC_CARD",
+        "Success",
+      );
       expect(markSuccessResponse.status).toBe(200);
 
       const trackingResponse = await completeOnlineCollectionWithDetails(token);
@@ -325,13 +335,19 @@ describe("initiate transaction", () => {
       expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
       expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
-      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
+      expect(trackingResponse).not.toHaveProperty(
+        "shipping_address_return_message",
+      );
     });
 
     it("should process a failed transaction when token is marked failed", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const markFailedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+      const markFailedResponse = await markPaymentStatus(
+        token,
+        "PLASTIC_CARD",
+        "Failed",
+      );
       expect(markFailedResponse.status).toBe(200);
 
       const trackingResponse = await completeOnlineCollectionWithDetails(token);
@@ -346,16 +362,26 @@ describe("initiate transaction", () => {
       expect(Date.parse(trackingResponse.transaction_date)).not.toBeNaN();
       expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
-      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
+      expect(trackingResponse).not.toHaveProperty(
+        "shipping_address_return_message",
+      );
     });
 
     it("should return an error when token is already marked failed", async () => {
       const { token } = await startOnlineCollection(amount);
 
-      const firstResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+      const firstResponse = await markPaymentStatus(
+        token,
+        "PLASTIC_CARD",
+        "Failed",
+      );
       expect(firstResponse.status).toBe(200);
 
-      const secondResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+      const secondResponse = await markPaymentStatus(
+        token,
+        "PLASTIC_CARD",
+        "Failed",
+      );
       const errorMessage = await secondResponse.text();
 
       expect(secondResponse.status).toBe(400);
@@ -374,10 +400,16 @@ describe("initiate transaction", () => {
       const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
       try {
-        const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
+        const markAchResponse = await markPaymentStatus(
+          token,
+          "ACH",
+          "Success",
+        );
         expect(markAchResponse.status).toBe(200);
 
-        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+        const trackingResponse = await completeOnlineCollectionWithDetails(
+          token,
+        );
 
         expect(trackingResponse.paygov_tracking_id).toBeTruthy();
         expect(trackingResponse.transaction_status).toBe("Received");
@@ -393,7 +425,9 @@ describe("initiate transaction", () => {
       }
     });
 
-    it(`should return Success status when ACH initiation is ${ACH_THRESHOLD_SECONDS + 1} seconds ago`, async () => {
+    it(`should return Success status when ACH initiation is ${
+      ACH_THRESHOLD_SECONDS + 1
+    } seconds ago`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const markAchResponse = await markPaymentStatus(token, "ACH", "Success");
@@ -401,10 +435,14 @@ describe("initiate transaction", () => {
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
+        .mockReturnValue(
+          DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }),
+        );
 
       try {
-        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+        const trackingResponse = await completeOnlineCollectionWithDetails(
+          token,
+        );
 
         expect(trackingResponse.paygov_tracking_id).toBeTruthy();
         expect(trackingResponse.transaction_status).toBe("Success");
@@ -427,10 +465,16 @@ describe("initiate transaction", () => {
       const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
       try {
-        const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
+        const markAchFailedResponse = await markPaymentStatus(
+          token,
+          "ACH",
+          "Failed",
+        );
         expect(markAchFailedResponse.status).toBe(200);
 
-        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+        const trackingResponse = await completeOnlineCollectionWithDetails(
+          token,
+        );
 
         expect(trackingResponse.paygov_tracking_id).toBeTruthy();
         expect(trackingResponse.transaction_status).toBe("Received");
@@ -449,15 +493,23 @@ describe("initiate transaction", () => {
     it(`should return Failed status when ACH is marked failed more than ${ACH_THRESHOLD_SECONDS} seconds after initiation`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const markAchFailedResponse = await markPaymentStatus(token, "ACH", "Failed");
+      const markAchFailedResponse = await markPaymentStatus(
+        token,
+        "ACH",
+        "Failed",
+      );
       expect(markAchFailedResponse.status).toBe(200);
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
+        .mockReturnValue(
+          DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }),
+        );
 
       try {
-        const trackingResponse = await completeOnlineCollectionWithDetails(token);
+        const trackingResponse = await completeOnlineCollectionWithDetails(
+          token,
+        );
 
         expect(trackingResponse.paygov_tracking_id).toBeTruthy();
         expect(trackingResponse.transaction_status).toBe("Failed");
@@ -480,11 +532,13 @@ describe("initiate transaction", () => {
       const completeResponse =
         await completeOnlineCollectionWithDetailsStableTrackingId(token);
       const trackingResponse = await getDetails(
-        completeResponse.paygov_tracking_id
+        completeResponse.paygov_tracking_id,
       );
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
-      expect(trackingResponse.paygov_tracking_id).toMatch(paygovTrackingIdRegex);
+      expect(trackingResponse.paygov_tracking_id).toMatch(
+        paygovTrackingIdRegex,
+      );
       expect(trackingResponse.transaction_status).toBe("Success");
       expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
       expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
@@ -495,18 +549,24 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
-      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
+      expect(trackingResponse).not.toHaveProperty(
+        "shipping_address_return_message",
+      );
     });
 
     it("should find the details of a failed transaction", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
-      const markFailedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+      const markFailedResponse = await markPaymentStatus(
+        token,
+        "PLASTIC_CARD",
+        "Failed",
+      );
       expect(markFailedResponse.status).toBe(200);
 
       const completeResponse =
         await completeOnlineCollectionWithDetailsStableTrackingId(token);
       const trackingResponse = await getDetails(
-        completeResponse.paygov_tracking_id
+        completeResponse.paygov_tracking_id,
       );
 
       expect(trackingResponse.paygov_tracking_id).toBeTruthy();
@@ -519,7 +579,9 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
       expect(trackingResponse.number_of_installments).toBe(1);
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
-      expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
+      expect(trackingResponse).not.toHaveProperty(
+        "shipping_address_return_message",
+      );
     });
 
     it(`should return Received status for ACH within ${ACH_THRESHOLD_SECONDS} seconds via getDetails`, async () => {
@@ -532,7 +594,9 @@ describe("initiate transaction", () => {
         await markPaymentStatus(token, "ACH", "Success");
         const completeResponse =
           await completeOnlineCollectionWithDetailsStableTrackingId(token);
-        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+        const trackingResponse = await getDetails(
+          completeResponse.paygov_tracking_id,
+        );
 
         expect(trackingResponse.transaction_status).toBe("Received");
         expect(trackingResponse.payment_type).toBe("ACH");
@@ -556,10 +620,14 @@ describe("initiate transaction", () => {
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
+        .mockReturnValue(
+          DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }),
+        );
 
       try {
-        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+        const trackingResponse = await getDetails(
+          completeResponse.paygov_tracking_id,
+        );
 
         expect(trackingResponse.transaction_status).toBe("Success");
         expect(trackingResponse.payment_type).toBe("ACH");
@@ -578,19 +646,23 @@ describe("initiate transaction", () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
       const frozenNow = DateTime.fromISO("2026-01-01T00:00:00.000Z");
-      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow as unknown as DateTime);
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(frozenNow as unknown as DateTime);
 
       try {
         const markAchFailedResponse = await markPaymentStatus(
           token,
           "ACH",
-          "Failed"
+          "Failed",
         );
         expect(markAchFailedResponse.status).toBe(200);
 
         const completeResponse =
           await completeOnlineCollectionWithDetailsStableTrackingId(token);
-        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+        const trackingResponse = await getDetails(
+          completeResponse.paygov_tracking_id,
+        );
 
         expect(trackingResponse.transaction_status).toBe("Received");
         expect(trackingResponse.payment_type).toBe("ACH");
@@ -614,10 +686,14 @@ describe("initiate transaction", () => {
 
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }));
+        .mockReturnValue(
+          DateTime.now().plus({ seconds: ACH_THRESHOLD_SECONDS + 1 }),
+        );
 
       try {
-        const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+        const trackingResponse = await getDetails(
+          completeResponse.paygov_tracking_id,
+        );
 
         expect(trackingResponse.transaction_status).toBe("Failed");
         expect(trackingResponse.payment_type).toBe("ACH");
@@ -634,7 +710,7 @@ describe("initiate transaction", () => {
   });
 
   describe("handleMarkPaymentStatus", () => {
-    describe ("ACH", () => {
+    describe("ACH", () => {
       it("should successfully mark a transaction as ACH success", async () => {
         const { token } = await startOnlineCollection(amount);
 
@@ -651,7 +727,11 @@ describe("initiate transaction", () => {
 
       it("should return Invalid payment status error for invalid ACH status", async () => {
         const { token } = await startOnlineCollection(amount);
-        const response = await markPaymentStatus(token, "ACH", "INVALID_STATUS");
+        const response = await markPaymentStatus(
+          token,
+          "ACH",
+          "INVALID_STATUS",
+        );
         const errorMessage = await response.text();
 
         expect(response.status).toBe(400);
@@ -677,7 +757,11 @@ describe("initiate transaction", () => {
         const achResponse = await markPaymentStatus(token, "ACH", "Success");
         expect(achResponse.status).toBe(200);
 
-        const failedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+        const failedResponse = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Failed",
+        );
         const errorMessage = await failedResponse.text();
 
         expect(failedResponse.status).toBe(400);
@@ -696,10 +780,18 @@ describe("initiate transaction", () => {
       it("should return an error when PAYPAL is marked a second time", async () => {
         const { token } = await startOnlineCollection(amount);
 
-        const firstResponse = await markPaymentStatus(token, "PAYPAL", "Success");
+        const firstResponse = await markPaymentStatus(
+          token,
+          "PAYPAL",
+          "Success",
+        );
         expect(firstResponse.status).toBe(200);
 
-        const secondResponse = await markPaymentStatus(token, "PAYPAL", "Success");
+        const secondResponse = await markPaymentStatus(
+          token,
+          "PAYPAL",
+          "Success",
+        );
         const errorMessage = await secondResponse.text();
 
         expect(secondResponse.status).toBe(400);
@@ -716,10 +808,18 @@ describe("initiate transaction", () => {
       it("should return an error when marking failed after PAYPAL was selected", async () => {
         const { token } = await startOnlineCollection(amount);
 
-        const paypalResponse = await markPaymentStatus(token, "PAYPAL", "Success");
+        const paypalResponse = await markPaymentStatus(
+          token,
+          "PAYPAL",
+          "Success",
+        );
         expect(paypalResponse.status).toBe(200);
 
-        const failedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+        const failedResponse = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Failed",
+        );
         const errorMessage = await failedResponse.text();
 
         expect(failedResponse.status).toBe(400);
@@ -731,21 +831,33 @@ describe("initiate transaction", () => {
       it("should successfully mark a transaction as successful", async () => {
         const { token } = await startOnlineCollection(amount);
 
-        const response = await markPaymentStatus(token, "PLASTIC_CARD", "Success");
+        const response = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Success",
+        );
         expect(response.status).toBe(200);
       });
 
       it("should successfully mark a transaction as failed", async () => {
         const { token } = await startOnlineCollection(amount);
 
-        const response = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
+        const response = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Failed",
+        );
         expect(response.status).toBe(200);
       });
 
       it("should return an error for unknown payment status", async () => {
         const { token } = await startOnlineCollection(amount);
 
-        const response = await markPaymentStatus(token, "PLASTIC_CARD", "UNKNOWN_STATUS");
+        const response = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "UNKNOWN_STATUS",
+        );
         const errorMessage = await response.text();
 
         expect(response.status).toBe(400);
@@ -756,7 +868,11 @@ describe("initiate transaction", () => {
     it("should return an error for invalid payment method", async () => {
       const { token } = await startOnlineCollection(amount);
 
-      const response = await markPaymentStatus(token, "INVALID_METHOD", "Success");
+      const response = await markPaymentStatus(
+        token,
+        "INVALID_METHOD",
+        "Success",
+      );
       const errorMessage = await response.text();
 
       expect(response.status).toBe(400);
@@ -780,7 +896,7 @@ describe("initiate transaction", () => {
 
       const response = await fetch(
         `${baseUrl}/pay/PLASTIC_CARD/Success?token=${token}`,
-        { method: "POST" }
+        { method: "POST" },
       );
       const body = await response.json();
 
@@ -791,11 +907,14 @@ describe("initiate transaction", () => {
 
   describe("getResourceLocal route", () => {
     it("returns 403 when authentication header is present but invalid", async () => {
-      const response = await fetch(`${baseUrl}/wsdl/TCSOnlineService_3_1.wsdl`, {
-        headers: {
-          authentication: "Bearer wrong-token",
+      const response = await fetch(
+        `${baseUrl}/wsdl/TCSOnlineService_3_1.wsdl`,
+        {
+          headers: {
+            authentication: "Bearer wrong-token",
+          },
         },
-      });
+      );
 
       expect(response.status).toBe(403);
       expect(await response.text()).toBe("Missing Authentication");
@@ -835,7 +954,9 @@ describe("initiate transaction", () => {
 
   describe("api gateway getResourceLambda.handler", () => {
     it("returns 403 when headers are missing", async () => {
-      const { handler: getResourceHandler } = await import("../../src/lambdas/getResourceLambda");
+      const { handler: getResourceHandler } = await import(
+        "../../src/lambdas/getResourceLambda"
+      );
       const response = await getResourceHandler({
         headers: undefined,
         pathParameters: { filename: "TCSOnlineService_3_1.wsdl" },
@@ -849,7 +970,9 @@ describe("initiate transaction", () => {
     });
 
     it("returns 200 for existing resource", async () => {
-      const { handler: getResourceHandler } = await import("../../src/lambdas/getResourceLambda");
+      const { handler: getResourceHandler } = await import(
+        "../../src/lambdas/getResourceLambda"
+      );
       const response = await getResourceHandler({
         headers: {
           authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
@@ -860,16 +983,20 @@ describe("initiate transaction", () => {
       expect(response.statusCode).toBe(200);
       expect(typeof response.body).toBe("string");
       expect(response.body.length).toBeGreaterThan(0);
-      expect(response.body).toMatch(/<\?xml|<definitions\b|<wsdl:definitions\b/i);
+      expect(response.body).toMatch(
+        /<\?xml|<definitions\b|<wsdl:definitions\b/i,
+      );
       expect(response.headers).toEqual(
         expect.objectContaining({
           "Content-Type": expect.stringMatching(/xml|wsdl|text\/plain/i),
-        })
+        }),
       );
     });
 
     it("returns 404 for missing resource", async () => {
-      const { handler: getResourceHandler } = await import("../../src/lambdas/getResourceLambda");
+      const { handler: getResourceHandler } = await import(
+        "../../src/lambdas/getResourceLambda"
+      );
       const response = await getResourceHandler({
         headers: {
           authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
@@ -887,7 +1014,9 @@ describe("initiate transaction", () => {
 
   describe("api gateway handleSoapRequestLambda.handler", () => {
     it("returns 403 when headers are missing", async () => {
-      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+      const { handler: handleSoapRequestHandler } = await import(
+        "../../src/lambdas/handleSoapRequestLambda"
+      );
       const response = await handleSoapRequestHandler({
         headers: undefined,
         body: toSoapEnvelope({
@@ -908,7 +1037,9 @@ describe("initiate transaction", () => {
     });
 
     it("returns 400 when body is missing", async () => {
-      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+      const { handler: handleSoapRequestHandler } = await import(
+        "../../src/lambdas/handleSoapRequestLambda"
+      );
       const response = await handleSoapRequestHandler({
         headers: {
           authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
@@ -924,7 +1055,9 @@ describe("initiate transaction", () => {
     });
 
     it("returns 400 for unsupported SOAP action", async () => {
-      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+      const { handler: handleSoapRequestHandler } = await import(
+        "../../src/lambdas/handleSoapRequestLambda"
+      );
       const response = await handleSoapRequestHandler({
         headers: {
           authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
@@ -944,7 +1077,9 @@ describe("initiate transaction", () => {
     });
 
     it("returns 200 for completeOnlineCollection action", async () => {
-      const { handler: handleSoapRequestHandler } = await import("../../src/lambdas/handleSoapRequestLambda");
+      const { handler: handleSoapRequestHandler } = await import(
+        "../../src/lambdas/handleSoapRequestLambda"
+      );
 
       const startResponse = await handleSoapRequestHandler({
         headers: {
@@ -965,7 +1100,9 @@ describe("initiate transaction", () => {
         }),
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
-      const startTokenMatch = startResponse.body.match(/<token>([^<]+)<\/token>/);
+      const startTokenMatch = startResponse.body.match(
+        /<token>([^<]+)<\/token>/,
+      );
       expect(startResponse.statusCode).toBe(200);
       expect(startResponse.headers).toEqual({
         "Content-Type": "application/xml; charset=UTF-8",
@@ -996,7 +1133,9 @@ describe("initiate transaction", () => {
 
   describe("api gateway markPaymentStatusLambda.handler", () => {
     it("returns 400 for invalid payment method", async () => {
-      const { handler: markPaymentStatusHandler } = await import("../../src/lambdas/markPaymentStatusLambda");
+      const { handler: markPaymentStatusHandler } = await import(
+        "../../src/lambdas/markPaymentStatusLambda"
+      );
       const response = await markPaymentStatusHandler({
         pathParameters: {
           paymentMethod: "INVALID_METHOD",
@@ -1008,10 +1147,10 @@ describe("initiate transaction", () => {
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
       expect(response.statusCode).toBe(400);
-      expect(response.headers).toEqual({ "Content-Type": "application/json" });
-      expect(response.body).toBe(
-        JSON.stringify({ message: "Invalid payment method: INVALID_METHOD" })
-      );
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
+      expect(response.body).toBe("Invalid payment method: INVALID_METHOD");
     });
 
     it("returns 200 for valid request", async () => {
@@ -1046,7 +1185,9 @@ describe("initiate transaction", () => {
     });
 
     it("returns 404 for unknown token", async () => {
-      const { handler: markPaymentStatusHandler } = await import("../../src/lambdas/markPaymentStatusLambda");
+      const { handler: markPaymentStatusHandler } = await import(
+        "../../src/lambdas/markPaymentStatusLambda"
+      );
       const response = await markPaymentStatusHandler({
         pathParameters: {
           paymentMethod: "PLASTIC_CARD",
@@ -1058,10 +1199,10 @@ describe("initiate transaction", () => {
       } as unknown as AWSLambda.APIGatewayProxyEvent);
 
       expect(response.statusCode).toBe(404);
-      expect(response.headers).toEqual({ "Content-Type": "application/json" });
-      expect(response.body).toBe(
-        JSON.stringify({ message: "Could not find file" })
-      );
+      expect(response.headers).toEqual({
+        "Content-Type": "text/plain; charset=UTF-8",
+      });
+      expect(response.body).toBe("Could not find file");
     });
   });
 });
