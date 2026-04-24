@@ -1,10 +1,43 @@
 import { isoDateTimeRegex, yyyyMmDdRegex } from '../useCaseHelpers/dateFormats';
 import { handleCompleteOnlineCollectionWithDetails } from '../useCases/handleCompleteOnlineCollectionWithDetails';
+import { MissingTokenError, MISSING_TOKEN_SOAP_FAULT } from '../errors/MissingTokenError';
 import { XMLParser } from 'fast-xml-parser';
 
 const toMoneyString = (value: string | number) => Number.parseFloat(String(value)).toFixed(2);
 
 describe('handleCompleteOnlineCollectionWithDetails', () => {
+  describe('when token is missing', () => {
+    it('throws a MissingTokenError with statusCode 400', async () => {
+      const appContext = {
+        persistenceGateway: () => ({
+          getInitiatedTransaction: jest.fn(),
+          saveCompletedTransaction: jest.fn(),
+        }),
+        useCaseHelpers: () => ({ completeTransaction: jest.fn(), buildXml: jest.fn() }),
+      } as unknown as Parameters<typeof handleCompleteOnlineCollectionWithDetails>[0];
+
+      await expect(
+        handleCompleteOnlineCollectionWithDetails(appContext, { token: undefined })
+      ).rejects.toThrow(MissingTokenError);
+    });
+
+    it('throws an error with the SOAP fault body and statusCode 400', async () => {
+      const appContext = {
+        persistenceGateway: () => ({
+          getInitiatedTransaction: jest.fn(),
+          saveCompletedTransaction: jest.fn(),
+        }),
+        useCaseHelpers: () => ({ completeTransaction: jest.fn(), buildXml: jest.fn() }),
+      } as unknown as Parameters<typeof handleCompleteOnlineCollectionWithDetails>[0];
+
+      const error = await handleCompleteOnlineCollectionWithDetails(appContext, {
+        token: undefined,
+      }).catch((e) => e);
+      expect(error.statusCode).toBe(400);
+      expect(error.message).toBe(MISSING_TOKEN_SOAP_FAULT);
+    });
+  });
+
   function buildXml({ response, responseType }: { response: any; responseType: string }) {
     const t = response;
     return `
