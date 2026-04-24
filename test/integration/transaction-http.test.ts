@@ -435,7 +435,6 @@ describe("initiate transaction", () => {
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
-<<<<<<< Updated upstream
     it("should resolve PLASTIC_CARD Success to Success status in getDetails", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
@@ -455,8 +454,6 @@ describe("initiate transaction", () => {
       expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
     });
 
-=======
->>>>>>> Stashed changes
     it("should find the details of a failed transaction", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
       const markFailedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
