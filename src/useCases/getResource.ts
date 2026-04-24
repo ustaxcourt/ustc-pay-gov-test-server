@@ -24,8 +24,8 @@ export const getResource: GetResource = async (appContext, { filename }) => {
     .storageClient()
     .getFile(appContext, `wsdl/${filename}`);
 
-  return contents.replace(
+  return contents.replaceAll(
     "%%location%%",
-    `https://${process.env.BASE_URL}/wsdl/`
+    `${process.env.BASE_URL}/wsdl/`
   );
 };

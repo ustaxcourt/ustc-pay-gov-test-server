@@ -9,3 +9,6 @@ resources/
 
 # Ignore Terraform static assets
 terraform/static
+
+# Don't ignore WSDL files in src/static/wsdl
+!src/static/wsdl
