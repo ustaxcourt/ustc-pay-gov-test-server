@@ -5,6 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 describe("test resources", () => {
   let server: Server;
   let baseUrl: string;
+  let previousBaseUrl: string | undefined;
   const resourcesToCheck = [
     "wsdl/TCSOnlineService_3_1.wsdl",
     "wsdl/TCSOnlineService_3_1.xsd",
@@ -24,9 +25,17 @@ describe("test resources", () => {
 
     const address = server.address() as AddressInfo;
     baseUrl = `http://127.0.0.1:${address.port}`;
+    previousBaseUrl = process.env.BASE_URL;
+    process.env.BASE_URL = baseUrl;
   });
 
   afterAll(async () => {
+    if (previousBaseUrl === undefined) {
+      Reflect.deleteProperty(process.env, "BASE_URL");
+    } else {
+      process.env.BASE_URL = previousBaseUrl;
+    }
+
     await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) {

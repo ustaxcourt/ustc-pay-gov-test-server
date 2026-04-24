@@ -28,6 +28,7 @@ describe("initiate transaction", () => {
   let server: Server;
   let baseUrl: string;
   let wsdlUrl: string;
+  let previousBaseUrl: string | undefined;
 
   beforeAll(async () => {
     process.env.NODE_ENV = "local";
@@ -42,9 +43,17 @@ describe("initiate transaction", () => {
     const address = server.address() as AddressInfo;
     baseUrl = `http://127.0.0.1:${address.port}`;
     wsdlUrl = `${baseUrl}/wsdl`;
+    previousBaseUrl = process.env.BASE_URL;
+    process.env.BASE_URL = baseUrl;
   });
 
   afterAll(async () => {
+    if (previousBaseUrl === undefined) {
+      Reflect.deleteProperty(process.env, "BASE_URL");
+    } else {
+      process.env.BASE_URL = previousBaseUrl;
+    }
+
     await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) {
