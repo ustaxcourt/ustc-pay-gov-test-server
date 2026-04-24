@@ -14,7 +14,7 @@ export const getFileLocal: GetFile = async (appContext, filename) => {
   ) {
     const staticRoot = path.resolve(__dirname, "../../../src/static");
     if (path.isAbsolute(filename) || hasParentTraversalSegment(filename)) {
-      throw new NotFoundError("Could not find file");
+      throw new NotFoundError("File not found");
     }
 
     const resolvedPath = path.resolve(staticRoot, filename);
@@ -25,7 +25,7 @@ export const getFileLocal: GetFile = async (appContext, filename) => {
       !path.isAbsolute(relativePath);
 
     if (!isWithinStaticRoot) {
-      throw new NotFoundError("Could not find file");
+      throw new NotFoundError("File not found");
     }
 
     try {
@@ -35,7 +35,7 @@ export const getFileLocal: GetFile = async (appContext, filename) => {
         throw error;
       }
 
-      throw new NotFoundError("Could not find file");
+      throw new NotFoundError("File not found");
     }
   }
 
@@ -43,5 +43,5 @@ export const getFileLocal: GetFile = async (appContext, filename) => {
     return appContext.files[filename];
   }
 
-  throw new NotFoundError("Could not find file");
+  throw new NotFoundError("File not found");
 };

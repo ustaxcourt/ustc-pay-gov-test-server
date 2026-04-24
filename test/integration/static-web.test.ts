@@ -129,13 +129,13 @@ describe("static web", () => {
       it("returns 404 for unsafe script path", async () => {
         const response = await fetch(`${baseUrl}/scripts/test..js`);
         expect(response.status).toBe(404);
-        expect(await response.text()).toBe("Could not find file");
+        expect(await response.text()).toBe("File not found");
       });
 
       it("returns 404 for missing script", async () => {
         const response = await fetch(`${baseUrl}/scripts/missing-script.js`);
         expect(response.status).toBe(404);
-        expect(await response.text()).toBe("Could not find file");
+        expect(await response.text()).toBe("File not found");
       });
 
       it("returns 404 when local lambda receives empty filename", async () => {
@@ -214,7 +214,7 @@ describe("static web", () => {
         } as unknown as AWSLambda.APIGatewayProxyEvent);
 
         expect(response.statusCode).toBe(404);
-        expect(response.body).toBe("Could not find file");
+        expect(response.body).toBe("File not found");
         expect(response.headers).toEqual({
           "Content-Type": "text/plain; charset=UTF-8",
         });
@@ -231,7 +231,7 @@ describe("static web", () => {
         } as unknown as AWSLambda.APIGatewayProxyEvent);
 
         expect(response.statusCode).toBe(404);
-        expect(response.body).toBe("Could not find file");
+        expect(response.body).toBe("File not found");
         expect(response.headers).toEqual({
           "Content-Type": "text/plain; charset=UTF-8",
         });
@@ -246,7 +246,7 @@ describe("static web", () => {
         } as unknown as AWSLambda.APIGatewayProxyEvent);
 
         expect(response.statusCode).toBe(404);
-        expect(response.body).toBe("Could not find file");
+        expect(response.body).toBe("File not found");
         expect(response.headers).toEqual({
           "Content-Type": "text/plain; charset=UTF-8",
         });

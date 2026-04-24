@@ -219,7 +219,7 @@ describe("initiate transaction", () => {
       } catch (error) {
         if (
           !(error instanceof Error) ||
-          !error.message.includes("Could not find file")
+          !error.message.includes("File not found")
         ) {
           throw error;
         }
@@ -1202,7 +1202,7 @@ describe("initiate transaction", () => {
       expect(response.headers).toEqual({
         "Content-Type": "text/plain; charset=UTF-8",
       });
-      expect(response.body).toBe("Could not find file");
+      expect(response.body).toBe("File not found");
     });
   });
 });

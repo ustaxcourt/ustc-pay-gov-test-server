@@ -12,7 +12,7 @@ export const lambdaAppContext = createAppContext();
 
 async function handleSoapRequest(
   appContext: AppContext,
-  soapRequest: string
+  soapRequest: string,
 ): Promise<string> {
   const jObj = parser.parse(soapRequest);
 
@@ -25,7 +25,7 @@ async function handleSoapRequest(
         .useCases()
         .handleStartOnlineCollection(
           appContext,
-          requestData[actionKey]["startOnlineCollectionRequest"]
+          requestData[actionKey]["startOnlineCollectionRequest"],
         );
 
     case "tcs:completeOnlineCollection":
@@ -33,7 +33,7 @@ async function handleSoapRequest(
         .useCases()
         .handleCompleteOnlineCollection(
           appContext,
-          requestData[actionKey]["completeOnlineCollectionRequest"]
+          requestData[actionKey]["completeOnlineCollectionRequest"],
         );
 
     case "tcs:completeOnlineCollectionWithDetails":
@@ -41,7 +41,7 @@ async function handleSoapRequest(
         .useCases()
         .handleCompleteOnlineCollectionWithDetails(
           appContext,
-          requestData[actionKey]["completeOnlineCollectionWithDetailsRequest"]
+          requestData[actionKey]["completeOnlineCollectionWithDetailsRequest"],
         );
 
     case "tcs:getDetails":
@@ -49,7 +49,7 @@ async function handleSoapRequest(
         .useCases()
         .handleGetDetails(
           appContext,
-          requestData[actionKey]["getDetailsRequest"]
+          requestData[actionKey]["getDetailsRequest"],
         );
 
     default:
@@ -74,7 +74,7 @@ export const parseRequest = (requestBody?: string | null) => {
 };
 
 export const handler = async (
-  event: AWSLambda.APIGatewayProxyEvent
+  event: AWSLambda.APIGatewayProxyEvent,
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
   const xmlHeaders = { "Content-Type": "application/xml; charset=UTF-8" };
 

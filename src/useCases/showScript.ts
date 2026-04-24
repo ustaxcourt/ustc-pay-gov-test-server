@@ -42,7 +42,7 @@ const isStorageNotFoundError = (error: unknown): boolean => {
 
 export const showScript: ShowScript = async (appContext, { file }) => {
   if (!isValidScriptFileName(file)) {
-    throw new NotFoundError("Could not find file");
+    throw new NotFoundError("File not found");
   }
 
   try {
@@ -51,13 +51,13 @@ export const showScript: ShowScript = async (appContext, { file }) => {
       .getFile(appContext, `html/scripts/${file}`);
 
     if (!script) {
-      throw new NotFoundError("Could not find file");
+      throw new NotFoundError("File not found");
     }
 
     return script;
   } catch (error) {
     if (isStorageNotFoundError(error)) {
-      throw new NotFoundError("Could not find file");
+      throw new NotFoundError("File not found");
     }
 
     throw error;
