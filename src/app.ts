@@ -1,6 +1,6 @@
 import express from "express";
 import { getResourceLocal } from "./lambdas/getResourceLambda";
-import { getPayPageLambda } from "./lambdas/getPayPageLambda";
+import { getPayPageLocal } from "./lambdas/getPayPageLambda";
 import { handleSoapRequestLocal } from "./lambdas/handleSoapRequestLambda";
 import { createAppContext } from "./appContext";
 import { getScriptLocal } from "./lambdas/getScriptLambda";
@@ -31,7 +31,7 @@ app.use((_req, res, next) => {
 app.get("/wsdl", getResourceLocal);
 
 app.get("/wsdl/:file", getResourceLocal);
-app.get("/pay", getPayPageLambda);
+app.get("/pay", getPayPageLocal);
 app.get("/scripts/:file", getScriptLocal);
 app.get("/:file", getResourceLocal);
 // Handles all payment method/status combinations (e.g. PLASTIC_CARD/Failed, ACH/Success)

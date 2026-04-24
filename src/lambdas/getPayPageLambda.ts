@@ -9,7 +9,7 @@ async function getPayPage(appContext: AppContext, token: string) {
   return appContext.useCases().showPayPage(appContext, { token });
 }
 
-export async function getPayPageLambda(req: Request, res: Response) {
+export async function getPayPageLocal(req: Request, res: Response) {
   if (!req.query.token || typeof req.query.token !== "string") {
     return res.send("no token found");
   }

@@ -1,8 +1,4 @@
-import {
-  getPayPageLambda,
-  handler,
-  lambdaAppContext,
-} from "./getPayPageLambda";
+import { getPayPageLocal, handler, lambdaAppContext } from "./getPayPageLambda";
 import type { Request, Response } from "express";
 
 describe("getPayPageLambda.handler", () => {
@@ -17,7 +13,7 @@ describe("getPayPageLambda.handler", () => {
     jest.restoreAllMocks();
   });
 
-  describe("Express getPayPageLambda(req, res)", () => {
+  describe("Express getPayPageLocal(req, res)", () => {
     let req: Partial<import("express").Request>;
     let res: Partial<import("express").Response>;
     let sendSpy: jest.Mock;
@@ -41,13 +37,13 @@ describe("getPayPageLambda.handler", () => {
     });
 
     it("should send 'no token found' if token is missing", async () => {
-      await getPayPageLambda(req as Request, res as Response);
+      await getPayPageLocal(req as Request, res as Response);
       expect(sendSpy).toHaveBeenCalledWith("no token found");
     });
 
     it("should call showPayPage and send result if token is present", async () => {
       req.query = { token: "tok" };
-      await getPayPageLambda(req as Request, res as Response);
+      await getPayPageLocal(req as Request, res as Response);
       expect(showPayPage).toHaveBeenCalledWith(appContext, { token: "tok" });
       expect(sendSpy).toHaveBeenCalledWith("<html>pay page</html>");
     });
