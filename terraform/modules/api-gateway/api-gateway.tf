@@ -85,6 +85,18 @@ resource "aws_api_gateway_integration" "soap_resource_get_filename" {
   uri                     = var.soap_resource_invoke_arn
 }
 
+resource "aws_api_gateway_resource" "pay_payment_method" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.pay.id
+  path_part   = "{paymentMethod}"
+}
+
+resource "aws_api_gateway_resource" "pay_payment_status" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  parent_id   = aws_api_gateway_resource.pay_payment_method.id
+  path_part   = "{paymentStatus}"
+}
+
 # Methods and Integrations for pay_page (GET /pay)
 resource "aws_api_gateway_method" "pay_page_get" {
   rest_api_id   = aws_api_gateway_rest_api.main.id
@@ -101,6 +113,24 @@ resource "aws_api_gateway_integration" "pay_page_get" {
   integration_http_method = "POST"
   type                    = "AWS_PROXY"
   uri                     = var.pay_page_invoke_arn
+}
+
+# Methods and Integrations for mark_payment_status (POST /pay/{paymentMethod}/{paymentStatus})
+resource "aws_api_gateway_method" "mark_payment_post" {
+  rest_api_id   = aws_api_gateway_rest_api.main.id
+  resource_id   = aws_api_gateway_resource.pay_payment_status.id
+  http_method   = "POST"
+  authorization = "NONE"
+}
+
+resource "aws_api_gateway_integration" "mark_payment_post" {
+  rest_api_id = aws_api_gateway_rest_api.main.id
+  resource_id = aws_api_gateway_resource.pay_payment_status.id
+  http_method = aws_api_gateway_method.mark_payment_post.http_method
+
+  integration_http_method = "POST"
+  type                    = "AWS_PROXY"
+  uri                     = var.mark_payment_status_invoke_arn
 }
 
 # Lambda permissions for API Gateway
@@ -128,6 +158,14 @@ resource "aws_lambda_permission" "pay_page" {
   source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/${aws_api_gateway_stage.main.stage_name}/*/*"
 }
 
+resource "aws_lambda_permission" "mark_payment_status" {
+  statement_id  = "AllowExecutionFromAPIGateway"
+  action        = "lambda:InvokeFunction"
+  function_name = var.mark_payment_status_function_name
+  principal     = "apigateway.amazonaws.com"
+  source_arn    = "${aws_api_gateway_rest_api.main.execution_arn}/${aws_api_gateway_stage.main.stage_name}/*/*"
+}
+
 # API Gateway Deployment
 resource "aws_api_gateway_deployment" "main" {
   depends_on = [
@@ -139,6 +177,8 @@ resource "aws_api_gateway_deployment" "main" {
     aws_api_gateway_integration.soap_resource_get_filename,
     aws_api_gateway_method.pay_page_get,
     aws_api_gateway_integration.pay_page_get,
+    aws_api_gateway_method.mark_payment_post,
+    aws_api_gateway_integration.mark_payment_post,
   ]
 
   rest_api_id = aws_api_gateway_rest_api.main.id
@@ -151,17 +191,20 @@ resource "aws_api_gateway_deployment" "main" {
         aws_api_gateway_method.soap_resource_get_wsdl.id,
         aws_api_gateway_method.soap_resource_get_filename.id,
         aws_api_gateway_method.pay_page_get.id,
+        aws_api_gateway_method.mark_payment_post.id,
       ]
       integrations = [
         aws_api_gateway_integration.soap_api_post.id,
         aws_api_gateway_integration.soap_resource_get_wsdl.id,
         aws_api_gateway_integration.soap_resource_get_filename.id,
         aws_api_gateway_integration.pay_page_get.id,
+        aws_api_gateway_integration.mark_payment_post.id,
       ]
       function_names = [
         var.soap_api_function_name,
         var.soap_resource_function_name,
         var.pay_page_function_name,
+        var.mark_payment_status_function_name,
       ]
       stage = var.api_gateway_stage_name
     }))

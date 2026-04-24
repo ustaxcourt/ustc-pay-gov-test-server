@@ -60,6 +60,15 @@ module "lambda" {
   common_tags               = local.common_tags
 }
 
+# Static file uploads to S3
+resource "aws_s3_object" "pay_page_html" {
+  bucket       = module.s3.bucket_id
+  key          = "html/pay.html"
+  source       = "${path.root}/static/html/pay.html"
+  content_type = "text/html"
+  etag         = filemd5("${path.root}/static/html/pay.html")
+}
+
 # API Gateway Module
 module "api_gateway" {
   source = "./modules/api-gateway"
@@ -71,7 +80,9 @@ module "api_gateway" {
   soap_api_invoke_arn         = module.lambda.soap_api_invoke_arn
   soap_resource_function_name = module.lambda.soap_resource_function_name
   soap_resource_invoke_arn    = module.lambda.soap_resource_invoke_arn
-  pay_page_function_name      = module.lambda.pay_page_function_name
-  pay_page_invoke_arn         = module.lambda.pay_page_invoke_arn
-  common_tags                 = local.common_tags
+  pay_page_function_name            = module.lambda.pay_page_function_name
+  pay_page_invoke_arn               = module.lambda.pay_page_invoke_arn
+  mark_payment_status_function_name = module.lambda.mark_payment_status_function_name
+  mark_payment_status_invoke_arn    = module.lambda.mark_payment_status_invoke_arn
+  common_tags                       = local.common_tags
 }

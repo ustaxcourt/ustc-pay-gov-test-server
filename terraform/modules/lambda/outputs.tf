@@ -27,3 +27,13 @@ output "pay_page_invoke_arn" {
   description = "Invoke ARN of the pay_page Lambda function"
   value       = aws_lambda_function.pay_page.invoke_arn
 }
+
+output "mark_payment_status_function_name" {
+  description = "Name of the mark_payment_status Lambda function"
+  value       = aws_lambda_function.mark_payment_status.function_name
+}
+
+output "mark_payment_status_invoke_arn" {
+  description = "Invoke ARN of the mark_payment_status Lambda function"
+  value       = aws_lambda_function.mark_payment_status.invoke_arn
+}
