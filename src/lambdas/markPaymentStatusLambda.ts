@@ -7,7 +7,6 @@ import {
   isMarkablePaymentStatus,
   MarkablePaymentStatus,
   PaymentType,
-  VALID_PAYMENT_TYPES,
 } from "../types/Transaction";
 import { createAppContext } from "../appContext";
 import { AppContext } from "../types/AppContext";

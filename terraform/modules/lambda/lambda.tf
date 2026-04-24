@@ -41,14 +41,6 @@ data "archive_file" "lambda_script_zip" {
     content  = file("${path.root}/lambda-script-bundled.js")
     filename = "src/lambdas/getScriptLambda.js"
   }
-
-  dynamic "source" {
-    for_each = fileset("${path.root}/static/html/scripts", "**")
-    content {
-      content  = file("${path.root}/static/html/scripts/${source.value}")
-      filename = "src/static/html/scripts/${source.value}"
-    }
-  }
 }
 
 data "archive_file" "lambda_mark_payment_status_zip" {
