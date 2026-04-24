@@ -8,21 +8,7 @@ function buildXml({ response, responseType }: { response: any; responseType: str
 
 describe('handleCompleteOnlineCollection', () => {
   describe('when token is missing', () => {
-    it('throws a MissingTokenError with statusCode 400', async () => {
-      const appContext = {
-        persistenceGateway: () => ({
-          getInitiatedTransaction: jest.fn(),
-          saveCompletedTransaction: jest.fn(),
-        }),
-        useCaseHelpers: () => ({ completeTransaction: jest.fn(), buildXml }),
-      } as unknown as Parameters<typeof handleCompleteOnlineCollection>[0];
-
-      await expect(
-        handleCompleteOnlineCollection(appContext, { token: undefined })
-      ).rejects.toThrow(MissingTokenError);
-    });
-
-    it('throws an error with the SOAP fault body and statusCode 400', async () => {
+    it('throws a MissingTokenError with statusCode 400 and SOAP fault body', async () => {
       const appContext = {
         persistenceGateway: () => ({
           getInitiatedTransaction: jest.fn(),
@@ -34,6 +20,7 @@ describe('handleCompleteOnlineCollection', () => {
       const error = await handleCompleteOnlineCollection(appContext, { token: undefined }).catch(
         (e) => e
       );
+      expect(error).toBeInstanceOf(MissingTokenError);
       expect(error.statusCode).toBe(400);
       expect(error.message).toBe(MISSING_TOKEN_SOAP_FAULT);
     });
