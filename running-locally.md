@@ -60,6 +60,23 @@ curl -s -X POST 'http://localhost:3366/wsdl' \
 EOF
 ```
 
+`startOnlineCollectionResponse`:
+
+```xml
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+  <S:Header>
+    <work:WorkContext xmlns:work="http://oracle.com/weblogic/soap/workarea/">rO0ABXd5ACl3ZWJsb2dpYy5hcHAudGNzb25saW5lLWF wcC02LjAuMC1TTkFQU0hPVAAAANYAAAAjd2VibG9naWMud29ya2FyZWEuU3RyaW5nV29ya0NvbnRleHQAH3Y2LjAuMC1TTkFQU 0hPVF8yMDE1XzEwXzE0XzIyMzgAAA==</work:WorkContext>
+  </S:Header>
+  <S:Body>
+    <ns2:startOnlineCollectionResponse xmlns:ns2="http://fms.treas.gov/services/tcsonline">
+      <startOnlineCollectionResponse>
+        <token>c132251f9feb4364a39664debcd199bb</token>
+      </startOnlineCollectionResponse>
+    </ns2:startOnlineCollectionResponse>
+  </S:Body>
+</S:Envelope>
+```
+
 Note: Transaction status is now controlled by token state. When
 "Complete Payment (Credit Card - Failed)" is clicked on the pay page, it calls
 `POST /pay/fail?token={token}` and marks that token as failed for future
@@ -125,6 +142,32 @@ EOF
 
 Copy the `<paygov_tracking_id>` from the SOAP response.
 
+`completeOnlineCollectionWithDetailsResponse`:
+
+```xml
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+  <S:Header>
+    <work:WorkContext xmlns:work="http://oracle.com/weblogic/soap/workarea/">rO0ABXd5ACl3ZWJsb2dpYy5hcHAudGNzb25saW5lLWF wcC02LjAuMC1TTkFQU0hPVAAAANYAAAAjd2VibG9naWMud29ya2FyZWEuU3RyaW5nV29ya0NvbnRleHQAH3Y2LjAuMC1TTkFQU 0hPVF8yMDE1XzEwXzE0XzIyMzgAAA==</work:WorkContext>
+  </S:Header>
+  <S:Body>
+    <ns2:completeOnlineCollectionWithDetailsResponse xmlns:ns2="http://fms.treas.gov/services/tcsonline">
+      <completeOnlineCollectionWithDetailsResponse>
+        <paygov_tracking_id>TMi85c0Se1ILrK298qBdr</paygov_tracking_id>
+        <agency_tracking_id>curl-test-1</agency_tracking_id>
+        <transaction_amount>25</transaction_amount>
+        <transaction_type>Sale</transaction_type>
+        <transaction_date>2026-04-23T17:28:22.596Z</transaction_date>
+        <payment_date>2026-04-23</payment_date>
+        <transaction_status>Success</transaction_status>
+        <payment_type>PLASTIC_CARD</payment_type>
+        <payment_frequency>ONE_TIME</payment_frequency>
+        <number_of_installments>1</number_of_installments>
+      </completeOnlineCollectionWithDetailsResponse>
+    </ns2:completeOnlineCollectionWithDetailsResponse>
+  </S:Body>
+</S:Envelope>
+```
+
 ### 5) Get details for that tracking id
 
 ```bash
@@ -147,4 +190,33 @@ EOF
 ```
 
 You should see `<transaction_status>Failed</transaction_status>` in both
-`completeOnlineCollectionWithDetails` and `getDetails` responses.
+`completeOnlineCollectionWithDetails` and `getDetails` responses:
+
+```xml
+
+<S:Envelope xmlns:S="http://schemas.xmlsoap.org/soap/envelope/">
+  <S:Header>
+    <work:WorkContext xmlns:work="http://oracle.com/weblogic/soap/workarea/">rO0ABXd5ACl3ZWJsb2dpYy5hcHAudGNzb25saW5lLWF wcC02LjAuMC1TTkFQU0hPVAAAANYAAAAjd2VibG9naWMud29ya2FyZWEuU3RyaW5nV29ya0NvbnRleHQAH3Y2LjAuMC1TTkFQU 0hPVF8yMDE1XzEwXzE0XzIyMzgAAA==</work:WorkContext>
+  </S:Header>
+  <S:Body>
+    <ns2:getDetailsResponse xmlns:ns2="http://fms.treas.gov/services/tcsonline">
+      <getDetailsResponse>
+        <transactions>
+          <transaction>
+            <paygov_tracking_id>TMi85c0Se1ILrK298qBdr</paygov_tracking_id>
+            <agency_tracking_id>curl-test-1</agency_tracking_id>
+            <transaction_amount>25</transaction_amount>
+            <transaction_type>Sale</transaction_type>
+            <transaction_date>2026-04-23T17:28:22.596Z</transaction_date>
+            <payment_date>2026-04-23</payment_date>
+            <transaction_status>Success</transaction_status>
+            <payment_type>PLASTIC_CARD</payment_type>
+            <payment_frequency>ONE_TIME</payment_frequency>
+            <number_of_installments>1</number_of_installments>
+          </transaction>
+        </transactions>
+      </getDetailsResponse>
+    </ns2:getDetailsResponse>
+  </S:Body>
+</S:Envelope>
+```
