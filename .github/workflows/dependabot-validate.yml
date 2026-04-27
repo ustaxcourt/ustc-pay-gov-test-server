@@ -36,4 +36,41 @@ jobs:
       - name: Run unit tests only
         run: npm test
 
+      - name: Build server
+        run: npm run build
 
+      - name: Create .env for integration tests
+        run: |
+          cat > .env <<'EOF'
+          BASE_URL=http://localhost:3366
+          ACCESS_TOKEN=asdf123
+          PORT=3366
+          NODE_ENV=local
+          EOF
+
+      - name: Start server in background
+        run: |
+          node dist/server.js &
+          echo "SERVER_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for server readiness
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS http://localhost:3366/wsdl > /dev/null 2>&1; then
+              echo "Server is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server failed to become ready within 30s"
+          exit 1
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Stop server
+        if: always()
+        run: |
+          if [ -n "${SERVER_PID:-}" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
+            kill "$SERVER_PID"
+          fi
