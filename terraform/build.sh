@@ -2,7 +2,7 @@
 
 # Build script for Lambda deployment
 
-set -e
+set -Eeuo pipefail
 
 echo "🔨 Building Lambda functions for deployment..."
 
@@ -10,8 +10,8 @@ echo "🔨 Building Lambda functions for deployment..."
 cd "$(dirname "$0")/.."
 
 do_esbuild() {
-  local input_file="$1"
-  local output_file="$2"
+  local input_file="${1:?input file is required}"
+  local output_file="${2:?output file is required}"
   echo "  📦 Bundling $input_file to $output_file..."
   npx esbuild "$input_file" \
     --bundle \
