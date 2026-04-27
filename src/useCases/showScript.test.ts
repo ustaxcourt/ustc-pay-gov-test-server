@@ -32,15 +32,15 @@ describe("showScript", () => {
   });
 
   it("throws NotFoundError for invalid filename", async () => {
-    await expect(
-      showScript(mockAppContext, { file: "../evil.js" }),
-    ).rejects.toThrow(NotFoundError);
-    await expect(
-      showScript(mockAppContext, { file: "foo.txt" }),
-    ).rejects.toThrow(NotFoundError);
-    await expect(
-      showScript(mockAppContext, { file: "foo.js" }),
-    ).rejects.toThrow(NotFoundError);
+    const invalidFilenames = ["../evil.js", "foo.txt", "foo.js"];
+
+    await Promise.all(
+      invalidFilenames.map((filename) =>
+        expect(showScript(mockAppContext, { file: filename })).rejects.toThrow(
+          NotFoundError,
+        ),
+      ),
+    );
   });
 
   it("maps storage-layer not found to NotFoundError", async () => {
