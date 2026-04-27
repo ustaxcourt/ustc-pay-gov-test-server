@@ -17,7 +17,7 @@ describe('handleCompleteOnlineCollection', () => {
       );
       expect(error).toBeInstanceOf(MissingTokenError);
       expect(error.statusCode).toBe(400);
-      expect(error.message).toBe(MISSING_TOKEN_SOAP_FAULT);
+      expect(error.body).toBe(MISSING_TOKEN_SOAP_FAULT);
     });
   });
 

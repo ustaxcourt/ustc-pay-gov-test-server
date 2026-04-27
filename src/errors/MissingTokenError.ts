@@ -16,8 +16,9 @@ export const MISSING_TOKEN_SOAP_FAULT = `<S:Envelope xmlns:S="http://schemas.xml
 
 export class MissingTokenError extends Error {
   public readonly statusCode: number = 400;
+  public readonly body: string = MISSING_TOKEN_SOAP_FAULT;
 
   constructor() {
-    super(MISSING_TOKEN_SOAP_FAULT);
+    super("Missing or expired token");
   }
 }
