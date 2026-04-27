@@ -15,7 +15,7 @@ export const MISSING_TOKEN_SOAP_FAULT = `<S:Envelope xmlns:S="http://schemas.xml
 
 
 export class MissingTokenError extends Error {
-  public statusCode: number = 400;
+  public readonly statusCode: number = 400;
 
   constructor() {
     super(MISSING_TOKEN_SOAP_FAULT);
