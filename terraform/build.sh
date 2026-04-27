@@ -16,7 +16,7 @@ do_esbuild() {
   npx esbuild "$input_file" \
     --bundle \
     --platform=node \
-    --target=node18 \
+    --target=node22 \
     --format=cjs \
     --outfile="$output_file" \
     --external:aws-sdk
