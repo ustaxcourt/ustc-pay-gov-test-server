@@ -108,5 +108,5 @@ jobs:
 
       - name: Upload pay page static assets
         run: |
-          aws s3 sync src/static/html s3://${{ steps.static-assets.outputs.bucket }}/html
-          aws s3 sync src/static/wsdl s3://${{ steps.static-assets.outputs.bucket }}/wsdl
+          aws s3 sync src/static/html s3://${{ steps.static-assets.outputs.bucket }}/html --delete
+          aws s3 sync src/static/wsdl s3://${{ steps.static-assets.outputs.bucket }}/wsdl --delete
