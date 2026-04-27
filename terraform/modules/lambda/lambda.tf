@@ -61,6 +61,8 @@ locals {
     ACCESS_TOKEN = var.access_token
     NODE_ENV     = var.node_env
   }
+
+  lambda_log_retention_days = 14
 }
 
 # Lambda function: soap_api
@@ -174,30 +176,30 @@ resource "aws_lambda_function" "mark_payment_status" {
 # CloudWatch Log Groups for Lambda functions
 resource "aws_cloudwatch_log_group" "soap_api" {
   name              = "/aws/lambda/${var.project_name}-${var.environment}-soap-api"
-  retention_in_days = 14
+  retention_in_days = local.lambda_log_retention_days
   tags              = var.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "soap_resource" {
   name              = "/aws/lambda/${var.project_name}-${var.environment}-soap-resource"
-  retention_in_days = 14
+  retention_in_days = local.lambda_log_retention_days
   tags              = var.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "pay_page" {
   name              = "/aws/lambda/${var.project_name}-${var.environment}-pay-page"
-  retention_in_days = 14
+  retention_in_days = local.lambda_log_retention_days
   tags              = var.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "get_script" {
   name              = "/aws/lambda/${var.project_name}-${var.environment}-get-script"
-  retention_in_days = 14
+  retention_in_days = local.lambda_log_retention_days
   tags              = var.common_tags
 }
 
 resource "aws_cloudwatch_log_group" "mark_payment_status" {
   name              = "/aws/lambda/${var.project_name}-${var.environment}-mark-payment-status"
-  retention_in_days = 14
+  retention_in_days = local.lambda_log_retention_days
   tags              = var.common_tags
 }
