@@ -1,3 +1,3 @@
 export type CompleteTransactionRequest = {
-  token: string;
+  token?: string;
 };

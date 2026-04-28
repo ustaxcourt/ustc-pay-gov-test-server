@@ -7,7 +7,7 @@ export const handleLambdaError = (
   if (err.statusCode && err.statusCode < 500) {
     return {
       statusCode: err.statusCode,
-      body: err.message,
+      body: err.body ?? err.message,
     };
   }
   throw err;
