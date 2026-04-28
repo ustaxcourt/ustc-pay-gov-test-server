@@ -4,7 +4,7 @@ import { NotFoundError } from "../../errors/NotFoundError";
 import { GetFile } from "../../types/GetFile";
 
 const hasParentTraversalSegment = (filename: string): boolean => {
-  return filename.split(/[\\/]+/).includes("..");
+  return path.normalize(filename).split(path.sep).includes("..");
 };
 
 export const getFileLocal: GetFile = async (appContext, filename) => {
