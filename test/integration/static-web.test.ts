@@ -178,7 +178,7 @@ describe("static web", () => {
         expect(response.statusCode).toBe(400);
         expect(response.body).toBe(MISSING_TOKEN_SOAP_FAULT);
         expect(response.headers).toEqual({
-          "Content-Type": "text/plain; charset=UTF-8",
+          "Content-Type": "application/wsdl+xml; charset=UTF-8",
         });
       });
 

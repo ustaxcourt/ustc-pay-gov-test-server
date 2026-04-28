@@ -27,7 +27,6 @@ export const getResourceLocal = async (req: Request, res: Response) => {
 export const handler = async (
   event: AWSLambda.APIGatewayProxyEvent,
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
-  const textHeaders = { "Content-Type": "text/plain; charset=UTF-8" };
   try {
     authenticateRequest(event.headers);
     const result = await getResource(
@@ -37,7 +36,7 @@ export const handler = async (
     return {
       statusCode: 200,
       body: result,
-      headers: textHeaders,
+      headers: { "Content-Type": "application/wsdl+xml; charset=UTF-8" },
     };
   } catch (err) {
     return handleLambdaError(err);

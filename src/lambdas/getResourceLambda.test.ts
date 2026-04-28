@@ -74,7 +74,10 @@ describe("handler", () => {
   });
 
   it("should call handler and return 200 with body", async () => {
-    const result = await handler({ headers: {}, pathParameters: { filename: "test.txt" } } as any);
+    const result = await handler({
+      headers: {},
+      pathParameters: { filename: "test.txt" },
+    } as any);
     expect(mockAuthenticateRequest).toHaveBeenCalledWith({});
     expect(lambdaGetResourceUseCase).toHaveBeenCalledWith(lambdaAppContext, {
       filename: "test.txt",
@@ -82,7 +85,7 @@ describe("handler", () => {
     expect(result).toEqual({
       statusCode: 200,
       body: "lambda-resource",
-      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+      headers: { "Content-Type": "application/wsdl+xml; charset=UTF-8" },
     });
     const { handleLambdaError } = require("./handleError");
     expect(handleLambdaError).not.toHaveBeenCalled();
@@ -94,7 +97,10 @@ describe("handler", () => {
     mockAuthenticateRequest.mockImplementationOnce(() => {
       throw error;
     });
-    const result = await handler({ headers: {}, pathParameters: { filename: "test.txt" } } as any);
+    const result = await handler({
+      headers: {},
+      pathParameters: { filename: "test.txt" },
+    } as any);
     expect(handleLambdaError).toHaveBeenCalledWith(error);
     expect(result).toEqual({ statusCode: 500, body: "error" });
   });
