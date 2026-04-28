@@ -1,5 +1,6 @@
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
 import { AppContext } from "../types/AppContext";
+import { MissingTokenError } from "../errors/MissingTokenError";
 
 export type CompleteOnlineCollectionResponse = {
   paygov_tracking_id: string;
@@ -12,6 +13,10 @@ export type HandleCompleteOnlineCollection = (
 
 export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
   async (appContext, { token }) => {
+    if (!token) {
+      throw new MissingTokenError();
+    }
+
     const transaction = await appContext
       .persistenceGateway()
       .getInitiatedTransaction(appContext, token);

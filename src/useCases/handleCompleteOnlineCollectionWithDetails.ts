@@ -1,4 +1,5 @@
 import { AppContext } from "../types/AppContext";
+import { MissingTokenError } from "../errors/MissingTokenError";
 import { pick } from "lodash";
 import {
   InitiatedTransaction,
@@ -31,6 +32,10 @@ export type HandleCompletOnlineCollectionWithDetails = (
 
 export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
   async (appContext, { token }) => {
+    if (!token) {
+      throw new MissingTokenError();
+    }
+
     const transaction: InitiatedTransaction = await appContext
       .persistenceGateway()
       .getInitiatedTransaction(appContext, token);
