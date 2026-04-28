@@ -11,6 +11,7 @@ import { ACH_THRESHOLD_SECONDS } from "../../src/useCaseHelpers/resolveTransacti
 import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { NotFoundError } from "../../src/errors/NotFoundError";
 import { paygovTrackingIdRegex } from "../../src/useCaseHelpers/generatePaygovTrackingId";
+import { MISSING_TOKEN_SOAP_FAULT } from "../../src/errors/MissingTokenError";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -262,7 +263,7 @@ describe("initiate transaction", () => {
       const body = await result.text();
 
       expect(result.status).toBe(400);
-      expect(body).toBe("Missing or expired token");
+      expect(body).toBe(MISSING_TOKEN_SOAP_FAULT);
     });
 
     it("calls the server to initiate a transaction", async () => {
@@ -960,7 +961,7 @@ describe("initiate transaction", () => {
       const errorMessage = await response.text();
 
       expect(response.status).toBe(400);
-      expect(errorMessage).toBe("No token found");
+      expect(errorMessage).toBe(MISSING_TOKEN_SOAP_FAULT);
     });
 
     it("should return redirectUrl json for a valid request", async () => {

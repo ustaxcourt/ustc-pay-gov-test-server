@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { APIGatewayProxyEvent, APIGatewayProxyResult } from "aws-lambda";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
+import { MissingTokenError } from "../errors/MissingTokenError";
 import { handleLambdaError, handleLocalError } from "./handleError";
 import {
   isPaymentType,
@@ -32,7 +33,7 @@ const validateMarkPaymentStatusRequest = (
   token: unknown,
 ): MarkPaymentStatusRequest => {
   if (!token || typeof token !== "string") {
-    throw new InvalidRequestError("No token found");
+    throw new MissingTokenError();
   }
 
   if (!isPaymentType(paymentMethod)) {

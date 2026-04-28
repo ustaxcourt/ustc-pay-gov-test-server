@@ -5,6 +5,7 @@ import {
   markPaymentStatusLocal,
 } from "./markPaymentStatusLambda";
 import { NotFoundError } from "../errors/NotFoundError";
+import { MISSING_TOKEN_SOAP_FAULT } from "../errors/MissingTokenError";
 
 describe("markPaymentStatusLambda", () => {
   let consoleErrorSpy: jest.SpyInstance;
@@ -26,6 +27,7 @@ describe("markPaymentStatusLambda", () => {
     let statusSpy: jest.Mock;
     let jsonSpy: jest.Mock;
     let sendSpy: jest.Mock;
+    let setSpy: jest.Mock;
     let appContext: {
       useCases: () => {
         handleMarkPaymentStatus: jest.Mock;
@@ -37,6 +39,7 @@ describe("markPaymentStatusLambda", () => {
       statusSpy = jest.fn().mockReturnThis();
       jsonSpy = jest.fn();
       sendSpy = jest.fn();
+      setSpy = jest.fn().mockReturnThis();
 
       appContext = {
         useCases: () => ({
@@ -53,6 +56,7 @@ describe("markPaymentStatusLambda", () => {
       };
 
       res = {
+        set: setSpy,
         status: statusSpy,
         json: jsonSpy,
         send: sendSpy,
@@ -68,7 +72,7 @@ describe("markPaymentStatusLambda", () => {
 
         expect(handleMarkPaymentStatus).not.toHaveBeenCalled();
         expect(statusSpy).toHaveBeenCalledWith(400);
-        expect(sendSpy).toHaveBeenCalledWith("No token found");
+        expect(sendSpy).toHaveBeenCalledWith(MISSING_TOKEN_SOAP_FAULT);
         expect(consoleErrorSpy).toHaveBeenCalled();
       });
     });
@@ -233,9 +237,9 @@ describe("markPaymentStatusLambda", () => {
 
       expect(result.statusCode).toBe(400);
       expect(result.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
+        "Content-Type": "application/wsdl+xml; charset=UTF-8",
       });
-      expect(result.body).toBe("No token found");
+      expect(result.body).toBe(MISSING_TOKEN_SOAP_FAULT);
       expect(mockHandle).not.toHaveBeenCalled();
     });
 

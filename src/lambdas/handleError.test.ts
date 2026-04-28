@@ -1,13 +1,17 @@
 import { Response } from "express";
 import { UnauthorizedError } from "../errors/UnauthorizedError";
+import {
+  MISSING_TOKEN_SOAP_FAULT,
+  MissingTokenError,
+} from "../errors/MissingTokenError";
 import { handleLambdaError, handleLocalError } from "./handleError";
 
 const unauthorizedError = new UnauthorizedError(
-  "you are not authorized to fail"
+  "you are not authorized to fail",
 );
 
 const internalServerError = new Error(
-  "this is a generic error without a status code"
+  "this is a generic error without a status code",
 );
 
 describe("handleLambdaError", () => {
@@ -49,26 +53,52 @@ describe("handleLambdaError", () => {
 
 describe("handleLocalError", () => {
   it("uses err.statusCode when present", () => {
+    const set = jest.fn().mockReturnThis();
     const status = jest.fn().mockReturnThis();
     const send = jest.fn();
-    const res = { status, send } as unknown as Response;
+    const res = { set, status, send } as unknown as Response;
     const err = { statusCode: 403, message: "forbidden" };
 
     handleLocalError(err, res);
 
+    expect(set).toHaveBeenCalledWith(
+      "Content-Type",
+      "text/plain; charset=UTF-8",
+    );
     expect(status).toHaveBeenCalledWith(403);
     expect(send).toHaveBeenCalledWith("forbidden");
   });
 
   it("defaults to 500 when err.statusCode is missing", () => {
+    const set = jest.fn().mockReturnThis();
     const status = jest.fn().mockReturnThis();
     const send = jest.fn();
-    const res = { status, send } as unknown as Response;
+    const res = { set, status, send } as unknown as Response;
     const err = { message: "generic error" };
 
     handleLocalError(err, res);
 
+    expect(set).toHaveBeenCalledWith(
+      "Content-Type",
+      "text/plain; charset=UTF-8",
+    );
     expect(status).toHaveBeenCalledWith(500);
     expect(send).toHaveBeenCalledWith("generic error");
+  });
+
+  it("uses structured body and headers when present", () => {
+    const set = jest.fn().mockReturnThis();
+    const status = jest.fn().mockReturnThis();
+    const send = jest.fn();
+    const res = { set, status, send } as unknown as Response;
+    const err = new MissingTokenError();
+
+    handleLocalError(err, res);
+
+    expect(set).toHaveBeenCalledWith({
+      "Content-Type": "application/wsdl+xml; charset=UTF-8",
+    });
+    expect(status).toHaveBeenCalledWith(400);
+    expect(send).toHaveBeenCalledWith(MISSING_TOKEN_SOAP_FAULT);
   });
 });

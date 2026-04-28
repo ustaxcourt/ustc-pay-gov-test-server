@@ -30,6 +30,7 @@ describe("getPayPageLambda.handler", () => {
     let req: Partial<import("express").Request>;
     let res: Partial<import("express").Response>;
     let sendSpy: jest.Mock;
+    let setSpy: jest.Mock;
     let statusSpy: jest.Mock;
     let showPayPage: jest.Mock;
     let appContext: {
@@ -40,6 +41,7 @@ describe("getPayPageLambda.handler", () => {
 
     beforeEach(() => {
       sendSpy = jest.fn();
+      setSpy = jest.fn().mockReturnThis();
       statusSpy = jest.fn().mockReturnThis();
       showPayPage = jest.fn().mockResolvedValue(renderedPayPageHtml);
       appContext = {
@@ -48,13 +50,18 @@ describe("getPayPageLambda.handler", () => {
         }),
       };
       req = { query: {} };
-      res = { status: statusSpy, send: sendSpy, locals: { appContext } };
+      res = {
+        set: setSpy,
+        status: statusSpy,
+        send: sendSpy,
+        locals: { appContext },
+      };
     });
 
     it("should send 'no token found' if token is missing", async () => {
       await getPayPageLocal(req as Request, res as Response);
       expect(statusSpy).toHaveBeenCalledWith(400);
-      expect(sendSpy).toHaveBeenCalledWith(new MissingTokenError().message);
+      expect(sendSpy).toHaveBeenCalledWith(MISSING_TOKEN_SOAP_FAULT);
     });
 
     it("should call showPayPage and send result if token is present", async () => {

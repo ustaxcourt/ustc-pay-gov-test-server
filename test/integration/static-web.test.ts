@@ -3,10 +3,7 @@ import { AddressInfo } from "net";
 import { v4 as uuidv4 } from "uuid";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
-import {
-  MISSING_TOKEN_SOAP_FAULT,
-  MissingTokenError,
-} from "../../src/errors/MissingTokenError";
+import { MISSING_TOKEN_SOAP_FAULT } from "../../src/errors/MissingTokenError";
 
 const xmlOptions = {
   ignoreAttributes: false,
@@ -114,7 +111,7 @@ describe("static web", () => {
         const body = await response.text();
 
         expect(response.status).toBe(400);
-        expect(body).toBe(new MissingTokenError().message);
+        expect(body).toBe(MISSING_TOKEN_SOAP_FAULT);
       });
     });
 

@@ -10,6 +10,10 @@ export const handleLambdaError = (
     err.statusCode <= 599
       ? err.statusCode
       : 500;
+  const headers =
+    err?.headers && typeof err.headers === "object" ? err.headers : textHeaders;
+
+  const structuredBody = typeof err?.body === "string" ? err.body : undefined;
 
   let message: string;
   if (statusCode >= 500) {
@@ -18,7 +22,9 @@ export const handleLambdaError = (
     message = "Internal Server Error";
   } else {
     message =
-      typeof err?.message === "string"
+      typeof structuredBody === "string"
+        ? structuredBody
+        : typeof err?.message === "string"
         ? err.message
         : typeof err === "string"
         ? err
@@ -28,13 +34,27 @@ export const handleLambdaError = (
   return {
     statusCode,
     body: message,
-    headers: textHeaders,
+    headers,
   };
 };
 
 export const handleLocalError = (err: any, res: Response) => {
   console.error(`responding with an error:`, err.message);
-  const statusCode = err.statusCode || 500;
 
-  res.status(statusCode).send(err.message);
+  const statusCode = err?.statusCode || 500;
+  const headers = err?.headers;
+  const body =
+    typeof err?.body === "string"
+      ? err.body
+      : typeof err?.message === "string"
+      ? err.message
+      : "Error";
+
+  if (headers && typeof headers === "object") {
+    res.set(headers);
+  } else {
+    res.set("Content-Type", "text/plain; charset=UTF-8");
+  }
+
+  res.status(statusCode).send(body);
 };
