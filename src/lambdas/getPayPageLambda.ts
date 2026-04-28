@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { createAppContext } from "../appContext";
 import { AppContext } from "../types/AppContext";
 import { handleLambdaError } from "./handleError";
+import { MissingTokenError } from "../errors/MissingTokenError";
 
 export const lambdaAppContext = createAppContext();
 
@@ -27,11 +28,7 @@ export async function handler(
     !event.queryStringParameters?.token ||
     typeof event.queryStringParameters.token !== "string"
   ) {
-    return {
-      statusCode: 400,
-      body: "No token found",
-      headers: textHeaders,
-    };
+    return new MissingTokenError();
   }
   try {
     const result = await getPayPage(

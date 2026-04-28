@@ -1,3 +1,4 @@
+import { MISSING_TOKEN_SOAP_FAULT } from "../errors/MissingTokenError";
 import { getPayPageLocal, handler, lambdaAppContext } from "./getPayPageLambda";
 import type { Request, Response } from "express";
 
@@ -53,7 +54,7 @@ describe("getPayPageLambda.handler", () => {
     const response = await handler({} as AWSLambda.APIGatewayProxyEvent);
 
     expect(response.statusCode).toBe(400);
-    expect(response.body).toBe("No token found");
+    expect(response.body).toBe(MISSING_TOKEN_SOAP_FAULT);
     expect(response.headers).toEqual({
       "Content-Type": "text/plain; charset=UTF-8",
     });

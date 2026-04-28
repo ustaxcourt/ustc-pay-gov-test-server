@@ -3,6 +3,7 @@ import { AddressInfo } from "net";
 import { v4 as uuidv4 } from "uuid";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
+import { MISSING_TOKEN_SOAP_FAULT } from "../../src/errors/MissingTokenError";
 
 const xmlOptions = {
   ignoreAttributes: false,
@@ -175,7 +176,7 @@ describe("static web", () => {
         } as unknown as AWSLambda.APIGatewayProxyEvent);
 
         expect(response.statusCode).toBe(400);
-        expect(response.body).toBe("No token found");
+        expect(response.body).toBe(MISSING_TOKEN_SOAP_FAULT);
         expect(response.headers).toEqual({
           "Content-Type": "text/plain; charset=UTF-8",
         });
