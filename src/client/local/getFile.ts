@@ -16,12 +16,8 @@ export const getFileLocal: GetFile = async (appContext, filename) => {
 
     const resolvedPath = path.resolve(staticRoot, filename);
     const relativePath = path.relative(staticRoot, resolvedPath);
-    const isWithinStaticRoot =
-      relativePath !== "" &&
-      !relativePath.startsWith("..") &&
-      !path.isAbsolute(relativePath);
 
-    if (!isWithinStaticRoot) {
+    if (relativePath.startsWith("..") || path.isAbsolute(relativePath)) {
       throw new NotFoundError("File not found");
     }
 
