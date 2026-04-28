@@ -3,7 +3,10 @@ import { AddressInfo } from "net";
 import { v4 as uuidv4 } from "uuid";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
-import { MISSING_TOKEN_SOAP_FAULT } from "../../src/errors/MissingTokenError";
+import {
+  MISSING_TOKEN_SOAP_FAULT,
+  MissingTokenError,
+} from "../../src/errors/MissingTokenError";
 
 const xmlOptions = {
   ignoreAttributes: false,
@@ -86,7 +89,7 @@ describe("static web", () => {
   };
 
   describe("local", () => {
-    describe("getPayPageLambda", () => {
+    describe("getPayPageLocal", () => {
       it("should return 200 and the pay page html when token is provided", async () => {
         const { token } = await startOnlineCollection("10.00");
 
@@ -106,12 +109,12 @@ describe("static web", () => {
         expect(body).toContain('href="https://example.com/cancel"');
       });
 
-      it("should return 200 and an error message when token is missing", async () => {
+      it("should return 400 and an error message when token is missing", async () => {
         const response = await fetch(`${baseUrl}/pay`);
         const body = await response.text();
 
-        expect(response.status).toBe(200);
-        expect(body).toBe("no token found");
+        expect(response.status).toBe(400);
+        expect(body).toBe(new MissingTokenError().message);
       });
     });
 

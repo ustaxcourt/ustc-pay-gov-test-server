@@ -261,8 +261,8 @@ describe("initiate transaction", () => {
       const result = await fetch(`${baseUrl}/pay`);
       const body = await result.text();
 
-      expect(result.status).toBe(200);
-      expect(body).toBe("no token found");
+      expect(result.status).toBe(400);
+      expect(body).toBe("Missing or expired token");
     });
 
     it("calls the server to initiate a transaction", async () => {
@@ -608,7 +608,8 @@ describe("initiate transaction", () => {
         "PLASTIC_CARD",
         "Success",
       );
-      const completeResponse = await completeOnlineCollectionWithDetails(token);
+      const completeResponse =
+        await completeOnlineCollectionWithDetailsStableTrackingId(token);
       const trackingResponse = await getDetails(
         completeResponse.paygov_tracking_id,
       );

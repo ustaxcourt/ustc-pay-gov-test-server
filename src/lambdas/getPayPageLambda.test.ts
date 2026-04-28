@@ -1,8 +1,20 @@
-import { MISSING_TOKEN_SOAP_FAULT } from "../errors/MissingTokenError";
+import {
+  MISSING_TOKEN_SOAP_FAULT,
+  MissingTokenError,
+} from "../errors/MissingTokenError";
 import { getPayPageLocal, handler, lambdaAppContext } from "./getPayPageLambda";
 import type { Request, Response } from "express";
+import fs from "fs";
+import path from "path";
 
 describe("getPayPageLambda.handler", () => {
+  const urlSuccess = "https://example.com/success";
+  const urlCancel = "https://example.com/cancel";
+  const renderedPayPageHtml = fs
+    .readFileSync(path.join(__dirname, "../static/html/pay.html"), "utf-8")
+    .replaceAll("%%urlSuccess%%", urlSuccess)
+    .replaceAll("%%urlCancel%%", urlCancel);
+
   let originalUseCases: any;
 
   beforeEach(() => {
@@ -18,6 +30,7 @@ describe("getPayPageLambda.handler", () => {
     let req: Partial<import("express").Request>;
     let res: Partial<import("express").Response>;
     let sendSpy: jest.Mock;
+    let statusSpy: jest.Mock;
     let showPayPage: jest.Mock;
     let appContext: {
       useCases: () => {
@@ -27,26 +40,36 @@ describe("getPayPageLambda.handler", () => {
 
     beforeEach(() => {
       sendSpy = jest.fn();
-      showPayPage = jest.fn().mockResolvedValue("<html>pay page</html>");
+      statusSpy = jest.fn().mockReturnThis();
+      showPayPage = jest.fn().mockResolvedValue(renderedPayPageHtml);
       appContext = {
         useCases: () => ({
           showPayPage,
         }),
       };
       req = { query: {} };
-      res = { send: sendSpy, locals: { appContext } };
+      res = { status: statusSpy, send: sendSpy, locals: { appContext } };
     });
 
     it("should send 'no token found' if token is missing", async () => {
       await getPayPageLocal(req as Request, res as Response);
-      expect(sendSpy).toHaveBeenCalledWith("no token found");
+      expect(statusSpy).toHaveBeenCalledWith(400);
+      expect(sendSpy).toHaveBeenCalledWith(new MissingTokenError().message);
     });
 
     it("should call showPayPage and send result if token is present", async () => {
-      req.query = { token: "tok" };
-      await getPayPageLocal(req as Request, res as Response);
+      const reqWithToken = {
+        query: { token: "tok" },
+      } as unknown as Request;
+
+      await getPayPageLocal(reqWithToken, res as Response);
       expect(showPayPage).toHaveBeenCalledWith(appContext, { token: "tok" });
-      expect(sendSpy).toHaveBeenCalledWith("<html>pay page</html>");
+      const renderedHtml = sendSpy.mock.calls[0][0] as string;
+
+      expect(renderedHtml).toContain(`href="${urlSuccess}"`);
+      expect(renderedHtml).toContain(`href="${urlCancel}"`);
+      expect(renderedHtml).not.toContain("%%urlSuccess%%");
+      expect(renderedHtml).not.toContain("%%urlCancel%%");
     });
   });
 
@@ -61,7 +84,7 @@ describe("getPayPageLambda.handler", () => {
   });
 
   it("should return 200 and html when token is provided", async () => {
-    const showPayPage = jest.fn().mockResolvedValue("<html>pay page</html>");
+    const showPayPage = jest.fn().mockResolvedValue(renderedPayPageHtml);
     (lambdaAppContext as any).useCases = () => ({
       showPayPage,
     });
@@ -75,7 +98,7 @@ describe("getPayPageLambda.handler", () => {
     expect(response.headers).toEqual({
       "Content-Type": "text/html; charset=UTF-8",
     });
-    expect(response.body).toBe("<html>pay page</html>");
+    expect(response.body).toBe(renderedPayPageHtml);
     expect(showPayPage).toHaveBeenCalledWith(lambdaAppContext, {
       token: "valid-token",
     });
