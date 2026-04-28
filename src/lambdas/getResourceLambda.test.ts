@@ -31,7 +31,6 @@ describe("getResourceLocal", () => {
       }),
     };
     req = { params: { file: "test.txt" }, headers: {} } as any;
-    (req as any).locals = { appContext };
     res = { send: sendSpy, locals: { appContext } };
     mockAuthenticateRequest.mockReset();
   });
