@@ -161,6 +161,42 @@ describe("markPaymentStatusLambda", () => {
         expect(sendSpy).toHaveBeenCalledWith("boom");
         expect(consoleErrorSpy).toHaveBeenCalled();
       });
+
+      it.each([
+        {
+          paymentMethod: "PLASTIC_CARD",
+          token: "plastic_tok",
+          redirectUrl: "https://plastic-success.example.com",
+        },
+        {
+          paymentMethod: "ACH",
+          token: "ach_tok",
+          redirectUrl: "https://ach-success.example.com",
+        },
+        {
+          paymentMethod: "PAYPAL",
+          token: "paypal_tok",
+          redirectUrl: "https://paypal-success.example.com",
+        },
+      ])(
+        "should handle $paymentMethod Success status",
+        async ({ paymentMethod, token, redirectUrl }) => {
+          req.query = { token };
+          req.params!.paymentMethod = paymentMethod;
+          req.params!.paymentStatus = "Success";
+          handleMarkPaymentStatus.mockResolvedValue(redirectUrl);
+
+          await markPaymentStatusLocal(req as Request, res as Response);
+
+          expect(handleMarkPaymentStatus).toHaveBeenCalledWith(appContext, {
+            token,
+            paymentMethod,
+            paymentStatus: "Success",
+          });
+          expect(statusSpy).toHaveBeenCalledWith(200);
+          expect(jsonSpy).toHaveBeenCalledWith({ redirectUrl });
+        },
+      );
     });
   });
 

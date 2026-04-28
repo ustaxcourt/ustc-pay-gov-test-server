@@ -5,7 +5,7 @@ import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 describe("test resources", () => {
   let server: Server;
   let baseUrl: string;
-  let previousBaseUrl: string | undefined;
+  let originalNodeEnv: string | undefined;
   const resourcesToCheck = [
     "wsdl/TCSOnlineService_3_1.wsdl",
     "wsdl/TCSOnlineService_3_1.xsd",
@@ -14,6 +14,7 @@ describe("test resources", () => {
   ];
 
   beforeAll(async () => {
+    originalNodeEnv = process.env.NODE_ENV;
     process.env.NODE_ENV = "local";
     const { app } = await import("../../src/app");
     server = await new Promise<Server>((resolve, reject) => {
@@ -25,17 +26,9 @@ describe("test resources", () => {
 
     const address = server.address() as AddressInfo;
     baseUrl = `http://127.0.0.1:${address.port}`;
-    previousBaseUrl = process.env.BASE_URL;
-    process.env.BASE_URL = baseUrl;
   });
 
   afterAll(async () => {
-    if (previousBaseUrl === undefined) {
-      Reflect.deleteProperty(process.env, "BASE_URL");
-    } else {
-      process.env.BASE_URL = previousBaseUrl;
-    }
-
     await new Promise<void>((resolve, reject) => {
       server.close((error) => {
         if (error) {
@@ -46,6 +39,9 @@ describe("test resources", () => {
         resolve();
       });
     });
+    if (originalNodeEnv) {
+      process.env.NODE_ENV = originalNodeEnv as "local" | "development";
+    }
   });
 
   it("should not serve the resources without the api token", async () => {
