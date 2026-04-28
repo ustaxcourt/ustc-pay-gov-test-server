@@ -222,6 +222,47 @@ describe("initiate transaction", () => {
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
+    it.each([
+      {
+        flow: "completeOnlineCollectionWithDetails",
+        getTrackingResponse: async (token: string) =>
+          completeOnlineCollectionWithDetails(token),
+      },
+      {
+        flow: "getDetails",
+        getTrackingResponse: async (token: string) => {
+          const completeResponse = await completeOnlineCollectionWithDetails(token);
+          return getDetails(completeResponse.paygov_tracking_id);
+        },
+      },
+    ])(
+      "should reflect PLASTIC_CARD Success status in $flow",
+      async ({ getTrackingResponse }) => {
+        const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+        const markSuccessResponse = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Success"
+        );
+        expect(markSuccessResponse.status).toBe(200);
+
+        const trackingResponse = await getTrackingResponse(token);
+
+        expect(trackingResponse.paygov_tracking_id).toBeTruthy();
+        expect(trackingResponse.paygov_tracking_id).toMatch(/^[A-Za-z0-9 ]{21}$/);
+        expect(trackingResponse.transaction_status).toBe("Success");
+        expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+        expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+        expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+        expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+        expect(trackingResponse.number_of_installments).toBe(1);
+        expect(trackingResponse.payment_date).toBe(today);
+        expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+        expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+      }
+    );
+
     it("should process a failed transaction when token is marked failed", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
@@ -394,6 +435,25 @@ describe("initiate transaction", () => {
       expect(trackingResponse).not.toHaveProperty("shipping_address_return_message");
     });
 
+    it("should resolve PLASTIC_CARD Success to Success status in getDetails", async () => {
+      const { token, agencyTrackingId } = await startOnlineCollection(amount);
+
+      const markPaymentStatusResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Success");
+      const completeResponse = await completeOnlineCollectionWithDetails(token);
+      const trackingResponse = await getDetails(completeResponse.paygov_tracking_id);
+
+      expect(markPaymentStatusResponse.status).toBe(200);
+      expect(trackingResponse.transaction_status).toBe("Success");
+      expect(trackingResponse.payment_type).toBe("PLASTIC_CARD");
+      expect(trackingResponse.agency_tracking_id).toBe(agencyTrackingId);
+      expect(toMoneyString(trackingResponse.transaction_amount)).toBe(amount);
+      expect(trackingResponse.payment_frequency).toBe("ONE_TIME");
+      expect(trackingResponse.number_of_installments).toBe(1);
+      expect(trackingResponse.payment_date).toBe(today);
+      expect(trackingResponse.transaction_date).toMatch(isoDateTimeRegex);
+      expect(trackingResponse.payment_date).toMatch(yyyyMmDdRegex);
+    });
+
     it("should find the details of a failed transaction", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
       const markFailedResponse = await markPaymentStatus(token, "PLASTIC_CARD", "Failed");
@@ -524,7 +584,7 @@ describe("initiate transaction", () => {
   });
 
   describe("handleMarkPaymentStatus", () => {
-    describe ("ACH", () => {
+    describe("ACH", () => {
       it("should successfully mark a transaction as ACH success", async () => {
         const { token } = await startOnlineCollection(amount);
 
