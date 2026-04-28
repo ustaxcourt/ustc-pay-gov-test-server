@@ -8,10 +8,7 @@ const hasParentTraversalSegment = (filename: string): boolean => {
 };
 
 export const getFileLocal: GetFile = async (appContext, filename) => {
-  if (
-    filename.substring(0, 5) === "html/" ||
-    filename.substring(0, 5) === "wsdl/"
-  ) {
+  if (filename.startsWith("html/") || filename.startsWith("wsdl/")) {
     const staticRoot = path.resolve(__dirname, "../../../src/static");
     if (path.isAbsolute(filename) || hasParentTraversalSegment(filename)) {
       throw new NotFoundError("File not found");
