@@ -43,6 +43,26 @@ variable "pay_page_invoke_arn" {
   type        = string
 }
 
+variable "mark_payment_status_invoke_arn" {
+  description = "Invoke ARN of the mark_payment_status Lambda function"
+  type        = string
+}
+
+variable "mark_payment_status_function_name" {
+  description = "Name of the mark_payment_status Lambda function"
+  type        = string
+}
+
+variable "get_script_function_name" {
+  description = "Name of the get_script Lambda function"
+  type        = string
+}
+
+variable "get_script_invoke_arn" {
+  description = "Invoke ARN of the get_script Lambda function"
+  type        = string
+}
+
 variable "common_tags" {
   description = "Common tags to apply to resources"
   type        = map(string)

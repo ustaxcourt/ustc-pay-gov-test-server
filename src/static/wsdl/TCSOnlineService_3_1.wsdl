@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions name="TCSOnlineService_3_1" xmlns="http://schemas.xmlsoap.org/wsdl/">
+  <documentation>USTC Pay.gov Test Server WSDL fixture</documentation>
+  <types>
+    <xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+      <xsd:import schemaLocation="%%location%%TCSOnlineService_3_1.xsd"/>
+      <xsd:import schemaLocation="%%location%%tcs_common_types.xsd"/>
+    </xsd:schema>
+  </types>
+</definitions>
