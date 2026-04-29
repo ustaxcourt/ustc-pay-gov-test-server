@@ -9,7 +9,7 @@ export type CompleteOnlineCollectionResponse = {
 
 export type HandleCompleteOnlineCollection = (
   appContext: AppContext,
-  { token }: CompleteTransactionRequest,
+  request: CompleteTransactionRequest,
 ) => Promise<string>;
 
 export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =

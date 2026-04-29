@@ -1,6 +1,6 @@
 export type CompleteTransactionRequest = {
-  token?: string | undefined;
-  tcs_app_id?: string | undefined;
+  token?: string;
+  tcs_app_id?: string;
   agency_tracking_id?: string;
   transaction_type?: string;
   transaction_amount?: string;

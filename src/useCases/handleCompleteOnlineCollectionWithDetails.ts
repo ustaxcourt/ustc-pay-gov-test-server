@@ -25,12 +25,12 @@ export type CompleteOnlineCollectionWithDetailsResponse = {
   number_of_installments: number;
 };
 
-export type HandleCompletOnlineCollectionWithDetails = (
+export type HandleCompleteOnlineCollectionWithDetails = (
   appContext: AppContext,
   request: CompleteTransactionRequest,
 ) => Promise<string>;
 
-export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
+export const handleCompleteOnlineCollectionWithDetails: HandleCompleteOnlineCollectionWithDetails =
   async (appContext, request) => {
     if (!request.token) {
       throw new MissingTokenError();
