@@ -133,4 +133,15 @@ describe("resolveTransactionStatus", () => {
       expect(result).toBe("Success");
     });
   });
+
+  describe("PAYPAL with failed_payment", () => {
+    it("returns Failed immediately", () => {
+      const result = resolveTransactionStatus({
+        ...baseTransaction,
+        payment_type: "PAYPAL",
+        failed_payment: true,
+      });
+      expect(result).toBe("Failed");
+    });
+  });
 });

@@ -21,6 +21,7 @@ In the following workflow, this USTC Pay.gov Dev Server takes the place of Pay.g
 5. The user clicks Complete or Cancel, which sends them back to the success or cancel URL specified in the original request.
 6. Once back on the originating App, the app makes another request to the Payment Portal to process the transaction.
 7. The payment portal calls Pay.gov to perform a `completeOnlineCollection` with the token.
+   - If no token is provided, the server returns HTTP 400 with a SOAP fault (return code 4117) matching the real Pay.gov response.
 8. Pay.gov responds with a Tracking ID, which is relayed back to the App via the Portal.
 
 ## Environment Variables
@@ -60,7 +61,7 @@ npm run dev
 
 This will start a dev server at the port specified in the [environment variables](#environment-variables).
 
-### As a dependency 
+### As a dependency
 This repo can be installed as a dependency from npm.
 
 ```

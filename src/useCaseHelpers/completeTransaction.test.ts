@@ -48,6 +48,29 @@ describe('completeTransaction', () => {
     });
   });
 
+  describe("payment_type: PAYPAL", () => {
+    it('sets payment_type to PAYPAL when transaction.payment_type is PAYPAL', () => {
+      const request: InitiatedTransaction = {
+        ...baseRequest,
+        payment_type: 'PAYPAL',
+      };
+      const result = completeTransaction(request, { transactionStatus: 'Success' });
+      expect(result.payment_type).toBe('PAYPAL');
+      expect(result.paid).toBe(true);
+    });
+
+    it('sets payment_type to PAYPAL and paid to false when failed_payment is set', () => {
+      const request: InitiatedTransaction = {
+        ...baseRequest,
+        payment_type: 'PAYPAL',
+        failed_payment: true,
+      };
+      const result = completeTransaction(request, { transactionStatus: 'Failed' });
+      expect(result.payment_type).toBe('PAYPAL');
+      expect(result.paid).toBe(false);
+    });
+  });
+
   describe("payment_type: none", () => {
     it('defaults payment_type to PLASTIC_CARD when transaction.payment_type is not provided', () => {
       const request: InitiatedTransaction = {

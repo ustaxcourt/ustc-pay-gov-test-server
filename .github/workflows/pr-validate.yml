@@ -8,19 +8,11 @@ on:
 env:
   AWS_REGION: us-east-1
 
-permissions:
-  id-token: write
-  contents: read
-
 jobs:
-  validate:
-    if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
-
-    concurrency:
-      group: terraform-dev-state
-      cancel-in-progress: true
-
+  test:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout code
@@ -39,6 +31,78 @@ jobs:
         with:
           node-version: "24"
 
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run unit tests
+        run: npm test
+
+      - name: Build server
+        run: npm run build
+
+      - name: Create .env for integration tests
+        run: |
+          cat > .env <<'EOF'
+          BASE_URL=http://localhost:3366
+          ACCESS_TOKEN=asdf123
+          PORT=3366
+          NODE_ENV=local
+          EOF
+
+      - name: Start server in background
+        run: |
+          node dist/server.js > server.log 2>&1 &
+          echo "SERVER_PID=$!" >> "$GITHUB_ENV"
+
+      - name: Wait for server readiness
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS -H "authentication: Bearer asdf123" http://localhost:3366/wsdl > /dev/null 2>&1; then
+              echo "Server is ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "Server failed to become ready within 30s"
+          exit 1
+
+      - name: Run integration tests
+        run: npm run test:integration
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat server.log
+
+      - name: Stop server
+        if: always()
+        run: |
+          # Tolerate kill failure: the process can exit between `kill -0` and
+          # `kill`, and we don't want best-effort teardown to flip a green job red.
+          if [ -n "${SERVER_PID:-}" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
+            kill "$SERVER_PID" || true
+          fi
+
+  plan:
+    # Skipped for Dependabot: dependency bumps don't change Lambda code or
+    # Terraform state, so a plan would burn AWS API calls and hold the dev
+    # state lock for no infra-relevant signal. Dependabot PRs still get unit
+    # and integration tests via the `test` job above.
+    if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      id-token: write
+      contents: read
+
+    concurrency:
+      group: terraform-dev-state
+      cancel-in-progress: true
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
       - name: Lint deploy workflow
         run: |
           # Guard: every terraform plan run block that uses -detailed-exitcode
@@ -47,9 +111,7 @@ jobs:
           PATTERN='detailed-exitcode'
           for file in .github/workflows/deploy.yml .github/workflows/pr-validate.yml; do
             if [ ! -f "$file" ]; then continue; fi
-            # Find each line number containing -detailed-exitcode, excluding comments
             grep -n "$PATTERN" "$file" | grep -v '^[0-9]*:\s*#' | while IFS=: read -r lineno _; do
-              # Check the 5 lines before it in the same run block for set +e
               start=$((lineno > 5 ? lineno - 5 : 1))
               if ! sed -n "${start},${lineno}p" "$file" | grep -q 'set +e'; then
                 echo "::error file=${file},line=${lineno}::${file}:${lineno} uses -detailed-exitcode without 'set +e'. Exit code will be lost."
@@ -60,11 +122,21 @@ jobs:
           if [ "$FAIL" -eq 1 ]; then exit 1; fi
           echo "Workflow exit code handling OK"
 
+      - name: Cache Node modules
+        uses: actions/cache@v5
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: "24"
+
       - name: Install dependencies
         run: npm ci
-
-      - name: Run tests
-        run: npm test
 
       - name: Build Lambda functions
         run: bash terraform/build.sh
