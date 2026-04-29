@@ -6,3 +6,10 @@ coverage/
 dist/
 .env*
 resources/
+
+# Ignore Terraform static assets
+# terraform/static is a build artifact populated by build.sh
+terraform/static
+
+# Don't ignore WSDL files in src/static/wsdl
+!src/static/wsdl
