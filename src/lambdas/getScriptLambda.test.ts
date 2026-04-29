@@ -1,82 +1,141 @@
-import { getScriptLocal } from './getScriptLambda';
-import type { Request, Response } from 'express';
-import fs from 'fs';
-import path from 'path';
+import type { Request, Response } from "express";
+import { getScriptLocal, handler } from "./getScriptLambda";
+import { NotFoundError } from "../errors/NotFoundError";
 
-describe('getScriptLocal', () => {
-  let req: Partial<Request>;
-  let res: Partial<Response>;
-  let sendSpy: jest.Mock;
-  let setHeaderSpy: jest.Mock;
-  let statusSpy: jest.Mock;
+const makeRequest = (file: string) =>
+  ({
+    params: { file },
+    locals: { appContext: { useCases: () => ({ showScript: jest.fn() }) } },
+  } as unknown as Request);
 
-  beforeEach(() => {
-    sendSpy = jest.fn();
-    setHeaderSpy = jest.fn();
-    statusSpy = jest.fn().mockReturnThis();
-    req = { params: { file: 'test.js' } };
-    res = {
-      send: sendSpy,
-      setHeader: setHeaderSpy,
-      status: statusSpy,
-    };
-  });
+const makeResponse = () => {
+  const set = jest.fn().mockReturnThis();
+  const send = jest.fn().mockReturnThis();
+  const status = jest.fn().mockReturnThis();
+  const res = {
+    set,
+    send,
+    status,
+    locals: { appContext: { useCases: () => ({ showScript: jest.fn() }) } },
+  } as unknown as Response;
+  return { res, set, send, status };
+};
 
-  afterEach(() => {
-    jest.restoreAllMocks();
-  });
+const makeEvent = (file?: string) =>
+  ({
+    pathParameters: file !== undefined ? { file } : null,
+  } as unknown as AWSLambda.APIGatewayProxyEvent);
 
-  it('serves the script if found', async () => {
+afterEach(() => {
+  jest.restoreAllMocks();
+});
+
+describe("getScriptLocal", () => {
+  it("serves the script if found", async () => {
     const scriptContent = 'console.log("hello");';
-    const scriptPath = path.resolve(__dirname, '../../src/static/html/scripts/test.js');
-    jest.spyOn(fs, 'existsSync').mockImplementation((p) => p === scriptPath);
-    jest.spyOn(fs, 'readFileSync').mockImplementation((p) => {
-      if (p === scriptPath) return scriptContent;
-      throw new Error('not found');
+    const { res, set, send } = makeResponse();
+    res.locals.appContext.useCases = () => ({
+      showScript: jest.fn().mockResolvedValue(scriptContent),
     });
 
-    await getScriptLocal(req as Request, res as Response);
-    expect(setHeaderSpy).toHaveBeenCalledWith('Content-Type', 'application/javascript');
-    expect(sendSpy).toHaveBeenCalledWith(scriptContent);
+    await getScriptLocal(makeRequest("test.js"), res);
+
+    expect(set).toHaveBeenCalledWith({
+      "Content-Type": "application/javascript",
+    });
+    expect(send).toHaveBeenCalledWith(scriptContent);
   });
 
-  it('returns 404 if script not found', async () => {
-    jest.spyOn(fs, 'existsSync').mockReturnValue(false);
-    await getScriptLocal(req as Request, res as Response);
-    expect(statusSpy).toHaveBeenCalledWith(404);
-    expect(sendSpy).toHaveBeenCalledWith('File not found');
+  it("returns 404 if script not found", async () => {
+    const { res, set, send, status } = makeResponse();
+    res.locals.appContext.useCases = () => ({
+      showScript: jest
+        .fn()
+        .mockRejectedValue(new NotFoundError("File not found")),
+    });
+
+    await getScriptLocal(makeRequest("missing.js"), res);
+
+    expect(status).toHaveBeenCalledWith(404);
+    expect(set).not.toHaveBeenCalledWith({
+      "Content-Type": "text/plain; charset=UTF-8",
+    });
+    expect(send).toHaveBeenCalledWith("File not found");
   });
 
-  it('returns 404 for an empty filename', async () => {
-    req = { params: { file: '' } };
-    const existsSpy = jest.spyOn(fs, 'existsSync');
+  it("returns 500 for internal errors", async () => {
+    const { res, set, send, status } = makeResponse();
+    const error = new Error("Internal error");
+    (error as any).statusCode = 500;
+    res.locals.appContext.useCases = () => ({
+      showScript: jest.fn().mockRejectedValue(error),
+    });
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
-    await getScriptLocal(req as Request, res as Response);
+    await getScriptLocal(makeRequest("test.js"), res);
 
-    expect(existsSpy).not.toHaveBeenCalled();
-    expect(statusSpy).toHaveBeenCalledWith(404);
-    expect(sendSpy).toHaveBeenCalledWith('File not found');
+    expect(status).toHaveBeenCalledWith(500);
+    expect(set).not.toHaveBeenCalledWith({
+      "Content-Type": "text/plain; charset=UTF-8",
+    });
+    expect(send).toHaveBeenCalledWith("Internal error");
+    expect(consoleErrorSpy).toHaveBeenCalled();
+  });
+});
+
+describe("handler", () => {
+  it("serves the script if found", async () => {
+    const scriptContent = 'console.log("hello");';
+    const { lambdaAppContext } = require("./getScriptLambda");
+    jest.spyOn(lambdaAppContext, "useCases").mockImplementation(() => ({
+      showScript: jest.fn().mockResolvedValue(scriptContent),
+    }));
+
+    const result = await handler(makeEvent("test.js"));
+
+    expect(result.statusCode).toBe(200);
+    expect(result.headers).toEqual({
+      "Content-Type": "application/javascript",
+    });
+    expect(result.body).toBe(scriptContent);
   });
 
-  it('returns 404 for path traversal filenames', async () => {
-    req = { params: { file: '../../etc/passwd' } };
-    const existsSpy = jest.spyOn(fs, 'existsSync');
+  it("returns 404 if script not found", async () => {
+    const { lambdaAppContext } = require("./getScriptLambda");
+    jest.spyOn(lambdaAppContext, "useCases").mockImplementation(() => ({
+      showScript: jest
+        .fn()
+        .mockRejectedValue(new NotFoundError("File not found")),
+    }));
 
-    await getScriptLocal(req as Request, res as Response);
+    const result = await handler(makeEvent("missing.js"));
 
-    expect(existsSpy).not.toHaveBeenCalled();
-    expect(statusSpy).toHaveBeenCalledWith(404);
-    expect(sendSpy).toHaveBeenCalledWith('File not found');
+    expect(result).toEqual({
+      statusCode: 404,
+      body: "File not found",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 
-  it('returns 404 for filenames containing double dots', async () => {
-    req = { params: { file: 'test..js' } };
-    const existsSpy = jest.spyOn(fs, 'existsSync');
+  it("returns 500 for internal errors", async () => {
+    const { lambdaAppContext } = require("./getScriptLambda");
+    const error = new Error("Internal error");
+    jest.spyOn(lambdaAppContext, "useCases").mockImplementation(() => ({
+      showScript: jest.fn().mockRejectedValue(error),
+    }));
+    const consoleErrorSpy = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => undefined);
 
-    await getScriptLocal(req as Request, res as Response);
+    const result = await handler(makeEvent("test.js"));
 
-    expect(existsSpy).not.toHaveBeenCalled();
-    expect(statusSpy).toHaveBeenCalledWith(404);
-    expect(sendSpy).toHaveBeenCalledWith('File not found');
+    expect(consoleErrorSpy).toHaveBeenCalled();
+    expect(result).toEqual({
+      statusCode: 500,
+      body: "Internal Server Error",
+      headers: { "Content-Type": "text/plain; charset=UTF-8" },
+    });
   });
 });
