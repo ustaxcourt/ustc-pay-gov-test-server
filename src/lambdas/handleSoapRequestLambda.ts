@@ -18,8 +18,6 @@ async function handleSoapRequest(
   const requestData = jObj["soapenv:Envelope"]["soapenv:Body"];
   const actionKey = Object.keys(requestData)[0];
 
-  console.log("requestData", requestData);
-
   switch (actionKey) {
     case "tcs:startOnlineCollection":
       return appContext
