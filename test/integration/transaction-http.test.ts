@@ -229,7 +229,7 @@ describe("initiate transaction", () => {
       const body = await result.text();
 
       expect(result.status).toBe(400);
-      expect(body).toBe("Missing or invalid TCS AppID");
+      expect(body).toBe("Missing or invalid TCS App ID");
     });
 
     it("should process a successful transaction", async () => {

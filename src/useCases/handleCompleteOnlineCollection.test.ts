@@ -1,10 +1,12 @@
 import { handleCompleteOnlineCollection } from "./handleCompleteOnlineCollection";
-import { MissingTokenError } from "../errors/MissingTokenError";
-import { MissingTcsAppIdError } from "../errors/MissingTcsAppIdError";
 import {
+  MissingTokenError,
   MISSING_TOKEN_SOAP_FAULT,
+} from "../errors/MissingTokenError";
+import {
+  MissingTcsAppIdError,
   MISSING_TCS_APPID_SOAP_FAULT,
-} from "../errors/getErrorTemplate";
+} from "../errors/MissingTcsAppIdError";
 import { XMLParser } from "fast-xml-parser";
 import { buildAppContext } from "../useCaseHelpers/testAppContext";
 
