@@ -49,6 +49,16 @@ describe("handleLambdaError", () => {
     expect(handledError.statusCode).toBe(500);
     expect(handledError.body).toBe("Internal Server Error");
   });
+
+  it("uses structured body and headers when present", () => {
+    const handledError = handleLambdaError(new MissingTokenError());
+
+    expect(handledError.statusCode).toBe(400);
+    expect(handledError.body).toBe(MISSING_TOKEN_SOAP_FAULT);
+    expect(handledError.headers).toEqual({
+      "Content-Type": "application/wsdl+xml; charset=UTF-8",
+    });
+  });
 });
 
 describe("handleLocalError", () => {
