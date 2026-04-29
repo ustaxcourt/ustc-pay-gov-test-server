@@ -1,26 +1,58 @@
-import { isoDateTimeRegex, yyyyMmDdRegex } from '../useCaseHelpers/dateFormats';
-import { handleCompleteOnlineCollectionWithDetails } from '../useCases/handleCompleteOnlineCollectionWithDetails';
-import { MissingTokenError, MISSING_TOKEN_SOAP_FAULT } from '../errors/MissingTokenError';
-import { XMLParser } from 'fast-xml-parser';
-import { buildAppContext } from '../useCaseHelpers/testAppContext';
+import { isoDateTimeRegex, yyyyMmDdRegex } from "../useCaseHelpers/dateFormats";
+import { handleCompleteOnlineCollectionWithDetails } from "../useCases/handleCompleteOnlineCollectionWithDetails";
+import { MissingTokenError } from "../errors/MissingTokenError";
+import { MissingTcsAppIdError } from "../errors/MissingTcsAppIdError";
+import {
+  MISSING_TOKEN_SOAP_FAULT,
+  MISSING_TCS_APPID_SOAP_FAULT,
+} from "../errors/getErrorTemplate";
+import { XMLParser } from "fast-xml-parser";
+import { buildAppContext } from "../useCaseHelpers/testAppContext";
 
-const toMoneyString = (value: string | number) => Number.parseFloat(String(value)).toFixed(2);
+const toMoneyString = (value: string | number) =>
+  Number.parseFloat(String(value)).toFixed(2);
 
-describe('handleCompleteOnlineCollectionWithDetails', () => {
-  describe('when token is missing', () => {
-    it('throws a MissingTokenError with statusCode 400 and SOAP fault body', async () => {
+describe("handleCompleteOnlineCollectionWithDetails", () => {
+  describe("when token is missing", () => {
+    it("throws a MissingTokenError with statusCode 400 and SOAP fault body", async () => {
       const appContext = buildAppContext();
 
-      const error = await handleCompleteOnlineCollectionWithDetails(appContext, {
-        token: undefined,
-      }).catch((e) => e);
+      const error = await handleCompleteOnlineCollectionWithDetails(
+        appContext,
+        {
+          token: undefined,
+        },
+      ).catch((e) => e);
       expect(error).toBeInstanceOf(MissingTokenError);
       expect(error.statusCode).toBe(400);
       expect(error.body).toBe(MISSING_TOKEN_SOAP_FAULT);
     });
   });
 
-  function buildXml({ response, responseType }: { response: any; responseType: string }) {
+  describe("when tcs_app_id is missing", () => {
+    it("throws a MissingTcsAppIdError with statusCode 400 and SOAP fault body", async () => {
+      const appContext = buildAppContext();
+
+      const error = await handleCompleteOnlineCollectionWithDetails(
+        appContext,
+        {
+          token: "tok",
+          tcs_app_id: undefined,
+        },
+      ).catch((e) => e);
+      expect(error).toBeInstanceOf(MissingTcsAppIdError);
+      expect(error.statusCode).toBe(400);
+      expect(error.body).toBe(MISSING_TCS_APPID_SOAP_FAULT);
+    });
+  });
+
+  function buildXml({
+    response,
+    responseType,
+  }: {
+    response: any;
+    responseType: string;
+  }) {
     const t = response;
     return `
       <${responseType}>
@@ -35,7 +67,9 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
         <payment_frequency>${t.payment_frequency}</payment_frequency>
         <number_of_installments>${t.number_of_installments}</number_of_installments>
       </${responseType}>
-    `.replace(/\s+/g, ' ').trim();
+    `
+      .replace(/\s+/g, " ")
+      .trim();
   }
 
   describe('Case: payment_type: "PLASTIC_CARD", no flags', () => {
@@ -43,82 +77,92 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
       const now = new Date().toISOString();
       const appContext = buildAppContext({
         getInitiatedTransaction: jest.fn().mockResolvedValue({
-          payment_type: 'PLASTIC_CARD',
+          payment_type: "PLASTIC_CARD",
           ach_initiated_at: undefined,
           failed_payment: undefined,
-          agency_tracking_id: 'aid',
-          transaction_amount: '10.00',
-          url_success: 'success',
-          url_cancel: 'cancel',
-          tcp_appid: 'appid',
-          token: 'tok',
+          agency_tracking_id: "aid",
+          transaction_amount: "10.00",
+          url_success: "success",
+          url_cancel: "cancel",
+          tcp_appid: "appid",
+          token: "tok",
         }),
         saveCompletedTransaction: jest.fn().mockResolvedValue(undefined),
-        completeTransaction: jest.fn().mockImplementation((transaction, { transactionStatus }) => ({
-          paygov_tracking_id: 'pgid',
-          agency_tracking_id: transaction.agency_tracking_id,
-          transaction_amount: transaction.transaction_amount,
-          transaction_type: 'Sale',
-          transaction_date: now,
-          payment_date: now.split('T')[0],
-          transaction_status: transactionStatus,
-          payment_type: transaction.payment_type,
-          payment_frequency: 'ONE_TIME',
-          number_of_installments: 1,
-        })),
+        completeTransaction: jest
+          .fn()
+          .mockImplementation((transaction, { transactionStatus }) => ({
+            paygov_tracking_id: "pgid",
+            agency_tracking_id: transaction.agency_tracking_id,
+            transaction_amount: transaction.transaction_amount,
+            transaction_type: "Sale",
+            transaction_date: now,
+            payment_date: now.split("T")[0],
+            transaction_status: transactionStatus,
+            payment_type: transaction.payment_type,
+            payment_frequency: "ONE_TIME",
+            number_of_installments: 1,
+          })),
         buildXml,
       });
 
-      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, { token: 'tok' });
+      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, {
+        token: "tok",
+        tcs_app_id: "test-app-id",
+      });
       const parser = new XMLParser({ parseTagValue: false });
       const parsed = parser.parse(xml);
       const transaction = parsed.completeOnlineCollectionWithDetailsResponse;
-      expect(transaction.transaction_status).toBe('Success');
-      expect(transaction.payment_type).toBe('PLASTIC_CARD');
+      expect(transaction.transaction_status).toBe("Success");
+      expect(transaction.payment_type).toBe("PLASTIC_CARD");
       expect(transaction.transaction_date).toMatch(isoDateTimeRegex);
       expect(transaction.payment_date).toMatch(yyyyMmDdRegex);
-      expect(toMoneyString(transaction.transaction_amount)).toBe('10.00');
+      expect(toMoneyString(transaction.transaction_amount)).toBe("10.00");
     });
   });
 
-  describe('Case: failed_payment: true', () => {
+  describe("Case: failed_payment: true", () => {
     it('transaction_status: "Failed"', async () => {
       const now = new Date().toISOString();
       const appContext = buildAppContext({
         getInitiatedTransaction: jest.fn().mockResolvedValue({
-          payment_type: 'PLASTIC_CARD',
+          payment_type: "PLASTIC_CARD",
           failed_payment: true,
-          agency_tracking_id: 'aid',
-          transaction_amount: '10.00',
-          url_success: 'success',
-          url_cancel: 'cancel',
-          tcp_appid: 'appid',
-          token: 'tok',
+          agency_tracking_id: "aid",
+          transaction_amount: "10.00",
+          url_success: "success",
+          url_cancel: "cancel",
+          tcp_appid: "appid",
+          token: "tok",
         }),
         saveCompletedTransaction: jest.fn().mockResolvedValue(undefined),
-        completeTransaction: jest.fn().mockImplementation((transaction, { transactionStatus }) => ({
-          paygov_tracking_id: 'pgid',
-          agency_tracking_id: transaction.agency_tracking_id,
-          transaction_amount: transaction.transaction_amount,
-          transaction_type: 'Sale',
-          transaction_date: now,
-          payment_date: now.split('T')[0],
-          transaction_status: transactionStatus,
-          payment_type: transaction.payment_type,
-          payment_frequency: 'ONE_TIME',
-          number_of_installments: 1,
-        })),
+        completeTransaction: jest
+          .fn()
+          .mockImplementation((transaction, { transactionStatus }) => ({
+            paygov_tracking_id: "pgid",
+            agency_tracking_id: transaction.agency_tracking_id,
+            transaction_amount: transaction.transaction_amount,
+            transaction_type: "Sale",
+            transaction_date: now,
+            payment_date: now.split("T")[0],
+            transaction_status: transactionStatus,
+            payment_type: transaction.payment_type,
+            payment_frequency: "ONE_TIME",
+            number_of_installments: 1,
+          })),
         buildXml,
       });
 
-      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, { token: 'tok' });
+      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, {
+        token: "tok",
+        tcs_app_id: "test-app-id",
+      });
       const parser = new XMLParser({ parseTagValue: false });
       const parsed = parser.parse(xml);
       const transaction = parsed.completeOnlineCollectionWithDetailsResponse;
-      expect(transaction.transaction_status).toBe('Failed');
+      expect(transaction.transaction_status).toBe("Failed");
       expect(transaction.transaction_date).toMatch(isoDateTimeRegex);
       expect(transaction.payment_date).toMatch(yyyyMmDdRegex);
-      expect(toMoneyString(transaction.transaction_amount)).toBe('10.00');
+      expect(toMoneyString(transaction.transaction_amount)).toBe("10.00");
     });
   });
 
@@ -128,40 +172,45 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
       const achInitiatedAt = new Date(now.getTime() - 5 * 1000).toISOString(); // 5s ago
       const appContext = buildAppContext({
         getInitiatedTransaction: jest.fn().mockResolvedValue({
-          payment_type: 'ACH',
+          payment_type: "ACH",
           ach_initiated_at: achInitiatedAt,
-          agency_tracking_id: 'aid',
-          transaction_amount: '10.00',
-          url_success: 'success',
-          url_cancel: 'cancel',
-          tcp_appid: 'appid',
-          token: 'tok',
+          agency_tracking_id: "aid",
+          transaction_amount: "10.00",
+          url_success: "success",
+          url_cancel: "cancel",
+          tcp_appid: "appid",
+          token: "tok",
         }),
         saveCompletedTransaction: jest.fn().mockResolvedValue(undefined),
-        completeTransaction: jest.fn().mockImplementation((transaction, { transactionStatus }) => ({
-          paygov_tracking_id: 'pgid',
-          agency_tracking_id: transaction.agency_tracking_id,
-          transaction_amount: transaction.transaction_amount,
-          transaction_type: 'Sale',
-          transaction_date: now.toISOString(),
-          payment_date: now.toISOString().split('T')[0],
-          transaction_status: transactionStatus,
-          payment_type: transaction.payment_type,
-          payment_frequency: 'ONE_TIME',
-          number_of_installments: 1,
-        })),
+        completeTransaction: jest
+          .fn()
+          .mockImplementation((transaction, { transactionStatus }) => ({
+            paygov_tracking_id: "pgid",
+            agency_tracking_id: transaction.agency_tracking_id,
+            transaction_amount: transaction.transaction_amount,
+            transaction_type: "Sale",
+            transaction_date: now.toISOString(),
+            payment_date: now.toISOString().split("T")[0],
+            transaction_status: transactionStatus,
+            payment_type: transaction.payment_type,
+            payment_frequency: "ONE_TIME",
+            number_of_installments: 1,
+          })),
         buildXml,
       });
 
-      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, { token: 'tok' });
+      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, {
+        token: "tok",
+        tcs_app_id: "test-app-id",
+      });
       const parser = new XMLParser({ parseTagValue: false });
       const parsed = parser.parse(xml);
       const transaction = parsed.completeOnlineCollectionWithDetailsResponse;
-      expect(transaction.transaction_status).toBe('Received');
-      expect(transaction.payment_type).toBe('ACH');
+      expect(transaction.transaction_status).toBe("Received");
+      expect(transaction.payment_type).toBe("ACH");
       expect(transaction.transaction_date).toMatch(isoDateTimeRegex);
       expect(transaction.payment_date).toMatch(yyyyMmDdRegex);
-      expect(toMoneyString(transaction.transaction_amount)).toBe('10.00');
+      expect(toMoneyString(transaction.transaction_amount)).toBe("10.00");
     });
   });
 
@@ -171,40 +220,45 @@ describe('handleCompleteOnlineCollectionWithDetails', () => {
       const achInitiatedAt = new Date(now.getTime() - 16 * 1000).toISOString(); // 16s ago
       const appContext = buildAppContext({
         getInitiatedTransaction: jest.fn().mockResolvedValue({
-          payment_type: 'ACH',
+          payment_type: "ACH",
           ach_initiated_at: achInitiatedAt,
-          agency_tracking_id: 'aid',
-          transaction_amount: '10.00',
-          url_success: 'success',
-          url_cancel: 'cancel',
-          tcp_appid: 'appid',
-          token: 'tok',
+          agency_tracking_id: "aid",
+          transaction_amount: "10.00",
+          url_success: "success",
+          url_cancel: "cancel",
+          tcp_appid: "appid",
+          token: "tok",
         }),
         saveCompletedTransaction: jest.fn().mockResolvedValue(undefined),
-        completeTransaction: jest.fn().mockImplementation((transaction, { transactionStatus }) => ({
-          paygov_tracking_id: 'pgid',
-          agency_tracking_id: transaction.agency_tracking_id,
-          transaction_amount: transaction.transaction_amount,
-          transaction_type: 'Sale',
-          transaction_date: now.toISOString(),
-          payment_date: now.toISOString().split('T')[0],
-          transaction_status: transactionStatus,
-          payment_type: transaction.payment_type,
-          payment_frequency: 'ONE_TIME',
-          number_of_installments: 1,
-        })),
+        completeTransaction: jest
+          .fn()
+          .mockImplementation((transaction, { transactionStatus }) => ({
+            paygov_tracking_id: "pgid",
+            agency_tracking_id: transaction.agency_tracking_id,
+            transaction_amount: transaction.transaction_amount,
+            transaction_type: "Sale",
+            transaction_date: now.toISOString(),
+            payment_date: now.toISOString().split("T")[0],
+            transaction_status: transactionStatus,
+            payment_type: transaction.payment_type,
+            payment_frequency: "ONE_TIME",
+            number_of_installments: 1,
+          })),
         buildXml,
       });
 
-      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, { token: 'tok' });
+      const xml = await handleCompleteOnlineCollectionWithDetails(appContext, {
+        token: "tok",
+        tcs_app_id: "test-app-id",
+      });
       const parser = new XMLParser({ parseTagValue: false });
       const parsed = parser.parse(xml);
       const transaction = parsed.completeOnlineCollectionWithDetailsResponse;
-      expect(transaction.transaction_status).toBe('Success');
-      expect(transaction.payment_type).toBe('ACH');
+      expect(transaction.transaction_status).toBe("Success");
+      expect(transaction.payment_type).toBe("ACH");
       expect(transaction.transaction_date).toMatch(isoDateTimeRegex);
       expect(transaction.payment_date).toMatch(yyyyMmDdRegex);
-      expect(toMoneyString(transaction.transaction_amount)).toBe('10.00');
+      expect(toMoneyString(transaction.transaction_amount)).toBe("10.00");
     });
   });
 });

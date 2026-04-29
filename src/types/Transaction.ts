@@ -12,7 +12,9 @@ export function isPaymentType(value: unknown): value is PaymentType {
   return VALID_PAYMENT_TYPES.includes(value as PaymentType);
 }
 
-export function isMarkablePaymentStatus(value: unknown): value is MarkablePaymentStatus {
+export function isMarkablePaymentStatus(
+  value: unknown,
+): value is MarkablePaymentStatus {
   return ["Success", "Failed"].includes(value as string);
 }
 
