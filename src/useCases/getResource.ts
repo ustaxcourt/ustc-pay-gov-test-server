@@ -1,5 +1,6 @@
 import { AppContext } from "../types/AppContext";
 import { ResourceRequest } from "../types/ResourceRequest";
+import { NotFoundError } from "../errors/NotFoundError";
 
 export type GetResource = (
   appContext: AppContext,
@@ -16,15 +17,15 @@ export const getResource: GetResource = async (appContext, { filename }) => {
   if (!filename) {
     filename = "TCSOnlineService_3_1.wsdl";
   } else if (!supportedFiles.includes(filename)) {
-    throw "Not found";
+    throw new NotFoundError("Not found");
   }
 
   const contents = await appContext
     .storageClient()
     .getFile(appContext, `wsdl/${filename}`);
 
-  return contents.replace(
+  return contents.replaceAll(
     "%%location%%",
-    `https://${process.env.BASE_URL}/wsdl/`
+    `${process.env.BASE_URL}/wsdl/`
   );
 };

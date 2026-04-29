@@ -7,11 +7,12 @@ import { handleLambdaError, handleLocalError } from "./handleError";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
 import { AppContext } from "../types/AppContext";
 
-const parser = new XMLParser(xmlOptions);
+export const parser = new XMLParser(xmlOptions);
+export const lambdaAppContext = createAppContext();
 
 async function handleSoapRequest(
   appContext: AppContext,
-  soapRequest: string
+  soapRequest: string,
 ): Promise<string> {
   const jObj = parser.parse(soapRequest);
 
@@ -24,7 +25,7 @@ async function handleSoapRequest(
         .useCases()
         .handleStartOnlineCollection(
           appContext,
-          requestData[actionKey]["startOnlineCollectionRequest"]
+          requestData[actionKey]["startOnlineCollectionRequest"],
         );
 
     case "tcs:completeOnlineCollection":
@@ -32,7 +33,7 @@ async function handleSoapRequest(
         .useCases()
         .handleCompleteOnlineCollection(
           appContext,
-          requestData[actionKey]["completeOnlineCollectionRequest"]
+          requestData[actionKey]["completeOnlineCollectionRequest"],
         );
 
     case "tcs:completeOnlineCollectionWithDetails":
@@ -40,7 +41,7 @@ async function handleSoapRequest(
         .useCases()
         .handleCompleteOnlineCollectionWithDetails(
           appContext,
-          requestData[actionKey]["completeOnlineCollectionWithDetailsRequest"]
+          requestData[actionKey]["completeOnlineCollectionWithDetailsRequest"],
         );
 
     case "tcs:getDetails":
@@ -48,7 +49,7 @@ async function handleSoapRequest(
         .useCases()
         .handleGetDetails(
           appContext,
-          requestData[actionKey]["getDetailsRequest"]
+          requestData[actionKey]["getDetailsRequest"],
         );
 
     default:
@@ -73,19 +74,21 @@ export const parseRequest = (requestBody?: string | null) => {
 };
 
 export const handler = async (
-  event: AWSLambda.APIGatewayProxyEvent
+  event: AWSLambda.APIGatewayProxyEvent,
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
+  const xmlHeaders = { "Content-Type": "application/xml; charset=UTF-8" };
+
   try {
-    const appContext = createAppContext();
     authenticateRequest(event.headers);
     parseRequest(event.body);
 
     const soapRequest = event.body;
 
-    const result = await handleSoapRequest(appContext, soapRequest!);
+    const result = await handleSoapRequest(lambdaAppContext, soapRequest!);
     return {
       statusCode: 200,
       body: result,
+      headers: xmlHeaders,
     };
   } catch (err) {
     return handleLambdaError(err);

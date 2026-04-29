@@ -64,14 +64,18 @@ module "lambda" {
 module "api_gateway" {
   source = "./modules/api-gateway"
 
-  project_name                = var.project_name
-  environment                 = local.environment
-  api_gateway_stage_name      = var.api_gateway_stage_name
-  soap_api_function_name      = module.lambda.soap_api_function_name
-  soap_api_invoke_arn         = module.lambda.soap_api_invoke_arn
-  soap_resource_function_name = module.lambda.soap_resource_function_name
-  soap_resource_invoke_arn    = module.lambda.soap_resource_invoke_arn
-  pay_page_function_name      = module.lambda.pay_page_function_name
-  pay_page_invoke_arn         = module.lambda.pay_page_invoke_arn
-  common_tags                 = local.common_tags
+  project_name                      = var.project_name
+  environment                       = local.environment
+  api_gateway_stage_name            = var.api_gateway_stage_name
+  soap_api_function_name            = module.lambda.soap_api_function_name
+  soap_api_invoke_arn               = module.lambda.soap_api_invoke_arn
+  soap_resource_function_name       = module.lambda.soap_resource_function_name
+  soap_resource_invoke_arn          = module.lambda.soap_resource_invoke_arn
+  pay_page_function_name            = module.lambda.pay_page_function_name
+  pay_page_invoke_arn               = module.lambda.pay_page_invoke_arn
+  mark_payment_status_function_name = module.lambda.mark_payment_status_function_name
+  mark_payment_status_invoke_arn    = module.lambda.mark_payment_status_invoke_arn
+  get_script_function_name          = module.lambda.get_script_function_name
+  get_script_invoke_arn             = module.lambda.get_script_invoke_arn
+  common_tags                       = local.common_tags
 }

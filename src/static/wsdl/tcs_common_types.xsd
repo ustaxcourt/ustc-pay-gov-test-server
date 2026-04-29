@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+  targetNamespace="http://fms.treas.gov/services/tcsonline_3_1/common"
+  elementFormDefault="qualified">
+  <xsd:simpleType name="paymentStatus">
+    <xsd:restriction base="xsd:string">
+      <xsd:enumeration value="Success"/>
+      <xsd:enumeration value="Failed"/>
+    </xsd:restriction>
+  </xsd:simpleType>
+</xsd:schema>

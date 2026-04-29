@@ -1,18 +1,20 @@
 import { TransactionStatus } from "./TransactionStatus";
 
 export type TransactionType = "Sale" | "Authorization";
-export type PaymentType = "PLASTIC_CARD" | "ACH" | "PAYPAL";
+export type PaymentType = (typeof VALID_PAYMENT_TYPES)[number];
 export type PaymentFrequencyType = "ONE_TIME";
 export type PaymentStatus = "Success" | "Failed" | "Pending";
 export type MarkablePaymentStatus = "Success" | "Failed";
 
-const VALID_PAYMENT_TYPES: PaymentType[] = ["PLASTIC_CARD", "ACH", "PAYPAL"];
+export const VALID_PAYMENT_TYPES = ["PLASTIC_CARD", "ACH", "PAYPAL"] as const;
 
 export function isPaymentType(value: unknown): value is PaymentType {
   return VALID_PAYMENT_TYPES.includes(value as PaymentType);
 }
 
-export function isMarkablePaymentStatus(value: unknown): value is MarkablePaymentStatus {
+export function isMarkablePaymentStatus(
+  value: unknown,
+): value is MarkablePaymentStatus {
   return ["Success", "Failed"].includes(value as string);
 }
 

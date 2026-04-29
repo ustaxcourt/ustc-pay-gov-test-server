@@ -99,3 +99,23 @@ jobs:
         if: steps.plan.outputs.exitcode == '2'
         working-directory: terraform
         run: terraform apply -input=false -auto-approve -lock-timeout=2m
+
+      - name: Resolve static asset bucket
+        id: static-assets
+        working-directory: terraform
+        run: |
+          set -e
+          BUCKET=$(terraform output -raw s3_bucket_name 2>/dev/null || true)
+          if [ -z "$BUCKET" ]; then
+            echo "::error::Terraform output 's3_bucket_name' is empty or not defined"
+            echo "Available outputs:"
+            terraform output || true
+            exit 1
+          fi
+          echo "Resolved static asset bucket: $BUCKET"
+          echo "bucket=$BUCKET" >> "$GITHUB_OUTPUT"
+
+      - name: Upload pay page static assets
+        run: |
+          aws s3 sync src/static/html s3://${{ steps.static-assets.outputs.bucket }}/html --delete
+          aws s3 sync src/static/wsdl s3://${{ steps.static-assets.outputs.bucket }}/wsdl --delete
