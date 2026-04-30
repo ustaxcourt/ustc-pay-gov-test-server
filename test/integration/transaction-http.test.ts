@@ -12,6 +12,7 @@ import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { NotFoundError } from "../../src/errors/NotFoundError";
 import { paygovTrackingIdRegex } from "../../src/useCaseHelpers/generatePaygovTrackingId";
 import { MISSING_TOKEN_SOAP_FAULT } from "../../src/errors/MissingTokenError";
+import { MISSING_TCS_APPID_SOAP_FAULT } from "../../src/errors/MissingTcsAppIdError";
 
 const toMoneyString = (value: string | number) =>
   Number.parseFloat(String(value)).toFixed(2);
@@ -292,6 +293,37 @@ describe("initiate transaction", () => {
   });
 
   describe("handleCompleteOnlineCollectionWithDetails", () => {
+    it("returns 400 when tcs_app_id is missing", async () => {
+      const { token } = await startOnlineCollection(amount);
+
+      const builder = new XMLBuilder(xmlOptions);
+      const xmlBody = builder.build({
+        "soapenv:Envelope": {
+          "soapenv:Header": {},
+          "soapenv:Body": {
+            "tcs:completeOnlineCollectionWithDetails": {
+              completeOnlineCollectionWithDetailsRequest: { token },
+            },
+          },
+          "@xmlns:soapenv": "http://schemas.xmlsoap.org/soap/envelope/",
+          "@xmlns:tcs": "http://fms.treas.gov/services/tcsonline_3_1",
+        },
+      });
+
+      const result = await fetch(wsdlUrl, {
+        method: "POST",
+        body: xmlBody,
+        headers: {
+          "Content-type": "application/soap+xml",
+          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+        },
+      });
+      const body = await result.text();
+
+      expect(result.status).toBe(400);
+      expect(body).toBe(MISSING_TCS_APPID_SOAP_FAULT);
+    });
+
     it("should process a successful transaction", async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
@@ -1190,6 +1222,7 @@ describe("initiate transaction", () => {
         body: toSoapEnvelope({
           "tcs:completeOnlineCollection": {
             completeOnlineCollectionRequest: {
+              tcs_app_id: tcsAppId,
               token,
             },
           },
