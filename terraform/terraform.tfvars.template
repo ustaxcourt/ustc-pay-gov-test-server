@@ -16,7 +16,10 @@ lambda_timeout     = 30
 lambda_memory_size = 512
 
 # Application Configuration
-node_env = "development"
+# NODE_ENV is the Node.js runtime mode. APP_ENV identifies the deployment
+# topology. See doc/architecture/decisions/0004-app-env-vs-node-env.md.
+node_env = "production"
+app_env  = "dev"
 
 # S3 Configuration
 s3_force_destroy = true

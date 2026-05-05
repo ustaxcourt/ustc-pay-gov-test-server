@@ -26,17 +26,24 @@ In the following workflow, this USTC Pay.gov Dev Server takes the place of Pay.g
 
 ## Environment Variables
 
-Environment variables are located in `.env` and `.env.prod`.
+The `.env` file in this repo is for **local development only** — it provides
+the variables a developer needs to run the test server against the local
+filesystem (no S3). Deployed environments get their configuration from
+Terraform — see [terraform/](terraform/) and
+[ADR 0004](doc/architecture/decisions/0004-app-env-vs-node-env.md).
 
-- `.env` this is used for local development. You can stand up a local dev server and use it to process transactions locally.
-- `.env.prod` this is used by `serverless.yml` and `npm run test:integration:prod`
+For local setup instructions, see [running-locally.md](running-locally.md).
+The full list of variables is in [`.env.example`](.env.example).
 
-| Environment Variable | Example Value                                                   | Description                                                                                                                                                |
-| -------------------- | --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BASE_URL`           | `https://pay-gov-dev.ustaxcourt.gov` or `http://localhost:3366` | The URL that serves this application.                                                                                                                      |
-| `ACCESS_TOKEN`       | `asdf123`                                                       | A random string that that is used to authenticate requests. The server looks for the header `Authentication`: `Bearer ${ACCESS_TOKEN}`.                    |
-| `PORT`               | `3366`                                                          | The port for the Express server when using local development. This not used on the deployed instance.                                                      |
-| `NODE_ENV`           | `local` or `production`                                         | The environment where the application is running. The production environment uses S3 for storing files, whereas the local environment uses the filesystem. |
+### How the environment layer is structured
+
+A few variables have semantic meaning beyond just "set this value":
+
+- **`APP_ENV`** identifies the deployment topology — one of `local`, `dev`,
+  or `test`. Read it via `getAppEnv()` / `isLocal()` / `isDeployed()` from
+  [`src/config/appEnv.ts`](src/config/appEnv.ts), not directly from `process.env`.
+- **`NODE_ENV`** is the Node runtime mode — `development`, `production`, or
+  `test`. Set automatically by Jest in test runs.
 
 ## Deployment
 

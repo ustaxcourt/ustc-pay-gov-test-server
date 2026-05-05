@@ -46,7 +46,7 @@ jobs:
           BASE_URL=http://localhost:3366
           ACCESS_TOKEN=asdf123
           PORT=3366
-          NODE_ENV=local
+          APP_ENV=local
           EOF
 
       - name: Start server in background

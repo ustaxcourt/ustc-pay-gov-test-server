@@ -33,9 +33,15 @@ variable "base_url" {
 }
 
 variable "node_env" {
-  description = "Node.js environment"
+  description = "Node.js runtime mode. One of: development, production, test."
   type        = string
-  default     = "development"
+  default     = "production"
+}
+
+variable "app_env" {
+  description = "Deployment topology of this service. One of: local, dev, test."
+  type        = string
+  default     = "dev"
 }
 
 # Lambda Configuration

@@ -2,15 +2,7 @@
 
 This will give you everything you need to run the test server locally.
 
-- Create a `.env` file and add the following variables:
-
-```
-BASE_URL=http://localhost:3366
-ACCESS_TOKEN=asdf123
-PORT=3366
-NODE_ENV=local
-```
-
+- Copy `.env.example` to `.env` (`cp .env.example .env`).
 - Run `npm install`
 - Run `npm run build`
 - Run `npm run dev`
