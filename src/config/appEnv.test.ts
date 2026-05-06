@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
-import { getAppEnv, isDeployed, isLocal } from "./appEnv";
+import { type AppEnv, getAppEnv, isDeployed, isLocal } from "./appEnv";
 
 describe("appEnv", () => {
   let originalAppEnv: string | undefined;
@@ -14,7 +14,7 @@ describe("appEnv", () => {
     Reflect.deleteProperty(process.env, "APP_ENV");
     Reflect.deleteProperty(process.env, "NODE_ENV");
     if (originalAppEnv !== undefined) {
-      process.env.APP_ENV = originalAppEnv as "local" | "dev" | "test";
+      process.env.APP_ENV = originalAppEnv as AppEnv;
     }
     if (originalNodeEnv !== undefined) {
       process.env.NODE_ENV = originalNodeEnv as
@@ -54,7 +54,7 @@ describe("appEnv", () => {
   });
 
   describe("isLocal", () => {
-    it.each<[boolean, "local" | "dev" | "test"]>([
+    it.each<[boolean, AppEnv]>([
       [true, "local"],
       [false, "dev"],
       [false, "test"],
@@ -65,7 +65,7 @@ describe("appEnv", () => {
   });
 
   describe("isDeployed", () => {
-    it.each<[boolean, "local" | "dev" | "test"]>([
+    it.each<[boolean, AppEnv]>([
       [false, "local"],
       [true, "dev"],
       [false, "test"],

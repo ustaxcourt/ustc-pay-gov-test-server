@@ -8,10 +8,15 @@ export const getAppEnv = (): AppEnv => {
   const raw = process.env.APP_ENV;
 
   if (!raw) {
+    // Jest sets NODE_ENV=test automatically; treat that as APP_ENV=test so
+    // unit tests don't have to set both. This is the only place NODE_ENV
+    // influences app environment — do not extend this pattern elsewhere.
     if (process.env.NODE_ENV === "test") {
       return "test";
     }
-    throw new Error("APP_ENV is not set");
+    throw new Error(
+      "APP_ENV is not set. Set it to one of: local, dev, test (e.g., copy .env.example to .env).",
+    );
   }
 
   if (!isAppEnv(raw)) {
