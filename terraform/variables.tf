@@ -35,13 +35,19 @@ variable "base_url" {
 variable "node_env" {
   description = "Node.js runtime mode. One of: development, production, test."
   type        = string
-  default     = "production"
+  validation {
+    condition     = contains(["development", "production", "test"], var.node_env)
+    error_message = "node_env must be one of: development, production, test."
+  }
 }
 
 variable "app_env" {
   description = "Deployment topology of this service. One of: local, dev, test."
   type        = string
-  default     = "dev"
+  validation {
+    condition     = contains(["local", "dev", "test"], var.app_env)
+    error_message = "app_env must be one of: local, dev, test."
+  }
 }
 
 # Lambda Configuration

@@ -20,6 +20,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      # Deployment topology — declared, not defaulted. See ADR 0004.
+      TF_VAR_node_env: production
+      TF_VAR_app_env: dev
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

@@ -45,6 +45,16 @@ A few variables have semantic meaning beyond just "set this value":
 - **`NODE_ENV`** is the Node runtime mode — `development`, `production`, or
   `test`. Set automatically by Jest in test runs.
 
+### Variables
+
+| Environment Variable | Example Value                                                   | Description                                                                                                                                                              |
+| -------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BASE_URL`           | `https://pay-gov-dev.ustaxcourt.gov` or `http://localhost:3366` | The URL that serves this application.                                                                                                                                    |
+| `ACCESS_TOKEN`       | `asdf123`                                                       | A random string used to authenticate requests. The server looks for the header `Authentication`: `Bearer ${ACCESS_TOKEN}`.                                               |
+| `PORT`               | `3366`                                                          | The port for the Express server when running locally. Not used on the deployed instance.                                                                                 |
+| `NODE_ENV`           | `development`, `production`, or `test`                          | Node.js runtime mode. Jest sets this to `test` automatically; deployed envs use `production`. Do **not** use this to encode deployment topology — use `APP_ENV` instead. |
+| `APP_ENV`            | `local`, `dev`, or `test`                                       | Deployment topology. `local` selects the filesystem storage client; `dev` selects S3. Read via `getAppEnv()` / `isLocal()` / `isDeployed()`.                             |
+
 ## Deployment
 
 This gets deployed to the ent-apps-pay-gov-workloads-dev AWS Account via terraform. The IaC documentation is found [here](terraform/README.md)
@@ -105,10 +115,10 @@ npm run test:integration
 
 ### Deployed Integration Tests
 
-In order to test and ensure the production server is running properly, you can run the integration tests on the prod instance. This ensures that the instance is handling requests as expected. It does rely on the proper environment config to be specified in `.env.prod`.
+To verify the deployed server is running properly, you can run the integration tests against it. This ensures the instance is handling requests as expected, and relies on the proper environment config in `.env.prod`.
 
 ```
-npm run test:integration:prod
+npm run test:integration:deployed
 ```
 
 ## Publishing

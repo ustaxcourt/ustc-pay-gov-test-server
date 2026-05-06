@@ -1,6 +1,14 @@
 import { AddressInfo } from "net";
 import { Server } from "http";
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
+import type { AppEnv } from "../../src/config/appEnv";
+
+const restoreAppEnv = (original: string | undefined) => {
+  Reflect.deleteProperty(process.env, "APP_ENV");
+  if (original !== undefined) {
+    process.env.APP_ENV = original as AppEnv;
+  }
+};
 
 describe("test resources", () => {
   let server: Server;
@@ -39,9 +47,7 @@ describe("test resources", () => {
         resolve();
       });
     });
-    if (originalAppEnv) {
-      process.env.APP_ENV = originalAppEnv as "local" | "dev" | "test";
-    }
+    restoreAppEnv(originalAppEnv);
   });
 
   it("should not serve the resources without the api token", async () => {

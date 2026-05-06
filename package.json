@@ -19,7 +19,7 @@
     "start": "node .",
     "test:integration": "APP_ENV=local jest --verbose --bail ./test/integration",
     "test:integration:coverage": "APP_ENV=local jest --config jest.config.ts --coverage --testPathPattern=integration",
-    "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod APP_ENV=dev jest --bail ./test/integration",
+    "test:integration:deployed": "DOTENV_CONFIG_PATH=.env.prod APP_ENV=dev jest --bail ./test/integration",
     "ci:publish": "changeset publish --provenance"
   },
   "keywords": [],
