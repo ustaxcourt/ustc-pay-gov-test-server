@@ -5,6 +5,7 @@ temp/
 coverage/
 dist/
 .env*
+!.env.example
 resources/
 
 # Ignore Terraform static assets

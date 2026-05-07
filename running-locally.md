@@ -2,15 +2,7 @@
 
 This will give you everything you need to run the test server locally.
 
-- Create a `.env` file and add the following variables:
-
-```
-BASE_URL=http://localhost:3366
-ACCESS_TOKEN=asdf123
-PORT=3366
-NODE_ENV=local
-```
-
+- Copy `.env.example` to `.env` (`cp .env.example .env`).
 - Run `npm install`
 - Run `npm run build`
 - Run `npm run dev`
@@ -28,6 +20,28 @@ NODE_ENV=local
 ```
 
 **You can now reach the server at localhost:3366**
+
+## Running `terraform plan` locally
+
+`node_env` and `app_env` are required Terraform variables (no defaults), so a
+local `terraform plan` needs values supplied one of two ways:
+
+- **`terraform.tfvars`** — copy the template:
+
+  ```bash
+  cp terraform/terraform.tfvars.template terraform/terraform.tfvars
+  ```
+
+- **Shell exports** — set both `TF_VAR_*` variables in your shell:
+
+  ```bash
+  export TF_VAR_node_env=production
+  export TF_VAR_app_env=dev
+  ```
+
+CI passes both via job-level `env:` — see
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) and
+[`.github/workflows/pr-validate.yml`](.github/workflows/pr-validate.yml).
 
 ## Manual curl testing
 

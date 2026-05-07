@@ -1,11 +1,23 @@
 import { AddressInfo } from "net";
 import { Server } from "http";
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
+import { isAppEnv } from "../../src/config/appEnv";
+
+const restoreAppEnv = (original: string | undefined) => {
+  Reflect.deleteProperty(process.env, "APP_ENV");
+  if (original === undefined) return;
+  if (!isAppEnv(original)) {
+    throw new Error(
+      `Cannot restore APP_ENV to invalid value "${original}" — bad test setup leaked into beforeAll snapshot.`,
+    );
+  }
+  process.env.APP_ENV = original;
+};
 
 describe("test resources", () => {
   let server: Server;
   let baseUrl: string;
-  let originalNodeEnv: string | undefined;
+  let originalAppEnv: string | undefined;
   const resourcesToCheck = [
     "wsdl/TCSOnlineService_3_1.wsdl",
     "wsdl/TCSOnlineService_3_1.xsd",
@@ -14,8 +26,8 @@ describe("test resources", () => {
   ];
 
   beforeAll(async () => {
-    originalNodeEnv = process.env.NODE_ENV;
-    process.env.NODE_ENV = "local";
+    originalAppEnv = process.env.APP_ENV;
+    process.env.APP_ENV = "local";
     const { app } = await import("../../src/app");
     server = await new Promise<Server>((resolve, reject) => {
       const listeningServer = app.listen(0, () => {
@@ -39,9 +51,7 @@ describe("test resources", () => {
         resolve();
       });
     });
-    if (originalNodeEnv) {
-      process.env.NODE_ENV = originalNodeEnv as "local" | "development";
-    }
+    restoreAppEnv(originalAppEnv);
   });
 
   it("should not serve the resources without the api token", async () => {

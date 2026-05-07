@@ -60,6 +60,7 @@ locals {
     BUCKET_NAME  = var.s3_bucket_id
     ACCESS_TOKEN = var.access_token
     NODE_ENV     = var.node_env
+    APP_ENV      = var.app_env
   }
 
   lambda_log_retention_days = 14
