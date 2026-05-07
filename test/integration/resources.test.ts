@@ -1,13 +1,17 @@
 import { AddressInfo } from "net";
 import { Server } from "http";
 import { afterAll, beforeAll, describe, expect, it } from "@jest/globals";
-import type { AppEnv } from "../../src/config/appEnv";
+import { isAppEnv } from "../../src/config/appEnv";
 
 const restoreAppEnv = (original: string | undefined) => {
   Reflect.deleteProperty(process.env, "APP_ENV");
-  if (original !== undefined) {
-    process.env.APP_ENV = original as AppEnv;
+  if (original === undefined) return;
+  if (!isAppEnv(original)) {
+    throw new Error(
+      `Cannot restore APP_ENV to invalid value "${original}" — bad test setup leaked into beforeAll snapshot.`,
+    );
   }
+  process.env.APP_ENV = original;
 };
 
 describe("test resources", () => {
