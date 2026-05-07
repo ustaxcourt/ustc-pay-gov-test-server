@@ -6,7 +6,7 @@ PAY-299: Stop overloading `NODE_ENV` to encode deployment topology. Restrict
 `NODE_ENV` to its three legal values (`development | production | test`) and
 introduce a new `APP_ENV` variable (`local | dev | test`) for the deployment
 context. Read `APP_ENV` through the typed accessor in `src/config/appEnv.ts`
-(`getAppEnv()`, `isLocal()`, `isDeployed()`); the TypeScript compiler now
+(`getAppEnv()`, `isLocal()`); the TypeScript compiler now
 rejects any string equality between `NODE_ENV` and disallowed values like
 `"local"` or `"prod"`.
 

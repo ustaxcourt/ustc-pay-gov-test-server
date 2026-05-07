@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "@jest/globals";
-import { type AppEnv, getAppEnv, isDeployed, isLocal } from "./appEnv";
+import { type AppEnv, getAppEnv, isLocal } from "./appEnv";
 
 describe("appEnv", () => {
   let originalAppEnv: string | undefined;
@@ -61,17 +61,6 @@ describe("appEnv", () => {
     ])("returns %s when APP_ENV=%s", (expected, value) => {
       process.env.APP_ENV = value;
       expect(isLocal()).toBe(expected);
-    });
-  });
-
-  describe("isDeployed", () => {
-    it.each<[boolean, AppEnv]>([
-      [false, "local"],
-      [true, "dev"],
-      [false, "test"],
-    ])("returns %s when APP_ENV=%s", (expected, value) => {
-      process.env.APP_ENV = value;
-      expect(isDeployed()).toBe(expected);
     });
   });
 });

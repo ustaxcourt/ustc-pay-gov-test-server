@@ -43,9 +43,15 @@ Use two variables with non-overlapping value spaces:
 
 `APP_ENV` is read only through the typed accessor in
 [`src/config/appEnv.ts`](../../../src/config/appEnv.ts):
-`getAppEnv()`, `isLocal()`, `isDeployed()`. Direct access to
-`process.env.APP_ENV` from application code is discouraged — the accessor
-validates the value and fails fast at cold start on misconfiguration.
+`getAppEnv()` and `isLocal()`. Direct access to `process.env.APP_ENV`
+from application code is discouraged — the accessor validates the value
+and fails fast at cold start on misconfiguration.
+
+The `test` value of `APP_ENV` is a Jest-only fallback (`getAppEnv()`
+returns it when `NODE_ENV=test` and `APP_ENV` is unset, so unit tests
+don't have to set both). Production code paths should not branch on
+`APP_ENV === "test"`; unit tests that exercise the storage layer should
+mock `storageClient()` directly.
 
 `src/types/environment.d.ts` narrows `NODE_ENV` to its three legal values, so
 the TypeScript compiler rejects any new code that compares `NODE_ENV` against
@@ -64,12 +70,12 @@ production deployment of this service to justify it.
   previously ran with `NODE_ENV=development`. It now runs with
   `NODE_ENV=production` (the deployment topology is carried by `APP_ENV=dev`
   instead). Express stops serving verbose error pages in this state — closer
-  prod parity. The S3 branch in the storage client is now selected via
-  `isDeployed()` rather than literal-matching `NODE_ENV`.
+  prod parity. The S3 branch in the storage client is now selected via the
+  negation of `isLocal()` rather than literal-matching `NODE_ENV`.
 - **Single source of truth for "where am I running."** Every check that used
   to read `process.env.NODE_ENV` now goes through `appEnv.ts`. Adding a new
-  deployment env (e.g., `prod`) is a one-line union extension plus updating
-  `isDeployed()`.
+  deployment env (e.g., `prod`) is a one-line union extension in
+  [`appEnv.ts`](../../../src/config/appEnv.ts).
 
 ## References
 

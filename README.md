@@ -40,20 +40,20 @@ The full list of variables is in [`.env.example`](.env.example).
 A few variables have semantic meaning beyond just "set this value":
 
 - **`APP_ENV`** identifies the deployment topology — one of `local`, `dev`,
-  or `test`. Read it via `getAppEnv()` / `isLocal()` / `isDeployed()` from
+  or `test`. Read it via `getAppEnv()` / `isLocal()` from
   [`src/config/appEnv.ts`](src/config/appEnv.ts), not directly from `process.env`.
 - **`NODE_ENV`** is the Node runtime mode — `development`, `production`, or
   `test`. Set automatically by Jest in test runs.
 
 ### Variables
 
-| Environment Variable | Example Value                                                   | Description                                                                                                                                                              |
-| -------------------- | --------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `BASE_URL`           | `https://pay-gov-dev.ustaxcourt.gov` or `http://localhost:3366` | The URL that serves this application.                                                                                                                                    |
-| `ACCESS_TOKEN`       | `asdf123`                                                       | A random string used to authenticate requests. The server looks for the header `Authentication`: `Bearer ${ACCESS_TOKEN}`.                                               |
-| `PORT`               | `3366`                                                          | The port for the Express server when running locally. Not used on the deployed instance.                                                                                 |
-| `NODE_ENV`           | `development`, `production`, or `test`                          | Node.js runtime mode. Jest sets this to `test` automatically; deployed envs use `production`. Do **not** use this to encode deployment topology — use `APP_ENV` instead. |
-| `APP_ENV`            | `local`, `dev`, or `test`                                       | Deployment topology. `local` selects the filesystem storage client; `dev` selects S3. Read via `getAppEnv()` / `isLocal()` / `isDeployed()`.                             |
+| Environment Variable | Example Value                                                   | Description                                                                                                                                                                                  |
+| -------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `BASE_URL`           | `https://pay-gov-dev.ustaxcourt.gov` or `http://localhost:3366` | The URL that serves this application.                                                                                                                                                        |
+| `ACCESS_TOKEN`       | `asdf123`                                                       | A random string used to authenticate requests. The server looks for the header `Authentication`: `Bearer ${ACCESS_TOKEN}`.                                                                   |
+| `PORT`               | `3366`                                                          | The port for the Express server when running locally. Not used on the deployed instance.                                                                                                     |
+| `NODE_ENV`           | `development`, `production`, or `test`                          | Node.js runtime mode. Jest sets this to `test` automatically; deployed envs use `production`. Do **not** use this to encode deployment topology — use `APP_ENV` instead.                     |
+| `APP_ENV`            | `local`, `dev`, or `test`                                       | Deployment topology. `local` → filesystem storage; `dev` → S3. `test` is a Jest fallback — unit tests should mock `storageClient()` rather than depend on this branch. Read via `isLocal()`. |
 
 ## Deployment
 

@@ -29,5 +29,3 @@ export const getAppEnv = (): AppEnv => {
 };
 
 export const isLocal = (): boolean => getAppEnv() === "local";
-
-export const isDeployed = (): boolean => getAppEnv() === "dev";
