@@ -35,6 +35,7 @@ variable "github_repo" {
 variable "github_oidc_provider_arn" {
   description = "ARN of the GitHub OIDC provider in this AWS account"
   type        = string
+  default     = "arn:aws:iam::803663093283:oidc-provider/token.actions.githubusercontent.com"
 }
 
 variable "deploy_role_name" {

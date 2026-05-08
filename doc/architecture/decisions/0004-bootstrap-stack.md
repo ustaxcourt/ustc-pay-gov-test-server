@@ -31,7 +31,7 @@ located at `terraform/bootstrap/`, with these properties:
 | State | S3 bucket `ustc-pay-gov-terraform-state`, key `ustc-pay-gov-test-server/bootstrap.tfstate` (separate from app state) |
 | Apply path | Manual, from a developer's workstation via `aws sso login` — never from CI |
 | Cross-stack references | Constructed ARN patterns based on naming convention; **no** `terraform_remote_state` coupling |
-| Access control | Repo-level `CODEOWNERS` requires platform-reviewer approval for `terraform/bootstrap/**` |
+| Access control | Standard PR review (no CODEOWNERS gate) — IAM changes are reviewed by convention with the platform reviewer |
 
 The bootstrap stack manages exactly two AWS resources:
 `aws_iam_role.github_actions_deployer` and
@@ -42,7 +42,7 @@ the app stack at `terraform/`.
 
 - **Permission additions are explicit and human-reviewed.** Adding a new IAM
   action to the deployer is a code change to `terraform/bootstrap/main.tf`,
-  reviewed via CODEOWNERS, and applied manually. CI cannot self-grant
+  reviewed in a normal PR, and applied manually. CI cannot self-grant
   permissions.
 - **Drift risk on naming.** The bootstrap policy constructs app-resource
   ARNs from naming convention (`${project}-${env}-*`). If app naming
