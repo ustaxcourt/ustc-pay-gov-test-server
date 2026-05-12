@@ -34,7 +34,7 @@ describe("initiate transaction", () => {
   let previousBaseUrl: string | undefined;
 
   beforeAll(async () => {
-    process.env.NODE_ENV = "local";
+    process.env.APP_ENV = "local";
     const { app } = await import("../../src/app");
     server = await new Promise<Server>((resolve, reject) => {
       const listeningServer = app.listen(0, () => {
