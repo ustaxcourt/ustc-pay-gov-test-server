@@ -11,7 +11,12 @@ already having that permission. See
 
 ## When to apply
 
-Apply the bootstrap stack in these (rare) situations:
+**Running `terraform apply` locally from your workstation is allowed — and
+required — for this stack.** Unlike the app stack (which is applied by CI on
+push to `main`), the bootstrap stack is operator-driven and must be applied
+manually by a user with admin permissions.
+
+Apply the bootstrap stack locally in these (rare) situations:
 
 1. **A deploy failed because the deployer is missing an IAM permission.**
    This is the recurring case. Add the missing action to `main.tf`, get the
@@ -20,9 +25,9 @@ Apply the bootstrap stack in these (rare) situations:
    pattern, new repo allowed to assume the role).
 3. **First-time setup of a new environment.**
 
-The bootstrap stack does **not** run in CI. CI uses the deployer role itself,
-so applying bootstrap from CI would defeat the purpose.
-
+The bootstrap stack **must not run in CI.** CI uses the deployer role itself,
+so applying bootstrap from CI would defeat the purpose (the role can't grant
+itself new permissions).
 ## How to apply
 
 ### Prerequisites
