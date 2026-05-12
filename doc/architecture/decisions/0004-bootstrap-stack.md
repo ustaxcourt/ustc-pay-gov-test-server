@@ -73,7 +73,6 @@ the app stack at `terraform/`.
 
 ## References
 
-- [PAY-303 implementation plan](../../PAY-303-plan.md)
 - [terraform/bootstrap/](../../../terraform/bootstrap/) — the new stack
 - [terraform/bootstrap/README.md](../../../terraform/bootstrap/README.md) —
   operator-facing apply instructions

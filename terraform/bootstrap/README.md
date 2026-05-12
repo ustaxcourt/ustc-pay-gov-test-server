@@ -4,11 +4,10 @@ This directory manages the IAM resources that the **app stack's** CI/CD relies
 on to deploy. Specifically: the GitHub OIDC deployer role
 (`ustc-github-actions-oidc-deployer-role`) and its inline policy.
 
-It exists as a separate Terraform stack because of the chicken-and-egg
+It exists as a separate Terraform stack because of a chicken-and-egg
 problem: if the role's permissions are managed by the same Terraform that
 uses the role to apply changes, you can't add a new permission without
 already having that permission. See
-[doc/PAY-303-plan.md](../../doc/PAY-303-plan.md) for the full rationale.
 
 ## When to apply
 
@@ -141,10 +140,3 @@ The recurring task this stack exists for. Workflow:
 - **Locking:** S3 native (`use_lockfile = true`).
 - **Separate from app state** — by design. App state lives at the same
   bucket under key `ustc-pay-gov-test-server/terraform.tfstate`.
-
-## See also
-
-- [doc/PAY-303-plan.md](../../doc/PAY-303-plan.md) — full implementation plan
-  and rationale.
-- [../iam-oidc-github.tf](../iam-oidc-github.tf) — the original (deleted
-  after Phase 4 of PAY-303).

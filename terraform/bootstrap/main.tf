@@ -105,11 +105,6 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
       # App S3 bucket (wsdl/html assets uploaded during deploy)
       {
         Effect   = "Allow"
-        Action   = ["s3:ListBucket"]
-        Resource = local.app_bucket_arn
-      },
-      {
-        Effect   = "Allow"
         Action   = ["s3:GetObject", "s3:PutObject", "s3:DeleteObject"]
         Resource = "${local.app_bucket_arn}/*"
       },

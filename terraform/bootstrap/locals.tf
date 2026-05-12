@@ -3,10 +3,6 @@ locals {
 
   github_sub = "repo:${var.github_org}/${var.github_repo}:*"
 
-  # Constructed ARN patterns. Bootstrap does not read app-stack state — these
-  # patterns must match the app stack's resource naming conventions exactly.
-  # See doc/PAY-303-plan.md for the inventory of cross-references resolved
-  # this way and the env-first vs project-first ordering warning.
 
   # Lambda functions: ${project}-${env}-* (terraform/modules/lambda/lambda.tf)
   lambda_function_arn_pattern = "arn:aws:lambda:${var.aws_region}:${local.account_id}:function:${var.project_name}-${var.environment}-*"
