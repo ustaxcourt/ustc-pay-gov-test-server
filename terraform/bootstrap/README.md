@@ -85,10 +85,16 @@ terraform import aws_iam_role.github_actions_deployer ustc-github-actions-oidc-d
 terraform import aws_iam_role_policy.github_actions_permissions \
   ustc-github-actions-oidc-deployer-role:ustc-pay-gov-test-server-dev-ci-deployer
 
-# 4. Verify the diff is policy-only
+# 4. Verify the diff is policy + tag-only
 terraform plan
-# Expected: ONLY the new logs:* permissions added. The role itself must show
-# no changes. If the role appears in the diff, STOP and investigate.
+# Expected diffs:
+#   - aws_iam_role_policy.github_actions_permissions: the new logs:* permissions added.
+#   - aws_iam_role.github_actions_deployer: a TAG-ONLY update changing
+#     ManagedBy from "terraform" to "terraform-bootstrap" (and any other tag
+#     differences between the two stacks' common_tags). This is expected on
+#     first cutover because ownership is moving between stacks.
+# STOP if you see anything else on the role — especially name, assume_role_policy,
+# or recreate (-/+). Those indicate state drift or an ARN mismatch.
 
 # 5. Apply
 terraform apply
