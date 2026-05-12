@@ -4,13 +4,13 @@ locals {
   github_sub = "repo:${var.github_org}/${var.github_repo}:*"
 
 
-  # Lambda functions: ${project}-${env}-* (terraform/modules/lambda/lambda.tf)
+  # Lambda functions: ${project}-${env}-* (see terraform/modules/lambda/lambda.tf)
   lambda_function_arn_pattern = "arn:aws:lambda:${var.aws_region}:${local.account_id}:function:${var.project_name}-${var.environment}-*"
 
-  # Lambda execution role: ${project}-${env}-lambda-role (terraform/iam.tf:3)
+  # Lambda execution role: ${project}-${env}-lambda-role (see terraform/iam.tf)
   lambda_role_arn = "arn:aws:iam::${local.account_id}:role/${var.project_name}-${var.environment}-lambda-role"
 
-  # App S3 bucket: ${env}-${project} (terraform/locals.tf:18) — note env-first ordering
+  # App S3 bucket: ${env}-${project} (see terraform/locals.tf bucket_name) — note env-first ordering
   app_bucket_arn = "arn:aws:s3:::${var.environment}-${var.project_name}"
 
   # Lambda log groups: /aws/lambda/${project}-${env}-*

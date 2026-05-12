@@ -141,7 +141,10 @@ resource "aws_iam_role_policy" "github_actions_permissions" {
           "logs:UntagResource",
           "logs:DescribeLogStreams"
         ]
-        Resource = local.log_group_arn_pattern
+        Resource = [
+          local.log_group_arn_pattern,
+          "${local.log_group_arn_pattern}:*",
+        ]
       },
 
       # Account-level log-group describe (no resource-level scoping available)

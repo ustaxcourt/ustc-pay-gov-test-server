@@ -7,7 +7,6 @@ on to deploy. Specifically: the GitHub OIDC deployer role
 It exists as a separate Terraform stack because of a chicken-and-egg
 problem: if the role's permissions are managed by the same Terraform that
 uses the role to apply changes, you can't add a new permission without
-already having that permission. See
 
 ## When to apply
 
