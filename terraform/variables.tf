@@ -96,8 +96,3 @@ variable "route53_zone_id" {
   default     = ""
 }
 
-variable "tf_lock_table_name" {
-  description = "Name of the DynamoDB table used for Terraform state locking for this environment"
-  type        = string
-  default     = ""
-}

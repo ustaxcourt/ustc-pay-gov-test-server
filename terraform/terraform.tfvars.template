@@ -42,6 +42,3 @@ api_gateway_stage_name = "dev"
 # 2. AWS Secrets Manager (recommended for production)
 # 3. Terraform Cloud/Enterprise variables
 access_token = "CHANGE_ME_OR_SET_VIA_ENV_VAR"
-
-# Backend Lock Configuration (DynamoDB; only set if not using S3 native locking)
-tf_lock_table_name = ""
