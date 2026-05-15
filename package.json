@@ -1,6 +1,6 @@
 {
   "name": "@ustaxcourt/ustc-pay-gov-test-server",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "USTC Pay.gov test server",
   "main": "dist/index.js",
   "repository": {
@@ -20,7 +20,7 @@
     "test:integration": "APP_ENV=local jest --verbose --bail ./test/integration",
     "test:integration:coverage": "APP_ENV=local jest --config jest.config.ts --coverage --testPathPattern=integration",
     "test:integration:deployed": "DOTENV_CONFIG_PATH=.env.prod APP_ENV=dev jest --bail ./test/integration",
-    "ci:publish": "changeset publish --provenance"
+    "ci:publish": "changeset publish"
   },
   "keywords": [],
   "author": "",
