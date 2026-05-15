@@ -16,6 +16,7 @@ terraform/
 ├── build.sh                   # Lambda build script
 ├── deploy.sh                  # Automated deployment script
 ├── create-terraform-backend.sh # Backend setup automation script
+├── bootstrap/                 # Separate stack — IAM for the CI/CD deployer (see Bootstrap Stack below)
 └── modules/                   # Reusable infrastructure modules
     ├── s3/
     │   ├── s3.tf              # S3 bucket resources
@@ -131,6 +132,27 @@ terraform apply
 # Destroy resources (use with caution)
 terraform destroy
 ```
+
+## Bootstrap Stack
+
+The IAM resources used by CI/CD to deploy this app — specifically the GitHub
+OIDC deployer role and its inline policy — are managed in a separate
+Terraform stack at [`terraform/bootstrap/`](bootstrap/). It exists because of
+a chicken-and-egg problem: the deployer role can't grant itself a new
+permission via CI without already having that permission. The bootstrap
+stack is applied manually by a developer with `aws sso login`, never from
+CI.
+
+You only interact with this stack when:
+
+1. A deploy fails because the deployer is missing an IAM permission (the
+   recurring case).
+2. The OIDC trust policy needs updating.
+3. Setting up a new environment.
+
+See [`bootstrap/README.md`](bootstrap/README.md) for apply instructions and
+[ADR 0004](../doc/architecture/decisions/0004-bootstrap-stack.md) for the
+rationale.
 
 ## Environment Configuration
 
