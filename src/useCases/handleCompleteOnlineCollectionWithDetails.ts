@@ -10,6 +10,7 @@ import {
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
 import { TransactionStatus } from "../types/TransactionStatus";
 import { resolveTransactionStatus } from "../useCaseHelpers/resolveTransactionStatus";
+import { MissingTcsAppIdError } from "../errors/MissingTcsAppIdError";
 
 export type CompleteOnlineCollectionWithDetailsResponse = {
   paygov_tracking_id: string;
@@ -24,23 +25,29 @@ export type CompleteOnlineCollectionWithDetailsResponse = {
   number_of_installments: number;
 };
 
-export type HandleCompletOnlineCollectionWithDetails = (
+export type HandleCompleteOnlineCollectionWithDetails = (
   appContext: AppContext,
-  { token }: CompleteTransactionRequest
+  request: CompleteTransactionRequest,
 ) => Promise<string>;
 
-
-export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails =
-  async (appContext, { token }) => {
-    if (!token) {
+export const handleCompleteOnlineCollectionWithDetails: HandleCompleteOnlineCollectionWithDetails =
+  async (appContext, request) => {
+    if (!request.token) {
       throw new MissingTokenError();
     }
+
+    if (!request.tcs_app_id) {
+      throw new MissingTcsAppIdError();
+    }
+
+    const token = request.token;
 
     const transaction: InitiatedTransaction = await appContext
       .persistenceGateway()
       .getInitiatedTransaction(appContext, token);
 
-    const transactionStatus: TransactionStatus = resolveTransactionStatus(transaction);
+    const transactionStatus: TransactionStatus =
+      resolveTransactionStatus(transaction);
 
     const completedTransaction = appContext
       .useCaseHelpers()
@@ -62,7 +69,7 @@ export const handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineColle
         "payment_type",
         "payment_frequency",
         "number_of_installments",
-      ])
+      ]),
     };
 
     return appContext.useCaseHelpers().buildXml({
