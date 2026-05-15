@@ -1,4 +1,4 @@
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import { TransactionRequest } from "../types/Transaction";
 import { AppContext } from "../types/AppContext";
 
@@ -16,7 +16,7 @@ export const handleStartOnlineCollection: HandleStartOnlineCollection = async (
   transaction
 ) => {
   // build token (Strip the - from the uuid to get us to exactly 32 characters)
-  const token = uuidv4().replace(/-/g, "");
+  const token = randomUUID().replace(/-/g, "");
 
   // persist token
   await appContext.persistenceGateway().saveInitiatedTransaction(appContext, {

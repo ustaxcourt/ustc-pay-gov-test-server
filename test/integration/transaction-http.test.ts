@@ -1,5 +1,5 @@
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import { DateTime } from "luxon";
 import { Server } from "http";
 import { AddressInfo } from "net";
@@ -112,7 +112,7 @@ describe("initiate transaction", () => {
   };
 
   const startOnlineCollection = async (transactionAmount: string) => {
-    const agencyTrackingId = uuidv4();
+    const agencyTrackingId = randomUUID();
 
     const response = await postSoapRequest({
       "tcs:startOnlineCollection": {
@@ -1194,7 +1194,7 @@ describe("initiate transaction", () => {
           "tcs:startOnlineCollection": {
             startOnlineCollectionRequest: {
               tcs_app_id: tcsAppId,
-              agency_tracking_id: uuidv4(),
+              agency_tracking_id: randomUUID(),
               transaction_type: "Sale",
               transaction_amount: amount,
               language: "en",
@@ -1260,7 +1260,7 @@ describe("initiate transaction", () => {
     });
 
     it("returns 200 for valid request", async () => {
-      const token = `token-${uuidv4()}`;
+      const token = `token-${randomUUID()}`;
       const {
         handler: markPaymentStatusHandler,
         lambdaAppContext: markPaymentStatusLambdaAppContext,

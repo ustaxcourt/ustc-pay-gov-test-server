@@ -1,6 +1,6 @@
 import { Server } from "http";
 import { AddressInfo } from "net";
-import { v4 as uuidv4 } from "uuid";
+import { randomUUID } from "node:crypto";
 import { XMLBuilder, XMLParser } from "fast-xml-parser";
 import { jest, afterAll, beforeAll, describe, expect, it } from "@jest/globals";
 import { MISSING_TOKEN_SOAP_FAULT } from "../../src/errors/MissingTokenError";
@@ -45,7 +45,7 @@ describe("static web", () => {
   const startOnlineCollection = async (transactionAmount: string) => {
     const builder = new XMLBuilder(xmlOptions);
     const parser = new XMLParser(xmlOptions);
-    const agencyTrackingId = uuidv4();
+    const agencyTrackingId = randomUUID();
     const xmlBody = builder.build({
       "soapenv:Envelope": {
         "soapenv:Header": {},
@@ -187,7 +187,7 @@ describe("static web", () => {
           handler: getPayPageHandler,
           lambdaAppContext: getPayPageLambdaAppContext,
         } = await import("../../src/lambdas/getPayPageLambda");
-        const token = `token-${uuidv4()}`;
+        const token = `token-${randomUUID()}`;
         (getPayPageLambdaAppContext.files as Record<string, string>)[
           `requests/${token}.json`
         ] = JSON.stringify({
