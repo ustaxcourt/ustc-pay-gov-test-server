@@ -11,7 +11,7 @@ custom_domain = "pay-gov-dev.ustaxcourt.gov"
 base_url      = "pay-gov-dev.ustaxcourt.gov"
 
 # Lambda Configuration
-lambda_runtime     = "nodejs18.x"
+lambda_runtime     = "nodejs24.x"
 lambda_timeout     = 30
 lambda_memory_size = 512
 

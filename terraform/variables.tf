@@ -54,7 +54,7 @@ variable "app_env" {
 variable "lambda_runtime" {
   description = "Runtime for Lambda functions"
   type        = string
-  default     = "nodejs22.x"
+  default     = "nodejs24.x"
 }
 
 variable "lambda_timeout" {
@@ -95,4 +95,3 @@ variable "route53_zone_id" {
   type        = string
   default     = ""
 }
-
