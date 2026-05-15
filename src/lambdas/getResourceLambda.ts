@@ -4,7 +4,12 @@ import { handleLambdaError, handleLocalError } from "./handleError";
 import { authenticateRequest } from "./authenticateRequest";
 import { AppContext } from "../types/AppContext";
 
-const getResource = async (appContext: AppContext, filename?: string) => {
+export const lambdaAppContext = createAppContext();
+
+export const getResource = async (
+  appContext: AppContext,
+  filename?: string,
+) => {
   return appContext.useCases().getResource(appContext, { filename });
 };
 
@@ -20,18 +25,18 @@ export const getResourceLocal = async (req: Request, res: Response) => {
 };
 
 export const handler = async (
-  event: AWSLambda.APIGatewayProxyEvent
+  event: AWSLambda.APIGatewayProxyEvent,
 ): Promise<AWSLambda.APIGatewayProxyResult> => {
-  const appContext = createAppContext();
   try {
     authenticateRequest(event.headers);
     const result = await getResource(
-      appContext,
-      event.pathParameters?.filename
+      lambdaAppContext,
+      event.pathParameters?.filename,
     );
     return {
       statusCode: 200,
       body: result,
+      headers: { "Content-Type": "application/wsdl+xml; charset=UTF-8" },
     };
   } catch (err) {
     return handleLambdaError(err);

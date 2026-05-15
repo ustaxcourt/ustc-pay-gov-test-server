@@ -1,6 +1,7 @@
 import { CompleteTransactionRequest } from "../types/CompleteTransactionRequest";
 import { AppContext } from "../types/AppContext";
 import { MissingTokenError } from "../errors/MissingTokenError";
+import { MissingTcsAppIdError } from "../errors/MissingTcsAppIdError";
 
 export type CompleteOnlineCollectionResponse = {
   paygov_tracking_id: string;
@@ -8,14 +9,20 @@ export type CompleteOnlineCollectionResponse = {
 
 export type HandleCompleteOnlineCollection = (
   appContext: AppContext,
-  { token }: CompleteTransactionRequest
+  request: CompleteTransactionRequest,
 ) => Promise<string>;
 
 export const handleCompleteOnlineCollection: HandleCompleteOnlineCollection =
-  async (appContext, { token }) => {
-    if (!token) {
+  async (appContext, request) => {
+    if (!request.token) {
       throw new MissingTokenError();
     }
+
+    if (!request.tcs_app_id) {
+      throw new MissingTcsAppIdError();
+    }
+
+    const token = request.token;
 
     const transaction = await appContext
       .persistenceGateway()

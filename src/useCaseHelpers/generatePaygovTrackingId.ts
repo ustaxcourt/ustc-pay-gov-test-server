@@ -8,3 +8,5 @@ export const generatePaygovTrackingId = (): string => {
     ALLOWED_CHARACTERS[randomInt(ALLOWED_CHARACTERS.length)]
   ).join("");
 };
+
+export const paygovTrackingIdRegex = /^[A-Za-z0-9 ]{21}$/;

@@ -12,6 +12,7 @@ import { handleCompleteOnlineCollectionWithDetails } from "./useCases/handleComp
 import { handleGetDetails } from "./useCases/handleGetDetails";
 import { completeTransaction } from "./useCaseHelpers/completeTransaction";
 import { handleMarkPaymentStatus } from "./useCases/handleMarkPaymentStatus";
+import { showScript } from "./useCases/showScript";
 
 export function createAppContext() {
   return {
@@ -23,6 +24,7 @@ export function createAppContext() {
       handleMarkPaymentStatus,
       handleStartOnlineCollection,
       showPayPage,
+      showScript,
     }),
     useCaseHelpers: () => ({
       buildXml,

@@ -13,10 +13,12 @@ export const MISSING_TOKEN_SOAP_FAULT = `<S:Envelope xmlns:S="http://schemas.xml
   </S:Body>
 </S:Envelope>`;
 
-
 export class MissingTokenError extends Error {
   public readonly statusCode: number = 400;
   public readonly body: string = MISSING_TOKEN_SOAP_FAULT;
+  public readonly headers = {
+    "Content-Type": "application/wsdl+xml; charset=UTF-8",
+  };
 
   constructor() {
     super("Missing or expired token");

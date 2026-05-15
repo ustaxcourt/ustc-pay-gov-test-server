@@ -33,9 +33,21 @@ variable "base_url" {
 }
 
 variable "node_env" {
-  description = "Node.js environment"
+  description = "Node.js runtime mode. One of: development, production, test."
   type        = string
-  default     = "development"
+  validation {
+    condition     = contains(["development", "production", "test"], var.node_env)
+    error_message = "node_env must be one of: development, production, test."
+  }
+}
+
+variable "app_env" {
+  description = "Deployment topology of this service. One of: local, dev, test."
+  type        = string
+  validation {
+    condition     = contains(["local", "dev", "test"], var.app_env)
+    error_message = "app_env must be one of: local, dev, test."
+  }
 }
 
 # Lambda Configuration
@@ -83,50 +95,4 @@ variable "route53_zone_id" {
   type        = string
   default     = ""
 }
-
-variable "github_org" {
-  description = "GitHub organization name"
-  type        = string
-  default     = "ustaxcourt"
-}
-
-
-variable "github_repo" {
-  description = "GitHub repository name"
-  type        = string
-  default     = "ustc-pay-gov-test-server"
-}
-
-
-variable "github_ref" {
-  description = "Git reference that can assume the role (e.g., refs/heads/main)"
-  type        = string
-  default     = ""
-}
-
-
-variable "deploy_role_name" {
-  description = "Name of Iam role assumed by Github actions"
-  type        = string
-  default     = "ustc-github-actions-oidc-deployer-role"
-}
-
-variable "github_oidc_provider_arn" {
-  type        = string
-  description = "ARN of IdP created for Github in AWS IAM"
-  default     = ""
-}
-
-variable "tf_state_bucket_name" {
-  description = "Name of the S3 bucket that stores Terraform state for this environment"
-  type        = string
-  default     = ""
-}
-
-variable "tf_lock_table_name" {
-  description = "Name of the DynamoDB table used for Terraform state locking for this environment"
-  type        = string
-  default     = ""
-}
-
 
