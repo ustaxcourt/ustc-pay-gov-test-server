@@ -4,7 +4,7 @@ import { SaveCompletedTransaction } from "../persistence/saveCompletedTransactio
 import { SaveInitiatedTransaction } from "../persistence/saveInitatedTransaction";
 import { ShowPayPage } from "../useCases/showPayPage";
 import { HandleStartOnlineCollection } from "../useCases/handleStartOnlineCollection";
-import { HandleCompletOnlineCollectionWithDetails } from "../useCases/handleCompleteOnlineCollectionWithDetails";
+import { HandleCompleteOnlineCollectionWithDetails } from "../useCases/handleCompleteOnlineCollectionWithDetails";
 import { HandleCompleteOnlineCollection } from "../useCases/handleCompleteOnlineCollection";
 import { GetResource } from "../useCases/getResource";
 import { BuildXml } from "../useCaseHelpers/buildXml";
@@ -18,7 +18,7 @@ export type AppContext = {
   useCases: () => {
     getResource: GetResource;
     handleCompleteOnlineCollection: HandleCompleteOnlineCollection;
-    handleCompleteOnlineCollectionWithDetails: HandleCompletOnlineCollectionWithDetails;
+    handleCompleteOnlineCollectionWithDetails: HandleCompleteOnlineCollectionWithDetails;
     handleGetDetails: HandleGetDetails;
     handleMarkPaymentStatus: HandleMarkPaymentStatus;
     handleStartOnlineCollection: HandleStartOnlineCollection;

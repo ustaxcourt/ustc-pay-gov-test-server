@@ -57,6 +57,7 @@ module "lambda" {
   custom_domain             = local.custom_domain
   access_token              = data.aws_secretsmanager_secret_version.access_token.secret_string
   node_env                  = var.node_env
+  app_env                   = var.app_env
   common_tags               = local.common_tags
 }
 

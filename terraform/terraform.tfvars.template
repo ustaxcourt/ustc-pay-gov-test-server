@@ -16,7 +16,10 @@ lambda_timeout     = 30
 lambda_memory_size = 512
 
 # Application Configuration
-node_env = "development"
+# NODE_ENV is the Node.js runtime mode. APP_ENV identifies the deployment
+# topology. See doc/architecture/decisions/0004-app-env-vs-node-env.md.
+node_env = "production"
+app_env  = "dev"
 
 # S3 Configuration
 s3_force_destroy = true
@@ -39,10 +42,3 @@ api_gateway_stage_name = "dev"
 # 2. AWS Secrets Manager (recommended for production)
 # 3. Terraform Cloud/Enterprise variables
 access_token = "CHANGE_ME_OR_SET_VIA_ENV_VAR"
-
-# OIDC Configuration
-github_oidc_provider_arn = "arn:aws:iam::account-id:oidc-provider/token.actions.githubusercontent.com"
-deploy_role_name         = "ustc-github-actions-oidc-deployer-role"
-github_repo              = "ustc-pay-gov-test-server"
-tf_state_bucket_name     = ""
-tf_lock_table_name       = ""

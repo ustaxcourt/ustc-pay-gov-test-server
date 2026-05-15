@@ -12,14 +12,14 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "dev": "NODE_ENV='local' concurrently \"npx tsc --watch\" \"nodemon -q ./dist/server.js\"",
+    "dev": "APP_ENV=local concurrently \"npx tsc --watch\" \"nodemon -q ./dist/server.js\"",
     "copy-files": "aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive",
     "test": "jest ./src",
     "test:coverage": "jest --coverage ./src",
     "start": "node .",
-    "test:integration": "NODE_ENV='local' jest --verbose --bail ./test/integration",
-    "test:integration:coverage": "jest --config jest.config.ts --coverage --testPathPattern=integration",
-    "test:integration:prod": "DOTENV_CONFIG_PATH=.env.prod NODE_ENV='prod' jest --bail ./test/integration",
+    "test:integration": "APP_ENV=local jest --verbose --bail ./test/integration",
+    "test:integration:coverage": "APP_ENV=local jest --config jest.config.ts --coverage --testPathPattern=integration",
+    "test:integration:deployed": "DOTENV_CONFIG_PATH=.env.prod APP_ENV=dev jest --bail ./test/integration",
     "ci:publish": "changeset publish --provenance"
   },
   "keywords": [],
