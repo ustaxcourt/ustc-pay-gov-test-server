@@ -16,8 +16,11 @@ export const getResource = async (
 export const getResourceLocal = async (req: Request, res: Response) => {
   try {
     authenticateRequest(req.headers);
+    const filename = Array.isArray(req.params.file)
+      ? req.params.file[0]
+      : req.params.file;
 
-    const result = await getResource(res.locals.appContext, req.params.file);
+    const result = await getResource(res.locals.appContext, filename);
     res.send(result);
   } catch (err) {
     handleLocalError(err, res);
