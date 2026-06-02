@@ -43,7 +43,7 @@
     "luxon": "^3.7.2",
     "nodemon": "^3.1.10",
     "soap": "^1.4.1",
-    "typescript": "^5.9.2"
+    "typescript": "^6.0.3"
   },
   "devDependencies": {
     "@changesets/cli": "^2.29.8",
