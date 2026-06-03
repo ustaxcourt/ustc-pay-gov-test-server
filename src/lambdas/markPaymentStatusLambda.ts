@@ -53,7 +53,12 @@ const validateMarkPaymentStatusRequest = (
 
 export async function markPaymentStatusLocal(req: Request, res: Response) {
   try {
-    const { paymentMethod, paymentStatus } = req.params;
+    const paymentMethod = Array.isArray(req.params.paymentMethod)
+      ? req.params.paymentMethod[0]
+      : req.params.paymentMethod;
+    const paymentStatus = Array.isArray(req.params.paymentStatus)
+      ? req.params.paymentStatus[0]
+      : req.params.paymentStatus;
     const { token } = req.query;
 
     const validatedRequest = validateMarkPaymentStatusRequest(
