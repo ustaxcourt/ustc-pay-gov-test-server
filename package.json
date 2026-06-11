@@ -35,7 +35,7 @@
     "@types/jest": "^29.5.14",
     "@types/lodash": "^4.17.20",
     "@types/luxon": "^3.7.1",
-    "concurrently": "^9.2.1",
+    "concurrently": "^10.0.3",
     "dotenv": "^17.2.2",
     "express": "^5.2.1",
     "fast-xml-parser": "^5.2.5",
