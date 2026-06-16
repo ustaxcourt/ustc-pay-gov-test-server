@@ -49,7 +49,9 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
         Condition = {
           StringLike = {
             "s3:prefix" = [
-              "wsdl/*"
+              "wsdl/*",
+              "requests/*",
+              "transactions/*"
             ]
           }
         }
