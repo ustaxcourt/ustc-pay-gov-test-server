@@ -36,7 +36,8 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
         Effect = "Allow"
         Action = [
           "s3:GetObject",
-          "s3:PutObject"
+          "s3:PutObject",
+          "s3:ListBucket"
         ]
         Resource = "${module.s3.bucket_arn}/*"
       },
@@ -46,13 +47,13 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
           "s3:ListBucket"
         ]
         Resource = "${module.s3.bucket_arn}"
-        Condition = {
-          StringLike = {
-            "s3:prefix" = [
-              "wsdl/*"
-            ]
-          }
-        }
+        # Condition = {
+        #   StringLike = {
+        #     "s3:prefix" = [
+        #       "wsdl/*"
+        #     ]
+        #   }
+        # }
       }
     ]
   })
