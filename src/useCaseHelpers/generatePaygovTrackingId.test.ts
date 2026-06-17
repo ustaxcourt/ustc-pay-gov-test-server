@@ -12,7 +12,7 @@ describe("PaygovTrackingId", () => {
 
     it("should only contain alphanumeric characters and spaces", () => {
       const id = generatePaygovTrackingId();
-      expect(id).toMatch(/^[A-Za-z0-9 ]{21}$/);
+      expect(id).toMatch(paygovTrackingIdRegex);
     });
 
     it("should return unique values on successive calls", () => {
@@ -37,6 +37,8 @@ describe("PaygovTrackingId", () => {
       expect("ABCDEFGHIJKLMNOPQRSTUV").not.toMatch(paygovTrackingIdRegex); // 22 characters
       expect("abcdefghi").not.toMatch(paygovTrackingIdRegex); // 9 characters
       expect("abc-def-ghi-jkl-mno-pqr").not.toMatch(paygovTrackingIdRegex); // contains hyphens
+      expect(" abcdefghi").not.toMatch(paygovTrackingIdRegex);
+      expect("abcdefghi ").not.toMatch(paygovTrackingIdRegex);
     });
   });
 });
