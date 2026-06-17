@@ -9,7 +9,7 @@ export const generatePaygovTrackingId = (): string => {
     () => ALLOWED_CHARACTERS[randomInt(ALLOWED_CHARACTERS.length)],
   );
 
-  const nonSpaceLength = ALLOWED_CHARACTERS.length - 1;
+  const nonSpaceLength = ALLOWED_CHARACTERS.slice(0, -1).length;
   chars[0] = ALLOWED_CHARACTERS[randomInt(nonSpaceLength)];
   chars[20] = ALLOWED_CHARACTERS[randomInt(nonSpaceLength)];
 
