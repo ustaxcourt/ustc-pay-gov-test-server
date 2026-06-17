@@ -31,7 +31,7 @@ export const getFileS3: GetFile = async (_appContext, Key) => {
     const contents = await streamToString(result.Body as Readable);
     return contents;
   } catch (err) {
-    console.error("Error retrieving file", err);
+    console.error("Error retrieving file", { params, err });
     throw err;
   }
 };
