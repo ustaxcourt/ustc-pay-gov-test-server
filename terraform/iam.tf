@@ -46,6 +46,16 @@ resource "aws_iam_role_policy" "lambda_s3_access" {
           "s3:ListBucket"
         ]
         Resource = "${module.s3.bucket_arn}"
+        Condition = {
+          StringLike = {
+            "s3:prefix" = [
+              "wsdl/*",
+              "html/*",
+              "requests/*",
+              "transactions/*"
+            ]
+          }
+        }
       }
     ]
   })
