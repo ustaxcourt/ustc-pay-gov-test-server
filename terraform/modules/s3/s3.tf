@@ -62,9 +62,7 @@ resource "aws_s3_bucket_policy" "main" {
         Condition = {
           StringLike = {
             "s3:prefix" = [
-              "wsdl/*",
-              "requests/*",
-              "transactions/*"
+              "wsdl/*"
             ]
           }
         }
