@@ -54,8 +54,8 @@ describe("PaygovTrackingId", () => {
       expect("ABCDEFGHIJKLMNOPQRSTUV").not.toMatch(paygovTrackingIdRegex); // 22 characters
       expect("abcdefghi").not.toMatch(paygovTrackingIdRegex); // 9 characters
       expect("abc-def-ghi-jkl-mno-pqr").not.toMatch(paygovTrackingIdRegex); // contains hyphens
-      expect(" abcdefghi").not.toMatch(paygovTrackingIdRegex);
-      expect("abcdefghi ").not.toMatch(paygovTrackingIdRegex);
+      expect(` ${"A".repeat(20)}`).not.toMatch(paygovTrackingIdRegex);
+      expect(`${"A".repeat(20)} `).not.toMatch(paygovTrackingIdRegex);
     });
   });
 });
