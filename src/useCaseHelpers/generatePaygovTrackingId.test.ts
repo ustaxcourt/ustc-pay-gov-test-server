@@ -15,6 +15,10 @@ describe("PaygovTrackingId", () => {
       }
     });
 
+    afterAll(() => {
+      payGovTrackingIds.clear();
+    });
+
     it("should only contain alphanumeric characters and spaces", () => {
       for (const id of payGovTrackingIds) {
         expect(id).toMatch(paygovTrackingIdRegex);
