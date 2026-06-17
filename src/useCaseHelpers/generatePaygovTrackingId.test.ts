@@ -5,14 +5,26 @@ import {
 
 describe("PaygovTrackingId", () => {
   describe("generatePaygovTrackingId", () => {
+    let payGovTrackingIds = new Set<string>();
+
+    beforeAll(() => {
+      for (let i = 0; i < 1000; i++) {
+        const id = generatePaygovTrackingId();
+        payGovTrackingIds.add(id);
+      }
+    });
+
     it("should return a 21-character string", () => {
-      const id = generatePaygovTrackingId();
-      expect(id).toHaveLength(21);
+      expect(payGovTrackingIds.size).toBe(1000); // Ensure all generated IDs are unique
+      for (const id of payGovTrackingIds) {
+        expect(id).toHaveLength(21);
+      }
     });
 
     it("should only contain alphanumeric characters and spaces", () => {
-      const id = generatePaygovTrackingId();
-      expect(id).toMatch(paygovTrackingIdRegex);
+      for (const id of payGovTrackingIds) {
+        expect(id).toMatch(paygovTrackingIdRegex);
+      }
     });
 
     it("should return unique values on successive calls", () => {
@@ -20,6 +32,13 @@ describe("PaygovTrackingId", () => {
         Array.from({ length: 100 }, () => generatePaygovTrackingId()),
       );
       expect(ids.size).toBe(100);
+    });
+
+    it("should not start or end with a space", () => {
+      for (const id of payGovTrackingIds) {
+        expect(id[0]).not.toBe(" ");
+        expect(id[id.length - 1]).not.toBe(" ");
+      }
     });
   });
 
