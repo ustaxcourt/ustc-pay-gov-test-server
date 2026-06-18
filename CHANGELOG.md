@@ -1,5 +1,12 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.2.2
+
+### Patch Changes
+
+- fbf66a2: Upgrade project dependencies; replaced jsdom with cheerio
+- c66e726: Generate Pay.gov tracking ID ensuring no spaces at the beginning or end (spaces allowed only in middle characters)
+
 ## 0.2.1
 
 ### Patch Changes
