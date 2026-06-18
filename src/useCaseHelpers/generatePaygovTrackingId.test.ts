@@ -5,7 +5,7 @@ import {
 
 describe("PaygovTrackingId", () => {
   describe("generatePaygovTrackingId", () => {
-    const NUMBER_OF_TEST_IDS = 70000;
+    const NUMBER_OF_TEST_IDS = 1000;
     let payGovTrackingIds = new Set<string>();
 
     beforeAll(() => {

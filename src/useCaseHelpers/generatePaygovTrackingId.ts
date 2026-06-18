@@ -1,19 +1,23 @@
 import { randomInt } from "crypto";
 
 const ALLOWED_CHARACTERS =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789 ";
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+
+const generateCharWithoutSpace = () => {
+  return ALLOWED_CHARACTERS[randomInt(ALLOWED_CHARACTERS.length)];
+};
 
 export const generatePaygovTrackingId = (): string => {
-  const chars = Array.from(
-    { length: 21 },
-    () => ALLOWED_CHARACTERS[randomInt(ALLOWED_CHARACTERS.length)],
-  );
+  const charsWithSpace = ALLOWED_CHARACTERS + " ";
 
-  const nonSpaceLength = ALLOWED_CHARACTERS.slice(0, -1).length;
-  chars[0] = ALLOWED_CHARACTERS[randomInt(nonSpaceLength)];
-  chars[20] = ALLOWED_CHARACTERS[randomInt(nonSpaceLength)];
+  const firstChar = generateCharWithoutSpace();
+  const lastChar = generateCharWithoutSpace();
+  const midChars = Array.from(
+    { length: 19 },
+    () => charsWithSpace[randomInt(charsWithSpace.length)],
+  ).join("");
 
-  return chars.join("");
+  return firstChar + midChars + lastChar;
 };
 
 export const paygovTrackingIdRegex =
