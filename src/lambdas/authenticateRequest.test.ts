@@ -3,22 +3,22 @@ import { authenticateRequest } from "./authenticateRequest";
 
 describe("authenticateRequest", () => {
   it("throws an error if nothing is passed in", () => {
-    expect(() => authenticateRequest()).toThrowError(UnauthorizedError);
+    expect(() => authenticateRequest()).toThrow(UnauthorizedError);
   });
 
   it("throws an error if with the incorrect authentication header", () => {
     expect(() =>
       authenticateRequest({
         authentication: `Bearer ${process.env.ACCESS_TOKEN} random extra stuff`,
-      })
-    ).toThrowError(UnauthorizedError);
+      }),
+    ).toThrow(UnauthorizedError);
   });
 
   it("should not throw an error with the correct authentication header", () => {
     expect(() =>
       authenticateRequest({
         authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
-      })
+      }),
     ).not.toThrow();
   });
 
@@ -26,7 +26,7 @@ describe("authenticateRequest", () => {
     expect(() =>
       authenticateRequest({
         Authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
-      })
+      }),
     ).not.toThrow();
   });
 
@@ -34,7 +34,7 @@ describe("authenticateRequest", () => {
     expect(() =>
       authenticateRequest({
         AUTHENTICATION: `Bearer ${process.env.ACCESS_TOKEN}`,
-      })
+      }),
     ).not.toThrow();
   });
 });
