@@ -5,21 +5,38 @@ import {
 
 describe("PaygovTrackingId", () => {
   describe("generatePaygovTrackingId", () => {
-    it("should return a 21-character string", () => {
-      const id = generatePaygovTrackingId();
-      expect(id).toHaveLength(21);
+    const NUMBER_OF_TEST_IDS = 1000;
+    let payGovTrackingIds = new Set<string>();
+
+    beforeAll(() => {
+      for (let i = 0; i < NUMBER_OF_TEST_IDS; i++) {
+        const id = generatePaygovTrackingId();
+        payGovTrackingIds.add(id);
+      }
+    });
+
+    afterAll(() => {
+      payGovTrackingIds.clear();
     });
 
     it("should only contain alphanumeric characters and spaces", () => {
-      const id = generatePaygovTrackingId();
-      expect(id).toMatch(/^[A-Za-z0-9 ]{21}$/);
+      for (const id of payGovTrackingIds) {
+        expect(id).toMatch(paygovTrackingIdRegex);
+      }
     });
 
     it("should return unique values on successive calls", () => {
-      const ids = new Set(
-        Array.from({ length: 100 }, () => generatePaygovTrackingId()),
-      );
-      expect(ids.size).toBe(100);
+      expect(payGovTrackingIds.size).toBe(NUMBER_OF_TEST_IDS); // Ensure all generated IDs are unique
+      for (const id of payGovTrackingIds) {
+        expect(id).toHaveLength(21);
+      }
+    });
+
+    it("should not start or end with a space", () => {
+      for (const id of payGovTrackingIds) {
+        expect(id[0]).not.toBe(" ");
+        expect(id[id.length - 1]).not.toBe(" ");
+      }
     });
   });
 
@@ -37,6 +54,8 @@ describe("PaygovTrackingId", () => {
       expect("ABCDEFGHIJKLMNOPQRSTUV").not.toMatch(paygovTrackingIdRegex); // 22 characters
       expect("abcdefghi").not.toMatch(paygovTrackingIdRegex); // 9 characters
       expect("abc-def-ghi-jkl-mno-pqr").not.toMatch(paygovTrackingIdRegex); // contains hyphens
+      expect(` ${"A".repeat(20)}`).not.toMatch(paygovTrackingIdRegex);
+      expect(`${"A".repeat(20)} `).not.toMatch(paygovTrackingIdRegex);
     });
   });
 });
