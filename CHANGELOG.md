@@ -1,5 +1,11 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.2.3
+
+### Patch Changes
+
+- 9efff3e: update dependencies to address vulnerabilities found in npm audit
+
 ## 0.2.2
 
 ### Patch Changes
