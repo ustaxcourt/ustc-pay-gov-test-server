@@ -753,7 +753,7 @@ describe("initiate transaction", () => {
       const frozenNow = DateTime.fromISO("2026-01-01T00:00:00.000Z");
       const nowSpy = jest
         .spyOn(DateTime, "now")
-        .mockReturnValue(frozenNow as unknown as DateTime);
+        .mockReturnValue(frozenNow as unknown as DateTime<true>);
 
       try {
         const markAchFailedResponse = await markPaymentStatus(
