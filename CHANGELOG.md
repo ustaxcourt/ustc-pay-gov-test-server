@@ -1,5 +1,11 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.2.4
+
+### Patch Changes
+
+- 7850174: remove js-yaml as a direct dependency as it wasn't being used
+
 ## 0.2.3
 
 ### Patch Changes
