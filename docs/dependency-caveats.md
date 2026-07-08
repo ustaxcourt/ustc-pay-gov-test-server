@@ -25,7 +25,7 @@ enough context that the next person doesn't have to re-derive the decision.
 
 ## Deferred upgrades
 
-### typescript 6.x → 7.x — deferred (2026-07-08)
+### TypeScript 6.x → 7.x — deferred (2026-07-08)
 
 - **Current:** `^6.0.3` (declared). **Available latest:** `7.0.2`.
 - **Reason:** TypeScript 7 is a full major ahead of the version this repo is
