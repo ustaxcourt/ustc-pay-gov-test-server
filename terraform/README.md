@@ -49,7 +49,7 @@ terraform/
 ## Prerequisites
 
 1. **AWS CLI configured** with appropriate credentials
-2. **Terraform installed** (~> 1.14.0) - [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+2. **Terraform installed** (~> 1.15.0) - [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 3. **Node.js and npm** for Lambda function builds
 4. **S3 bucket** for Terraform state storage (optional but recommended)
 
@@ -230,7 +230,7 @@ terraform show
    ```bash
    # Ensure TypeScript builds successfully
    npm run build
-   
+
    # Check dist/ directory exists
    ls -la dist/
    ```
@@ -278,7 +278,7 @@ The AWS credentials used must have permissions for:
 ## Next Steps
 
 1. **CI/CD Integration**: Update GitHub Actions to use Terraform
-2. **Monitoring**: Set up CloudWatch dashboards and alarms  
+2. **Monitoring**: Set up CloudWatch dashboards and alarms
 3. **Testing**: Implement infrastructure testing
 4. **Optimization**: Review costs and performance
 
