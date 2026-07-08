@@ -34,7 +34,7 @@ itself new permissions).
 - `aws sso login` to a profile in account `803663093283` with permission to
   manage IAM (at minimum: `iam:CreateRole`, `iam:UpdateAssumeRolePolicy`,
   `iam:PutRolePolicy`, `iam:GetRole*`).
-- `terraform` >= 1.14 on PATH.
+- `terraform` >= 1.15 on PATH.
 
 ### One-time init
 
