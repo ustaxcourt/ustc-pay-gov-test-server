@@ -28,9 +28,9 @@ enough context that the next person doesn't have to re-derive the decision.
 Captured on branch `PAY-367-dependency-updates-2026-07-06`, off `main`.
 
 - `npm audit`: **0 vulnerabilities**.
-- `package.json` and `package-lock.json` already declare several **major** version
-  bumps that were committed previously but whose install had not yet been verified
-  by a full test run at the start of this ticket:
+- `package.json` and `package-lock.json` already declared several **major** version
+  bumps that had been committed previously but whose install had not yet been
+  verified by a full test run:
 
   | Package        | Installed (stale) | Declared / lockfile | Latest  |
   |----------------|-------------------|---------------------|---------|
@@ -42,8 +42,20 @@ Captured on branch `PAY-367-dependency-updates-2026-07-06`, off `main`.
   | concurrently   | 9.2.1             | 10.0.3              | 10.0.3  |
   | esbuild        | 0.25.12           | 0.28.1              | 0.28.1  |
 
-  Phase 1 of PAY-367 syncs the install (`npm ci`) and validates these against the
-  full test/build suite before any further changes.
+### Validation — 2026-07-08
+
+Ran `npm ci` (658 packages, 0 vulnerabilities) to land the staged majors on disk,
+then exercised the full suite. **All green** — the staged Express 5 / TypeScript 6 /
+Jest 30 upgrades build and pass:
+
+- `npm run build` (tsc 6.0.3): clean, exit 0.
+- `npm test` (Jest 30.4.2): **19 suites / 133 tests passed**.
+- `npm run test:integration` (in-process Express 5 app): **64 passed**, 4 pre-existing
+  skips (1 skipped suite). Error-path tests log expected `console.error` noise.
+- `npm audit`: **0 vulnerabilities**.
+
+Remaining outdated after sync: `@aws-sdk/client-s3` (3.1075 → 3.1081, minor) and
+`typescript` (6.0.3 → 7.0.2, deferred; see below).
 
 ---
 
@@ -59,7 +71,7 @@ Captured on branch `PAY-367-dependency-updates-2026-07-06`, off `main`.
 - **Plan:** Evaluate 7.x in a dedicated follow-up once 6.x is stable on `main`.
   Cut a ticket and flag the PO if/when pursued.
 
-<!-- Add further deferrals below as they are decided during PAY-367. -->
+<!-- Add further deferrals below as they are decided. -->
 
 ---
 
