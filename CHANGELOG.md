@@ -1,5 +1,11 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.2.5
+
+### Patch Changes
+
+- 0f8ace9: Bump @aws-sdk/client-s3 to `^3.1081.0` (minimum version 3.1081.0; routine dependency maintenance, no API or behavior changes).
+
 ## 0.2.4
 
 ### Patch Changes
