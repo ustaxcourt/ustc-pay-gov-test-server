@@ -35,7 +35,6 @@
     "@types/jest": "^30.0.0",
     "@types/lodash": "^4.17.24",
     "@types/luxon": "^3.7.2",
-    "concurrently": "^10.0.3",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "fast-xml-parser": "^5.10.1",
@@ -48,6 +47,7 @@
   "devDependencies": {
     "@changesets/cli": "^2.31.1",
     "cheerio": "^1.2.0",
+    "concurrently": "9.2.4",
     "esbuild": "^0.28.1",
     "jest": "^30.4.2",
     "ts-jest": "^29.4.11",
