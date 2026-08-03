@@ -43,7 +43,7 @@ enough context that the next person doesn't have to re-derive the decision.
 
 ### Vulnerabilities resolved via override
 
-Sometimes we have to deal with vulnerabilities caused by transitive dependencies. Be cautious doing overrides, we only want to resort to this in cases where our dependency is unlikely to fix them or take a long time to fix (like a transitive dependency not getting updated in order to support an old version of node). If you need to do an override, you'll add the transitive dependency in question to `overrides` at the bottom of `package.json`.
+ Be cautious doing overrides, we only want to resort to this in cases where our dependency is unlikely to fix them or take a long time to fix (like a transitive dependency not getting updated in order to support an old version of node). If you need to do an override, you'll add the transitive dependency in question to `overrides` at the bottom of `package.json`.
 
 ### GHSA-mh99-v99m-4gvg — brace-expansion (<=5.0.7) (high) — resolved via override (2026-07-29)
 
