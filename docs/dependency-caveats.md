@@ -47,6 +47,7 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 
 ### GHSA-mh99-v99m-4gvg — brace-expansion (<=5.0.7) (high) — resolved via override (2026-07-29)
 
+**From: Jest**
 - **Override:** `babel-plugin-istanbul@^8.0.2`, `test-exclude@^8.0.0`,
   `glob@^13.0.6`.
 - **Why an override was needed:** `jest`'s own `babel-plugin-istanbul`/`glob`
