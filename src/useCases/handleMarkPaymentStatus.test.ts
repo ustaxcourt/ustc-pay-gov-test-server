@@ -174,7 +174,7 @@ describe("handleMarkPaymentStatus", () => {
     expect(result).toBe("success");
   });
 
-  it("throws error if token already marked failed", async () => {
+  it("throws error if transaction already has failed_payment set", async () => {
     const getInitiatedTransaction = jest.fn().mockResolvedValue({
       token: "tok",
       url_success: "success",
@@ -195,13 +195,39 @@ describe("handleMarkPaymentStatus", () => {
         paymentStatus: "Failed",
       }),
     ).rejects.toThrow("Payment has already been processed for this token");
+
+    expect(saveInitiatedTransaction).not.toHaveBeenCalled();
   });
 
-  it("throws error if token already marked as ACH (double-ACH guard)", async () => {
+  it("throws error if transaction already has payment_type set", async () => {
     const getInitiatedTransaction = jest.fn().mockResolvedValue({
       token: "tok",
       url_success: "success",
-      payment_type: "ACH",
+      payment_type: "PAYPAL",
+    });
+    const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
+    const appContext = {
+      persistenceGateway: () => ({
+        getInitiatedTransaction,
+        saveInitiatedTransaction,
+      }),
+    } as unknown as Parameters<typeof handleMarkPaymentStatus>[0];
+
+    await expect(
+      handleMarkPaymentStatus(appContext, {
+        token: "tok",
+        paymentMethod: "PLASTIC_CARD",
+        paymentStatus: "Success",
+      }),
+    ).rejects.toThrow("Payment has already been processed for this token");
+
+    expect(saveInitiatedTransaction).not.toHaveBeenCalled();
+  });
+
+  it("throws error if transaction already has ach_initiated_at set", async () => {
+    const getInitiatedTransaction = jest.fn().mockResolvedValue({
+      token: "tok",
+      url_success: "success",
       ach_initiated_at: new Date().toISOString(),
     });
     const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
@@ -219,75 +245,7 @@ describe("handleMarkPaymentStatus", () => {
         paymentStatus: "Success",
       }),
     ).rejects.toThrow("Payment has already been processed for this token");
-  });
 
-  it("throws error if token already marked as PAYPAL (double-PAYPAL guard)", async () => {
-    const getInitiatedTransaction = jest.fn().mockResolvedValue({
-      token: "tok",
-      url_success: "success",
-      payment_type: "PAYPAL",
-    });
-    const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
-    const appContext = {
-      persistenceGateway: () => ({
-        getInitiatedTransaction,
-        saveInitiatedTransaction,
-      }),
-    } as unknown as Parameters<typeof handleMarkPaymentStatus>[0];
-
-    await expect(
-      handleMarkPaymentStatus(appContext, {
-        token: "tok",
-        paymentMethod: "PAYPAL",
-        paymentStatus: "Success",
-      }),
-    ).rejects.toThrow("Payment has already been processed for this token");
-  });
-
-  it("throws error if attempting to mark failed after PAYPAL was selected", async () => {
-    const getInitiatedTransaction = jest.fn().mockResolvedValue({
-      token: "tok",
-      url_success: "success",
-      payment_type: "PAYPAL",
-    });
-    const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
-    const appContext = {
-      persistenceGateway: () => ({
-        getInitiatedTransaction,
-        saveInitiatedTransaction,
-      }),
-    } as unknown as Parameters<typeof handleMarkPaymentStatus>[0];
-
-    await expect(
-      handleMarkPaymentStatus(appContext, {
-        token: "tok",
-        paymentMethod: "PLASTIC_CARD",
-        paymentStatus: "Failed",
-      }),
-    ).rejects.toThrow("Payment has already been processed for this token");
-  });
-
-  it("throws error if attempting to mark failed after ACH was initiated", async () => {
-    const getInitiatedTransaction = jest.fn().mockResolvedValue({
-      token: "tok",
-      url_success: "success",
-      payment_type: "ACH",
-      ach_initiated_at: new Date().toISOString(),
-    });
-    const saveInitiatedTransaction = jest.fn().mockResolvedValue(undefined);
-    const appContext = {
-      persistenceGateway: () => ({
-        getInitiatedTransaction,
-        saveInitiatedTransaction,
-      }),
-    } as unknown as Parameters<typeof handleMarkPaymentStatus>[0];
-
-    await expect(
-      handleMarkPaymentStatus(appContext, {
-        token: "tok",
-        paymentMethod: "PLASTIC_CARD",
-        paymentStatus: "Failed",
-      }),
-    ).rejects.toThrow("Payment has already been processed for this token");
+    expect(saveInitiatedTransaction).not.toHaveBeenCalled();
   });
 });
