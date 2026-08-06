@@ -954,6 +954,29 @@ describe("initiate transaction", () => {
         expect(response.status).toBe(200);
       });
 
+      it("should return an error when PLASTIC_CARD is marked a second time", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const firstResponse = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Success",
+        );
+        expect(firstResponse.status).toBe(200);
+
+        const secondResponse = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Success",
+        );
+        const errorMessage = await secondResponse.text();
+
+        expect(secondResponse.status).toBe(400);
+        expect(errorMessage).toBe(
+          "Payment has already been processed for this token",
+        );
+      });
+
       it("should successfully mark a transaction as failed", async () => {
         const { token } = await startOnlineCollection(amount);
 
