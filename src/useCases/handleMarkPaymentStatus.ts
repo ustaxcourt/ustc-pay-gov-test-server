@@ -1,6 +1,10 @@
 import { DateTime } from "luxon";
 import { AppContext } from "../types/AppContext";
-import { InitiatedTransaction, MarkablePaymentStatus, PaymentType } from "../types/Transaction";
+import {
+  InitiatedTransaction,
+  MarkablePaymentStatus,
+  PaymentType,
+} from "../types/Transaction";
 import { InvalidRequestError } from "../errors/InvalidRequestError";
 
 export type HandleMarkPaymentStatus = (
@@ -9,7 +13,11 @@ export type HandleMarkPaymentStatus = (
     token,
     paymentMethod,
     paymentStatus,
-  }: { token: string; paymentMethod: PaymentType; paymentStatus: MarkablePaymentStatus },
+  }: {
+    token: string;
+    paymentMethod: PaymentType;
+    paymentStatus: MarkablePaymentStatus;
+  },
 ) => Promise<string>;
 
 export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
@@ -20,16 +28,14 @@ export const handleMarkPaymentStatus: HandleMarkPaymentStatus = async (
     .persistenceGateway()
     .getInitiatedTransaction(appContext, token);
 
-  if (transaction.failed_payment) {
-    throw new InvalidRequestError("Token already marked failed");
-  }
-
-  if (transaction.ach_initiated_at) {
-    throw new InvalidRequestError("Token already marked as ACH");
-  }
-
-  if (transaction.payment_type === "PAYPAL") {
-    throw new InvalidRequestError("Token already marked as PAYPAL");
+  if (
+    transaction.payment_type ||
+    transaction.failed_payment ||
+    transaction.ach_initiated_at
+  ) {
+    throw new InvalidRequestError(
+      "Payment has already been processed for this token",
+    );
   }
 
   const isFailed = paymentStatus === "Failed";
