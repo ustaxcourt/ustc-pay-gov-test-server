@@ -476,7 +476,9 @@ describe("initiate transaction", () => {
       if (!frozenNow.isValid) {
         throw new Error("Invalid DateTime for mocking");
       }
-      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
+      const nowSpy = jest
+        .spyOn(DateTime, "now")
+        .mockReturnValue(frozenNow as unknown as DateTime<true>);
 
       try {
         const markAchResponse = await markPaymentStatus(
