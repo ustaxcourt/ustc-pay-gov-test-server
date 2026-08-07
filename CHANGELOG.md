@@ -1,5 +1,20 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.3.0
+
+### Minor Changes
+
+- e3e81ff: Updated npm dependencies and Terraform lockfiles.
+
+  Kept TypeScript on the ts-jest-compatible 6.x line and aligned dev tooling so
+  `npm ci` and `npm audit` complete cleanly.
+
+### Patch Changes
+
+- 23caa2d: Prevent reuse of payment tokens by rejecting duplicate payment selections and returning an appropriate validation error in page responses.
+- 83e7ca7: Dependency updates and resolving vulnerabilities from transitive dependencies via selective override.
+- 0f8ace9: Bump @aws-sdk/client-s3 to `^3.1081.0` (minimum version 3.1081.0; routine dependency maintenance, no API or behavior changes).
+
 ## 0.2.4
 
 ### Patch Changes
