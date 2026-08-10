@@ -474,10 +474,9 @@ describe("initiate transaction", () => {
     it(`should return Received status within ${ACH_THRESHOLD_SECONDS} seconds of ACH initiation`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const frozenNow = DateTime.fromISO("2026-01-01T00:00:00.000Z");
-      if (!frozenNow.isValid) {
-        throw new Error("Invalid DateTime for mocking");
-      }
+      const frozenNow = DateTime.fromISO(
+        "2026-01-01T00:00:00.000Z",
+      ) as DateTime<true>;
       const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
       try {
@@ -752,10 +751,10 @@ describe("initiate transaction", () => {
     it(`should return Received status for ACH failed within ${ACH_THRESHOLD_SECONDS} seconds via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const frozenNow = DateTime.fromISO("2026-01-01T00:00:00.000Z");
-      const nowSpy = jest
-        .spyOn(DateTime, "now")
-        .mockReturnValue(frozenNow as unknown as DateTime<true>);
+      const frozenNow = DateTime.fromISO(
+        "2026-01-01T00:00:00.000Z",
+      ) as DateTime<true>;
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
       try {
         const markAchFailedResponse = await markPaymentStatus(
