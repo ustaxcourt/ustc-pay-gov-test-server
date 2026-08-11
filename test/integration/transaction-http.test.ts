@@ -464,7 +464,9 @@ describe("initiate transaction", () => {
       const errorMessage = await secondResponse.text();
 
       expect(secondResponse.status).toBe(400);
-      expect(errorMessage).toBe("Token already marked failed");
+      expect(errorMessage).toBe(
+        "Payment has already been processed for this token",
+      );
     });
   });
 
@@ -472,10 +474,9 @@ describe("initiate transaction", () => {
     it(`should return Received status within ${ACH_THRESHOLD_SECONDS} seconds of ACH initiation`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const frozenNow = DateTime.fromISO("2026-01-01T00:00:00.000Z");
-      if (!frozenNow.isValid) {
-        throw new Error("Invalid DateTime for mocking");
-      }
+      const frozenNow = DateTime.fromISO(
+        "2026-01-01T00:00:00.000Z",
+      ) as DateTime<true>;
       const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
       try {
@@ -750,10 +751,10 @@ describe("initiate transaction", () => {
     it(`should return Received status for ACH failed within ${ACH_THRESHOLD_SECONDS} seconds via getDetails`, async () => {
       const { token, agencyTrackingId } = await startOnlineCollection(amount);
 
-      const frozenNow = DateTime.fromISO("2026-01-01T00:00:00.000Z");
-      const nowSpy = jest
-        .spyOn(DateTime, "now")
-        .mockReturnValue(frozenNow as unknown as DateTime<true>);
+      const frozenNow = DateTime.fromISO(
+        "2026-01-01T00:00:00.000Z",
+      ) as DateTime<true>;
+      const nowSpy = jest.spyOn(DateTime, "now").mockReturnValue(frozenNow);
 
       try {
         const markAchFailedResponse = await markPaymentStatus(
@@ -853,7 +854,9 @@ describe("initiate transaction", () => {
         const errorMessage = await secondResponse.text();
 
         expect(secondResponse.status).toBe(400);
-        expect(errorMessage).toBe("Token already marked as ACH");
+        expect(errorMessage).toBe(
+          "Payment has already been processed for this token",
+        );
       });
 
       it("should return an error when marking failed after ACH was initiated", async () => {
@@ -870,7 +873,9 @@ describe("initiate transaction", () => {
         const errorMessage = await failedResponse.text();
 
         expect(failedResponse.status).toBe(400);
-        expect(errorMessage).toBe("Token already marked as ACH");
+        expect(errorMessage).toBe(
+          "Payment has already been processed for this token",
+        );
       });
     });
 
@@ -900,7 +905,9 @@ describe("initiate transaction", () => {
         const errorMessage = await secondResponse.text();
 
         expect(secondResponse.status).toBe(400);
-        expect(errorMessage).toBe("Token already marked as PAYPAL");
+        expect(errorMessage).toBe(
+          "Payment has already been processed for this token",
+        );
       });
 
       it("should successfully mark a transaction as PAYPAL failed", async () => {
@@ -928,7 +935,9 @@ describe("initiate transaction", () => {
         const errorMessage = await failedResponse.text();
 
         expect(failedResponse.status).toBe(400);
-        expect(errorMessage).toBe("Token already marked as PAYPAL");
+        expect(errorMessage).toBe(
+          "Payment has already been processed for this token",
+        );
       });
     });
 
@@ -942,6 +951,29 @@ describe("initiate transaction", () => {
           "Success",
         );
         expect(response.status).toBe(200);
+      });
+
+      it("should return an error when PLASTIC_CARD is marked a second time", async () => {
+        const { token } = await startOnlineCollection(amount);
+
+        const firstResponse = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Success",
+        );
+        expect(firstResponse.status).toBe(200);
+
+        const secondResponse = await markPaymentStatus(
+          token,
+          "PLASTIC_CARD",
+          "Success",
+        );
+        const errorMessage = await secondResponse.text();
+
+        expect(secondResponse.status).toBe(400);
+        expect(errorMessage).toBe(
+          "Payment has already been processed for this token",
+        );
       });
 
       it("should successfully mark a transaction as failed", async () => {
