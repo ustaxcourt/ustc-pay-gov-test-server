@@ -43,8 +43,9 @@ enough context that the next person doesn't have to re-derive the decision.
   regression here breaks publishing rather than the app, so it shouldn't ride
   along with a routine weekly dependency sweep where it would get little
   focused testing.
-- **Plan:** Upgrade in its own PR, where the changeset → version → publish flow
-  can be exercised end to end before merge.
+- **Plan:** Slotted into its own story rather than riding along with the weekly
+  sweep, so the changeset → version → publish flow can be exercised end to end
+  before merge. Link the ticket here once it is cut.
 
 <!-- Add further deferrals below as they are decided. -->
 
