@@ -29,6 +29,9 @@ This document outlines the approach for publishing versioned updates of `@ustaxc
      - `minor`: New features, backward compatible (0.1.0 → 0.2.0)
      - `major`: Breaking changes (0.1.0 → 1.0.0)
    - Write a concise summary of changes for the changelog
+     - Validation note: this repo has been smoke-tested on `@changesets/cli@3.0.1`
+       by running `changeset status --since=origin/main` and an isolated
+       `changeset version --snapshot ...` pass before merge.
 
 4. **Commit and push**:
    ```bash
@@ -125,10 +128,15 @@ npx @ustaxcourt/ustc-pay-gov-test-server update-env
     "scripts": {
         "build": "npx tsc",
         "test": "jest ./src",
-        "ci:publish": "changeset publish --provenance"
+        "ci:publish": "changeset publish"
     }
   }
   ```
+
+- **Publish provenance**:
+  - The workflow enables provenance via `npm config set provenance true` before
+    `npm run ci:publish`, so the script itself does not need a `--provenance`
+    flag.
 
 - **`.changeset/config.json`**:
   ```json

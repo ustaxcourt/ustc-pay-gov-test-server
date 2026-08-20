@@ -35,18 +35,6 @@ enough context that the next person doesn't have to re-derive the decision.
 - **Plan:** Evaluate 7.x in a dedicated follow-up once 6.x is stable on `main`.
   Cut a ticket and flag the PO if/when pursued.
 
-### @changesets/cli 2.x → 3.x — deferred (2026-08-11)
-
-- **Current:** `^2.31.1` (declared). **Available latest:** `3.0.0`.
-- **Reason:** A major on the tool that drives release tooling — `ci:publish`
-  runs `changeset publish`, and the `publish.yml` workflow depends on it. A
-  regression here breaks publishing rather than the app, so it shouldn't ride
-  along with a routine weekly dependency sweep where it would get little
-  focused testing.
-- **Plan:** Slotted into its own story rather than riding along with the weekly
-  sweep, so the changeset → version → publish flow can be exercised end to end
-  before merge. Link the ticket here once it is cut.
-
 <!-- Add further deferrals below as they are decided. -->
 
 ---
