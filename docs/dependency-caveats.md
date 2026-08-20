@@ -48,6 +48,7 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 ### GHSA-mh99-v99m-4gvg — brace-expansion (<=5.0.7) (high) — resolved via override (2026-07-29)
 
 **From: Jest**
+
 - **Override:** `babel-plugin-istanbul@^8.0.2`, `test-exclude@^8.0.0`,
   `glob@^13.0.6`.
 - **Why an override was needed:** `jest`'s own `babel-plugin-istanbul`/`glob`
@@ -68,6 +69,7 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 ### GHSA-rgw5-rvv9-x895 — brace-expansion (4.0.0–5.0.8) (high) — resolved by transitive bump (2026-08-11)
 
 **From: nodemon → minimatch**
+
 - **Override:** none needed. The existing `glob@^13.0.6` override above already
   keeps this chain on `minimatch@10`, which declares
   `"brace-expansion": "^5.0.8"` — so `npm update` resolved straight to the
@@ -88,6 +90,7 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
   "dev-only."
 
 ### Accepted vulnerabilities
+
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)
 
@@ -95,4 +98,3 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 - **Mitigation:** ...
 - **Revisit:** <condition or date>
 -->
-

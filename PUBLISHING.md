@@ -13,6 +13,7 @@ This document outlines the approach for publishing versioned updates of `@ustaxc
 ### 1. Development Phase
 
 1. **Create a feature branch**:
+
    ```bash
    git switch -c feature/your-feature-name
    ```
@@ -20,9 +21,11 @@ This document outlines the approach for publishing versioned updates of `@ustaxc
 2. **Make your changes** to the codebase.
 
 3. **Add a changeset** to document your changes:
+
    ```bash
    npx changeset add
    ```
+
    - Select the package to version (`@ustaxcourt/ustc-pay-gov-test-server`)
    - Choose the semver bump type:
      - `patch`: Bug fixes and minor changes (0.1.0 → 0.1.1)
@@ -34,6 +37,7 @@ This document outlines the approach for publishing versioned updates of `@ustaxc
        `changeset version --snapshot ...` pass before merge.
 
 4. **Commit and push**:
+
    ```bash
    git add .
    git commit -m "feat: your feature with changeset"
@@ -112,23 +116,24 @@ npx @ustaxcourt/ustc-pay-gov-test-server update-env
 ### Package Configuration
 
 - **`package.json`**:
+
   ```json
-    {
+  {
     "name": "@ustaxcourt/ustc-pay-gov-test-server",
     "version": "0.1.0",
     "description": "USTC Pay.gov test server",
     "main": "dist/index.js",
     "repository": {
-        "type": "git",
-        "url": "https://github.com/ustaxcourt/ustc-pay-gov-test-server"
+      "type": "git",
+      "url": "https://github.com/ustaxcourt/ustc-pay-gov-test-server"
     },
     "publishConfig": {
-        "access": "public"
+      "access": "public"
     },
     "scripts": {
-        "build": "npx tsc",
-        "test": "jest ./src",
-        "ci:publish": "changeset publish"
+      "build": "npx tsc",
+      "test": "jest ./src",
+      "ci:publish": "changeset publish"
     }
   }
   ```
