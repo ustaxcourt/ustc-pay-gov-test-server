@@ -34,7 +34,6 @@
   The pay page now shows a "Complete Payment (PAYPAL - Success)" link. Clicking it calls the `POST /pay/PAYPAL/Success?token={token}` endpoint, which marks the token as a PAYPAL payment.
 
   After a token is marked as PAYPAL Success, `completeOnlineCollectionWithDetails` and `getDetails` return:
-
   - `transaction_status` of `Success`
   - `payment_type` of `PAYPAL` for both responses
 
@@ -43,7 +42,6 @@
   The pay page now shows a "Complete Payment (PAYPAL - Failed)" link. Clicking it calls the `POST /pay/PAYPAL/Failed?token={token}` endpoint, which marks the token with `paypal_initiated_at` and `failed_payment`.
 
   After a token is marked as PAYPAL Failed, `completeOnlineCollectionWithDetails` and `getDetails` return:
-
   - `transaction_status` of `Failed`
   - `payment_type` of `PAYPAL`
 
@@ -53,7 +51,6 @@
   The pay page now shows a "Complete Payment (ACH - Success)" link. Clicking it calls the generalized `POST /pay/:paymentMethod/:paymentStatus?token={token}` endpoint, which replaces the previous `POST /pay/fail` endpoint and handles all payment method and status combinations.
 
   After a token is marked as ACH Success, `completeOnlineCollectionWithDetails` and `getDetails` return:
-
   - `transaction_status` of `Received` for the first 15 seconds after initiation
   - `transaction_status` of `Success` after 15 seconds
   - `payment_type` of `ACH` for both responses
@@ -61,7 +58,6 @@
 - 1d07cb2: Improves reliability, security, and test coverage for Lambda, local Express routes, and deployment packaging.
 
   Key updates include:
-
   - Unified local and API Gateway error handling through shared helpers, with clearer behavior for 4xx vs 5xx responses.
   - Hardened local file reads against path traversal by validating resolved paths and rejecting parent/absolute traversal inputs.
   - Strengthened script-serving flow with strict filename validation and safer not-found mapping behavior.
@@ -77,7 +73,6 @@
   The pay page now shows a "Complete Payment (ACH - Failed)" link. Clicking it calls the `POST /pay/ACH/Failed?token={token}` endpoint, which marks the token with both `failed_payment` and `ach_initiated_at`.
 
   After a token is marked as ACH Failed, `completeOnlineCollectionWithDetails` and `getDetails` return:
-
   - `transaction_status` of `Received` for the first 60 seconds after initiation
   - `transaction_status` of `Failed` after 60 seconds
   - `payment_type` of `ACH` for both responses
@@ -98,7 +93,6 @@
   Moves pay-page link override logic to an external script served from `GET /scripts/:file`, with token passed via query string.
 
   Also adds integration coverage for:
-
   - failed-payment flow, including duplicate failed-mark requests returning an error
   - script-serving endpoint behavior (`200` for known scripts, `404` for unknown scripts)
   - static asset parity between `src/static/html` and `terraform/static/html`, including an explicit `override-links.js` sync check
