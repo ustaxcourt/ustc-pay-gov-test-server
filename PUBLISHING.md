@@ -109,7 +109,7 @@ npx @ustaxcourt/ustc-pay-gov-test-server update-env
 
 - **Publish workflow** (`.github/workflows/publish.yml`):
   - Triggered after CI passes and on push to `main`
-  - Uses `changesets/action@v1` to:
+  - Uses `changesets/action@v2` to:
     - Create/update Version PR when changesets exist
     - Publish to npm when Version PR is merged
 
