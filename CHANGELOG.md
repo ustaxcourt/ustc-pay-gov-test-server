@@ -1,5 +1,25 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.3.0
+
+### Minor Changes
+
+- e3e81ff: Updated npm dependencies and Terraform lockfiles.
+  
+  Kept TypeScript on the ts-jest-compatible 6.x line and aligned dev tooling so
+  `npm ci` and `npm audit` complete cleanly.
+
+### Patch Changes
+
+- d04fbf6: Update `@aws-sdk/client-s3` to `^3.1106.0` and refresh the published lodash and Luxon type dependencies as part of routine dependency maintenance.
+- 23caa2d: Prevent reuse of payment tokens by rejecting duplicate payment selections and returning an appropriate validation error in page responses.
+- 83e7ca7: Dependency updates and resolving vulnerabilities from transitive dependencies via selective override.
+- 82730e0: Refresh package dependencies and lockfiles, including `@changesets/cli` 3.x, bump Terraform in CI to `1.15.9`, and align the release documentation with the validated Changesets publish flow.
+- 4089407: - Update `package.json` and `package-lock.json` for Dependency Update Week of 2026-08-24, including the latest `@aws-sdk/client-s3` and `@types/luxon` refresh plus the corresponding transitive lockfile updates.
+  - Changeset action update to v2.
+- 7373c01: Refresh package dependencies and lockfiles for the PAY-451 / PAY-427 dependency update, bump `actions/setup-node` to v7 across all CI workflows, drop the now-inert `read-yaml-file` and nested `@istanbuljs/load-nyc-config` `js-yaml` overrides, and align the Changesets config `$schema` with the installed `@changesets/config@4.0.0`.
+- 0f8ace9: Bump @aws-sdk/client-s3 to `^3.1081.0` (minimum version 3.1081.0; routine dependency maintenance, no API or behavior changes).
+
 ## 0.2.4
 
 ### Patch Changes
