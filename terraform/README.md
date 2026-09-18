@@ -49,7 +49,7 @@ terraform/
 ## Prerequisites
 
 1. **AWS CLI configured** with appropriate credentials
-2. **Terraform installed** (~> 1.15.0) - [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
+2. **Terraform installed** (~> 1.16.0) - [Installation Guide](https://learn.hashicorp.com/tutorials/terraform/install-cli)
 3. **Node.js and npm** for Lambda function builds
 4. **S3 bucket** for Terraform state storage (optional but recommended)
 
