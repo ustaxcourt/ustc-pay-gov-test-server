@@ -54,11 +54,27 @@ describe("test resources", () => {
     restoreAppEnv(originalAppEnv);
   });
 
+  // This file runs as APP_ENV=local, where auth is skipped. Flip to "dev" to
+  // exercise rejection; restore it or later tests read from S3, not disk.
   it("should not serve the resources without the api token", async () => {
+    process.env.APP_ENV = "dev";
+
+    try {
+      for (const resource of resourcesToCheck) {
+        const url = `${baseUrl}/${resource}`;
+        const response = await fetch(url, {});
+        expect(response.status).toBe(403);
+      }
+    } finally {
+      process.env.APP_ENV = "local";
+    }
+  });
+
+  it("should serve the resources without the api token when local", async () => {
     for (const resource of resourcesToCheck) {
       const url = `${baseUrl}/${resource}`;
       const response = await fetch(url, {});
-      expect(response.status).toBe(403);
+      expect(response.status).toBe(200);
     }
   });
 
