@@ -53,7 +53,6 @@ Use these commands to manually test the local SOAP flow, including a failed
 ```bash
 curl -s -X POST 'http://localhost:3366/wsdl' \
 	-H 'Content-Type: application/soap+xml' \
-	-H 'authentication: Bearer asdf123' \
 	--data-binary @- <<'EOF'
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tcs="http://fms.treas.gov/services/tcsonline_3_1">
 	<soapenv:Header/>
@@ -138,7 +137,6 @@ curl -s -X POST "http://localhost:3366/pay/PLASTIC_CARD/Failed?token=c132251f9fe
 ```bash
 curl -s -X POST 'http://localhost:3366/wsdl' \
 	-H 'Content-Type: application/soap+xml' \
-	-H 'authentication: Bearer asdf123' \
 	--data-binary @- <<'EOF'
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tcs="http://fms.treas.gov/services/tcsonline_3_1">
 	<soapenv:Header/>
@@ -187,7 +185,6 @@ Copy the `<paygov_tracking_id>` from the SOAP response.
 ```bash
 curl -s -X POST 'http://localhost:3366/wsdl' \
 	-H 'Content-Type: application/soap+xml' \
-	-H 'authentication: Bearer asdf123' \
 	--data-binary @- <<'EOF'
 <soapenv:Envelope xmlns:soapenv="http://schemas.xmlsoap.org/soap/envelope/" xmlns:tcs="http://fms.treas.gov/services/tcsonline_3_1">
 	<soapenv:Header/>
