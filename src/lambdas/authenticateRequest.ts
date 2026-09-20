@@ -10,6 +10,12 @@ export const authenticateRequest = (headers?: Headers) => {
     return;
   }
 
+
+  const expectedToken = process.env.ACCESS_TOKEN;
+  if (!expectedToken) {
+    throw new UnauthorizedError("Missing Authentication");
+  }
+
   if (!headers) {
     throw new UnauthorizedError("Missing Authentication");
   }
@@ -22,7 +28,7 @@ export const authenticateRequest = (headers?: Headers) => {
     }
   }
 
-  if (authentication !== `Bearer ${process.env.ACCESS_TOKEN}`) {
+  if (authentication !== `Bearer ${expectedToken}`) {
     throw new UnauthorizedError("Missing Authentication");
   }
 };

@@ -7,19 +7,27 @@ import { authenticateRequest } from "./authenticateRequest";
 // .env says APP_ENV=local and in CI, where no .env exists.
 describe("authenticateRequest", () => {
   const originalAppEnv = process.env.APP_ENV;
+  const originalToken = process.env.ACCESS_TOKEN;
+  const testToken = "test-access-token";
 
   afterEach(() => {
     if (originalAppEnv === undefined) {
       Reflect.deleteProperty(process.env, "APP_ENV");
-      return;
+    } else {
+      process.env.APP_ENV = originalAppEnv;
     }
 
-    process.env.APP_ENV = originalAppEnv;
+    if (originalToken === undefined) {
+      Reflect.deleteProperty(process.env, "ACCESS_TOKEN");
+    } else {
+      process.env.ACCESS_TOKEN = originalToken;
+    }
   });
 
   describe("when the server is not running locally", () => {
     beforeEach(() => {
       process.env.APP_ENV = "dev";
+      process.env.ACCESS_TOKEN = testToken;
     });
 
     it("throws an error if nothing is passed in", () => {
@@ -37,7 +45,7 @@ describe("authenticateRequest", () => {
     it("should not throw an error with the correct authentication header", () => {
       expect(() =>
         authenticateRequest({
-          authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+          authentication: `Bearer ${testToken}`,
         }),
       ).not.toThrow();
     });
@@ -45,7 +53,7 @@ describe("authenticateRequest", () => {
     it("should not throw an error with the correct authentication header in Title Case", () => {
       expect(() =>
         authenticateRequest({
-          Authentication: `Bearer ${process.env.ACCESS_TOKEN}`,
+          Authentication: `Bearer ${testToken}`,
         }),
       ).not.toThrow();
     });
@@ -53,9 +61,36 @@ describe("authenticateRequest", () => {
     it("should not throw an error with the correct authentication header in Upper Case", () => {
       expect(() =>
         authenticateRequest({
-          AUTHENTICATION: `Bearer ${process.env.ACCESS_TOKEN}`,
+          AUTHENTICATION: `Bearer ${testToken}`,
         }),
       ).not.toThrow();
+    });
+
+
+    it("rejects the literal 'Bearer undefined' when ACCESS_TOKEN is unset", () => {
+      Reflect.deleteProperty(process.env, "ACCESS_TOKEN");
+
+      expect(() =>
+        authenticateRequest({
+          authentication: "Bearer undefined",
+        }),
+      ).toThrow(UnauthorizedError);
+    });
+
+    it("rejects every request when ACCESS_TOKEN is unset", () => {
+      Reflect.deleteProperty(process.env, "ACCESS_TOKEN");
+
+      expect(() =>
+        authenticateRequest({ authentication: `Bearer ${testToken}` }),
+      ).toThrow(UnauthorizedError);
+    });
+
+    it("rejects every request when ACCESS_TOKEN is empty", () => {
+      process.env.ACCESS_TOKEN = "";
+
+      expect(() =>
+        authenticateRequest({ authentication: "Bearer " }),
+      ).toThrow(UnauthorizedError);
     });
   });
 
