@@ -57,6 +57,7 @@ describe("test resources", () => {
   // This file runs as APP_ENV=local, where auth is skipped. Flip to "dev" to
   // exercise rejection; restore it or later tests read from S3, not disk.
   it("should not serve the resources without the api token", async () => {
+    const suiteAppEnv = process.env.APP_ENV;
     process.env.APP_ENV = "dev";
 
     try {
@@ -66,7 +67,7 @@ describe("test resources", () => {
         expect(response.status).toBe(403);
       }
     } finally {
-      process.env.APP_ENV = "local";
+      restoreAppEnv(suiteAppEnv);
     }
   });
 

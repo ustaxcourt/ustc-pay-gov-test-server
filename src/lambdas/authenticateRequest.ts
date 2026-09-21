@@ -10,7 +10,6 @@ export const authenticateRequest = (headers?: Headers) => {
     return;
   }
 
-
   const expectedToken = process.env.ACCESS_TOKEN;
   if (!expectedToken) {
     throw new UnauthorizedError("Missing Authentication");

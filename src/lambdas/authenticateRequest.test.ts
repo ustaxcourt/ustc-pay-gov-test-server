@@ -75,7 +75,6 @@ describe("authenticateRequest", () => {
       ).not.toThrow();
     });
 
-
     it("rejects the literal 'Bearer undefined' when ACCESS_TOKEN is unset", () => {
       Reflect.deleteProperty(process.env, "ACCESS_TOKEN");
 
