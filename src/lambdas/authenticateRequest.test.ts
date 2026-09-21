@@ -1,5 +1,23 @@
 import { UnauthorizedError } from "../errors/UnauthorizedError";
+import { isAppEnv } from "../config/appEnv";
 import { authenticateRequest } from "./authenticateRequest";
+
+const restoreAppEnv = (original: string | undefined) => {
+  Reflect.deleteProperty(process.env, "APP_ENV");
+  if (original === undefined) return;
+  if (!isAppEnv(original)) {
+    throw new Error(
+      `Cannot restore APP_ENV to invalid value "${original}" — bad test setup leaked into the suite snapshot.`,
+    );
+  }
+  process.env.APP_ENV = original;
+};
+
+const restoreAccessToken = (original: string | undefined) => {
+  Reflect.deleteProperty(process.env, "ACCESS_TOKEN");
+  if (original === undefined) return;
+  process.env.ACCESS_TOKEN = original;
+};
 
 // APP_ENV decides whether authentication runs at all, and jest.config.ts loads
 // the developer's .env through dotenv/config before any test runs. Set it
@@ -11,17 +29,8 @@ describe("authenticateRequest", () => {
   const testToken = "test-access-token";
 
   afterEach(() => {
-    if (originalAppEnv === undefined) {
-      Reflect.deleteProperty(process.env, "APP_ENV");
-    } else {
-      process.env.APP_ENV = originalAppEnv;
-    }
-
-    if (originalToken === undefined) {
-      Reflect.deleteProperty(process.env, "ACCESS_TOKEN");
-    } else {
-      process.env.ACCESS_TOKEN = originalToken;
-    }
+    restoreAppEnv(originalAppEnv);
+    restoreAccessToken(originalToken);
   });
 
   describe("when the server is not running locally", () => {
@@ -112,16 +121,9 @@ describe("authenticateRequest", () => {
     });
 
     it("does not require ACCESS_TOKEN to be set", () => {
-      const originalToken = process.env.ACCESS_TOKEN;
       Reflect.deleteProperty(process.env, "ACCESS_TOKEN");
 
-      try {
-        expect(() => authenticateRequest({})).not.toThrow();
-      } finally {
-        if (originalToken !== undefined) {
-          process.env.ACCESS_TOKEN = originalToken;
-        }
-      }
+      expect(() => authenticateRequest({})).not.toThrow();
     });
   });
 });
