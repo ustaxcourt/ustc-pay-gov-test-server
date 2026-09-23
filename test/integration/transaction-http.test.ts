@@ -1043,18 +1043,34 @@ describe("initiate transaction", () => {
   });
 
   describe("getResourceLocal route", () => {
+    // This file runs as APP_ENV=local, where auth is skipped. Flip to "dev" to
+    // exercise rejection; restore it or later tests read from S3, not disk.
     it("returns 403 when authentication header is present but invalid", async () => {
+      process.env.APP_ENV = "dev";
+
+      try {
+        const response = await fetch(
+          `${baseUrl}/wsdl/TCSOnlineService_3_1.wsdl`,
+          {
+            headers: {
+              authentication: "Bearer wrong-token",
+            },
+          },
+        );
+
+        expect(response.status).toBe(403);
+        expect(await response.text()).toBe("Missing Authentication");
+      } finally {
+        process.env.APP_ENV = "local";
+      }
+    });
+
+    it("serves the resource without an authentication header when local", async () => {
       const response = await fetch(
         `${baseUrl}/wsdl/TCSOnlineService_3_1.wsdl`,
-        {
-          headers: {
-            authentication: "Bearer wrong-token",
-          },
-        },
       );
 
-      expect(response.status).toBe(403);
-      expect(await response.text()).toBe("Missing Authentication");
+      expect(response.status).toBe(200);
     });
 
     it("returns 404 when filename is unsupported", async () => {
@@ -1091,19 +1107,25 @@ describe("initiate transaction", () => {
 
   describe("api gateway getResourceLambda.handler", () => {
     it("returns 403 when headers are missing", async () => {
-      const { handler: getResourceHandler } = await import(
-        "../../src/lambdas/getResourceLambda"
-      );
-      const response = await getResourceHandler({
-        headers: undefined,
-        pathParameters: { filename: "TCSOnlineService_3_1.wsdl" },
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
+      process.env.APP_ENV = "dev";
 
-      expect(response.statusCode).toBe(403);
-      expect(response.body).toBe("Missing Authentication");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
+      try {
+        const { handler: getResourceHandler } = await import(
+          "../../src/lambdas/getResourceLambda"
+        );
+        const response = await getResourceHandler({
+          headers: undefined,
+          pathParameters: { filename: "TCSOnlineService_3_1.wsdl" },
+        } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+        expect(response.statusCode).toBe(403);
+        expect(response.body).toBe("Missing Authentication");
+        expect(response.headers).toEqual({
+          "Content-Type": "text/plain; charset=UTF-8",
+        });
+      } finally {
+        process.env.APP_ENV = "local";
+      }
     });
 
     it("returns 200 for existing resource", async () => {
@@ -1151,26 +1173,32 @@ describe("initiate transaction", () => {
 
   describe("api gateway handleSoapRequestLambda.handler", () => {
     it("returns 403 when headers are missing", async () => {
-      const { handler: handleSoapRequestHandler } = await import(
-        "../../src/lambdas/handleSoapRequestLambda"
-      );
-      const response = await handleSoapRequestHandler({
-        headers: undefined,
-        body: toSoapEnvelope({
-          "tcs:getDetails": {
-            getDetailsRequest: {
-              tcs_app_id: tcsAppId,
-              paygov_tracking_id: "abc",
-            },
-          },
-        }),
-      } as unknown as AWSLambda.APIGatewayProxyEvent);
+      process.env.APP_ENV = "dev";
 
-      expect(response.statusCode).toBe(403);
-      expect(response.body).toBe("Missing Authentication");
-      expect(response.headers).toEqual({
-        "Content-Type": "text/plain; charset=UTF-8",
-      });
+      try {
+        const { handler: handleSoapRequestHandler } = await import(
+          "../../src/lambdas/handleSoapRequestLambda"
+        );
+        const response = await handleSoapRequestHandler({
+          headers: undefined,
+          body: toSoapEnvelope({
+            "tcs:getDetails": {
+              getDetailsRequest: {
+                tcs_app_id: tcsAppId,
+                paygov_tracking_id: "abc",
+              },
+            },
+          }),
+        } as unknown as AWSLambda.APIGatewayProxyEvent);
+
+        expect(response.statusCode).toBe(403);
+        expect(response.body).toBe("Missing Authentication");
+        expect(response.headers).toEqual({
+          "Content-Type": "text/plain; charset=UTF-8",
+        });
+      } finally {
+        process.env.APP_ENV = "local";
+      }
     });
 
     it("returns 400 when body is missing", async () => {

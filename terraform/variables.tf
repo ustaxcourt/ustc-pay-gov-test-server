@@ -42,11 +42,15 @@ variable "node_env" {
 }
 
 variable "app_env" {
-  description = "Deployment topology of this service. One of: local, dev, test."
+  # "local" is deliberately excluded. It is a valid runtime mode for the Express
+  # server on a developer's machine, but never a valid deployment target: it
+  # disables request authentication (src/lambdas/authenticateRequest.ts) and
+  # selects filesystem storage over S3 (src/client/storageClient.ts).
+  description = "Deployment topology of this service. One of: dev, test."
   type        = string
   validation {
-    condition     = contains(["local", "dev", "test"], var.app_env)
-    error_message = "app_env must be one of: local, dev, test."
+    condition     = contains(["dev", "test"], var.app_env)
+    error_message = "app_env must be one of: dev, test. \"local\" is not deployable — it disables request authentication."
   }
 }
 

@@ -55,7 +55,7 @@ variable "node_env" {
 }
 
 variable "app_env" {
-  description = "Deployment topology of this service. One of: local, dev, test."
+  description = "Deployment topology of this service. One of: dev, test."
   type        = string
 }
 
