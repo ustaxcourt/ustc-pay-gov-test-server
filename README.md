@@ -10,6 +10,8 @@ It also serves up a crude UI that directs users to either the Success or Cancel 
 
 The development environment of the Payment Portal should be configured to point to this application's REST API. Configured by [terraform](terraform/README.md), the custom domain name is `https://pay-gov-dev.ustaxcourt.gov`. The token that is used to authenticate requests is located in the `.env.prod` file with the key of `ACCESS_TOKEN`. When the application is deployed, this `ACCESS_TOKEN` becomes an environment variable for the application, and SOAP requests made to the deployed server must include that token.
 
+**Authentication applies to deployed environments only.** A server running locally (`APP_ENV=local`) skips the token check, so local requests need no `Authentication` header and no `ACCESS_TOKEN` is required to set one up. Terraform will not deploy with `app_env = "local"`, so this bypass cannot reach a deployed environment.
+
 ## Transaction Workflow
 
 In the following workflow, this USTC Pay.gov Dev Server takes the place of Pay.gov. All transactions are treated as if they will be processed successfully.
@@ -50,7 +52,7 @@ A few variables have semantic meaning beyond just "set this value":
 | Environment Variable | Example Value                                                   | Description                                                                                                                                                                                  |
 | -------------------- | --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `BASE_URL`           | `https://pay-gov-dev.ustaxcourt.gov` or `http://localhost:3366` | The URL that serves this application.                                                                                                                                                        |
-| `ACCESS_TOKEN`       | `asdf123`                                                       | A random string used to authenticate requests. The server looks for the header `Authentication`: `Bearer ${ACCESS_TOKEN}`.                                                                   |
+| `ACCESS_TOKEN`       | `asdf123`                                                       | **Deployed environments only.** A random string used to authenticate requests. The server looks for the header `Authentication`: `Bearer ${ACCESS_TOKEN}`. Ignored when `APP_ENV=local`.      |
 | `PORT`               | `3366`                                                          | The port for the Express server when running locally. Not used on the deployed instance.                                                                                                     |
 | `NODE_ENV`           | `development`, `production`, or `test`                          | Node.js runtime mode. Jest sets this to `test` automatically; deployed envs use `production`. Do **not** use this to encode deployment topology — use `APP_ENV` instead.                     |
 | `APP_ENV`            | `local`, `dev`, or `test`                                       | Deployment topology. `local` → filesystem storage; `dev` → S3. `test` is a Jest fallback — unit tests should mock `storageClient()` rather than depend on this branch. Read via `isLocal()`. |

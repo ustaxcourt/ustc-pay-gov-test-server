@@ -8,7 +8,8 @@ declare global {
       APP_ENV?: "local" | "dev" | "test";
       BASE_URL: string;
       BUCKET_NAME: string;
-      ACCESS_TOKEN: string;
+      // Deployed environments only; local runs skip authentication.
+      ACCESS_TOKEN?: string;
       PORT: string;
     }
   }
