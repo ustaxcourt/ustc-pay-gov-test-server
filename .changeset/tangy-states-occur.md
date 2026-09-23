@@ -1,5 +1,7 @@
 ---
-"@ustaxcourt/ustc-pay-gov-test-server": patch
+"@ustaxcourt/ustc-pay-gov-test-server": minor
 ---
 
-Scheduled update NPM and Terraform dependencies - Week of 2026-09-21
+Scheduled dependency maintenance for the week of 2026-09-21.
+
+Updated npm dependencies and refreshed Terraform provider lock files.
