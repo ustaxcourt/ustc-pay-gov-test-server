@@ -25,15 +25,41 @@ enough context that the next person doesn't have to re-derive the decision.
 
 ## Deferred upgrades
 
-### TypeScript 6.x → 7.x — deferred (2026-07-08)
+### TypeScript 6.x → 7.x — deferred (2026-09-17)
 
-- **Current:** `^6.0.3` (declared). **Available latest:** `7.0.2`.
-- **Reason:** TypeScript 7 is a full major ahead of the version this repo is
-  currently migrating onto (6.x). Landing the 5→6 migration and proving the suite
-  green is the goal of this ticket; stacking a second compiler major on top would
-  conflate two migrations and expand blast radius.
-- **Plan:** Evaluate 7.x in a dedicated follow-up once 6.x is stable on `main`.
-  Cut a ticket and flag the PO if/when pursued.
+- **Current:** `^6.0.3` (declared and resolved). **Available latest:** `7.0.2`.
+- **Reason:** blocked by `ts-jest`, not by appetite. The latest `ts-jest`
+  (`29.4.12`) declares `"typescript": ">=4.3 <7"` as a peer dependency, so
+  moving to TypeScript 7 puts the whole Jest suite on an unsupported peer
+  combination. `ts-jest` has published no release that accepts TypeScript 7.
+- **History:** first deferred 2026-07-08 on the grounds that stacking a second
+  compiler major on top of the in-flight 5→6 migration would conflate two
+  migrations. That migration has since landed; the blocker is now the `ts-jest`
+  peer range above, which is a harder constraint.
+- **Plan:** re-check on each dependency-update pass whether `ts-jest` has
+  widened its peer range. When it does, the upgrade warrants its own ticket —
+  it is a compiler major with a test-runner change riding along, not routine
+  maintenance. Cut the ticket and flag the PO at that point.
+
+### dotenv 17.x → 18.x — taken, with a caveat for the Payment Portal (2026-09-18)
+
+- **Upgraded** `^17.4.2` → `^18.0.0`. Recorded here because the changelog is
+  misleading, not because the upgrade was deferred.
+- **The trap:** dotenv 18's changelog lists "Remove preloading. Instead use cli
+  `dotenv run -- your-command`". Read literally, that breaks this repo — Jest
+  loads env through `setupFiles: ["dotenv/config"]`, and
+  `test:integration:deployed` selects `.env.prod` via `DOTENV_CONFIG_PATH`.
+- **What is actually true:** the `./config` subpath export survives in 18.0.0
+  (`"./config": "./dist/config.cjs"`), and `DOTENV_CONFIG_PATH` is still
+  honored. Verified empirically against both 17.4.2 and 18.0.0 — a plain
+  `-r dotenv/config` preload and a `DOTENV_CONFIG_PATH=.env.prod` preload each
+  resolved the expected file on both versions. What 18 dropped is the
+  `./lib/cli-options` and `./lib/env-options` subpaths, which nothing here
+  imports directly.
+- **Payment Portal:** it declares `dotenv` separately and uses
+  `node -r dotenv/config` in seven `package.json` scripts. The same finding
+  should apply, but re-verify there before bumping — do not carry this
+  conclusion across on trust.
 
 <!-- Add further deferrals below as they are decided. -->
 
@@ -55,7 +81,7 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
   deps are held back because `glob@11+`/`test-exclude@8` require Node `>=20`,
   and jest 30 still officially supports Node `18.14.0+`. Not a bug on jest's
   part, just a Node-floor jest can't be forced to drop, but doesn't apply to
-  us (`.nvmrc` pins `24.19.0`). That held-back chain
+  us (`.nvmrc` pins `24.20.0`). That held-back chain
   (`babel-plugin-istanbul` → `test-exclude` → `glob` → `minimatch` →
   `brace-expansion`) is what `npm audit` flags.
 - **Verified:** `npm audit` no longer reports the finding; `package-lock.json`
@@ -80,7 +106,7 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 - **Verified:** `npm audit` reports 0 vulnerabilities. `npm ls brace-expansion`
   shows a single deduped copy at `5.0.9` with one consumer
   (`nodemon@3.1.14` → `minimatch@10.2.6`). `brace-expansion@5.0.9` declares
-  `engines: { node: "20 || >=22" }`, satisfied by the `24.19.0` pin in `.nvmrc`.
+  `engines: { node: "20 || >=22" }`, satisfied by the `24.20.0` pin in `.nvmrc`.
   Test suite green (19 suites / 131 tests).
 - **Note:** this chain reaches production installs, because `nodemon` is declared
   in `dependencies` rather than `devDependencies`. Worth revisiting separately —
@@ -88,6 +114,30 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
   `devDependencies` would shrink both the deployed footprint and the audit
   surface. Not changed here; flagged only so the next audit isn't dismissed as
   "dev-only."
+
+### Week of 2026-09-14 — no new findings (2026-09-17)
+
+`npm audit` reported **0 vulnerabilities** both before and after this round's
+`npm update`. The three overrides recorded above (`babel-plugin-istanbul`, `test-exclude`,
+`glob`) are still in `package.json` and still doing work — they are what keeps
+the `brace-expansion` chain on a patched version. Do not drop them without
+re-running `npm audit`.
+
+Node floor raised this round: `.nvmrc` moved `24.19.0` → `24.20.0` (24.x LTS,
+"Krypton") and `package.json` gained an explicit
+`engines: { node: ">=24.20.0 <25.0.0" }`, which the package had never declared.
+The two must move together — CI installs Node from `.nvmrc`, so an `engines`
+floor above the `.nvmrc` pin would make every CI install emit `EBADENGINE`.
+Note this floor reaches consumers of the published package: the Payment Portal
+declares `>=24.19.0 <25.0.0` and depends on `^0.3.0`, so it needs the same bump
+before it picks up this release.
+
+Still open from the previous round, and deliberately not changed here:
+`nodemon`, `typescript`, and the `@types/*` packages are declared in
+`dependencies` rather than `devDependencies`, so they ship to production
+installs and widen the audit surface. Moving them is a packaging change with
+its own blast radius (it alters what consumers of the published package
+receive), so it belongs in its own ticket rather than in a dependency refresh.
 
 ### Accepted vulnerabilities
 
