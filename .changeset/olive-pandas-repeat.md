@@ -1,5 +1,5 @@
 ---
-'@ustaxcourt/ustc-pay-gov-test-server': minor
+"@ustaxcourt/ustc-pay-gov-test-server": minor
 ---
 
 PAY-455: dependency updates for the week of 2026-09-14.
