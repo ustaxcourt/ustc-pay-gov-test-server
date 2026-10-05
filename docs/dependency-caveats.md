@@ -25,11 +25,11 @@ enough context that the next person doesn't have to re-derive the decision.
 
 ## Deferred upgrades
 
-### TypeScript 6.x → 7.x — deferred (2026-09-17)
+### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-05)
 
 - **Current:** `^6.0.3` (declared and resolved). **Available latest:** `7.0.2`.
 - **Reason:** blocked by `ts-jest`, not by appetite. The latest `ts-jest`
-  (`29.4.12`) declares `"typescript": ">=4.3 <7"` as a peer dependency, so
+  (`29.4.14`) declares `"typescript": ">=4.3 <7"` as a peer dependency, so
   moving to TypeScript 7 puts the whole Jest suite on an unsupported peer
   combination. `ts-jest` has published no release that accepts TypeScript 7.
 - **History:** first deferred 2026-07-08 on the grounds that stacking a second
