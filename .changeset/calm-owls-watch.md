@@ -16,7 +16,7 @@ PAY-472: dependency updates for 2026-09-28 to 2026-10-09.
   (8.10.164), `@types/luxon` (3.7.6) and the dev dependency `ts-jest` (29.4.14).
 - Refresh the Terraform provider lockfiles to `hashicorp/aws` 6.67.0 (main and
   bootstrap stacks).
-- Pin the CI Terraform version to `~> 1.16.0` in the deploy and PR-validate
+- Pin the CI Terraform version to `~1.16.0` in the deploy and PR-validate
   workflows so patch releases are picked up automatically. (Major and minor updates require human intervention)
 
 TypeScript remains on 6.x; see `docs/dependency-caveats.md` for the reasoning.
