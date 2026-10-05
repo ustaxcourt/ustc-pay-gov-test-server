@@ -27,8 +27,6 @@ For each runtime package (or group of related packages), check off the **affecte
 - [ ] local dev server startup (`npm run dev`, or `start-pay-gov-test-server` for the published package)
 - [ ] Lambda deploy artifact (`bash terraform/build.sh`)
 
-**Mandatory manual testing:** automated CI alone is not sufficient for a dependency rotation. After pushing this branch (which gets its own ephemeral dev environment via `CICD - Dev`, unless authored by `dependabot[bot]`), manually exercise the application areas listed above — both locally and in that environment.
-
 ### Runtime dependencies
 
 <!-- Packages under `@aws-sdk` are optional to list individually for brevity — group them as `@aws-sdk/*` with a combined purpose if several bumped together. -->
@@ -51,9 +49,8 @@ Verification of these is usually covered by CI (`npm test`, `npx tsc --noEmit`).
 ### Dependencies checklist
 
 - [ ] I have listed the updated packages, their purpose, where they're used, and the plain-language application areas to test (`@aws-sdk/*` packages are optional to list individually).
-- [ ] **Mandatory manual testing:** I have exercised the affected application areas listed above:
-  - [ ] Locally (`npm run dev`)
-  - [ ] In this PR's ephemeral dev environment
+- [ ] **Mandatory manual testing:** I have exercised the affected application areas listed above locally (`npm run dev`).
+- [ ] After merge, I have spot-checked the dev environment once the `Deploy Code` workflow completes.
 - [ ] I have confirmed that integration tests pass for this PR (`npm run test:integration`).
 - [ ] I have run `npm audit --audit-level=high` and resolved or consciously accepted any findings.
 - [ ] `package-lock.json` reflects a clean `npm ci` install — no hand edits.
@@ -62,6 +59,7 @@ Verification of these is usually covered by CI (`npm test`, `npx tsc --noEmit`).
 - [ ] Any deferred updates have been listed in `docs/dependency-caveats.md`.
 - [ ] I have included a changeset file covering the dependency updates.
 - [ ] I have reviewed CHANGELOG.md / release notes for any breaking changes in the updated packages and reflected them in the tables above.
+- [ ] After merging, approve and merge in the `Version Change` PR. This will trigger the package version to be bumped according to open changeset files, and publish the new package to npm.
 
 ---
 
