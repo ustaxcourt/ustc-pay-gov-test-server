@@ -92,6 +92,8 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 - **Revisit:** once jest itself raises its Node floor past `20` and bumps
   these deps directly, this override can likely be dropped.
 
+### GHSA-rgw5-rvv9-x895 — brace-expansion (4.0.0–5.0.8) (high) — resolved by removing the nodemon dependency (2026-10-05)
+
 ### Week of 2026-09-14 — no new findings (2026-09-17)
 
 `npm audit` reported **0 vulnerabilities** both before and after this round's
