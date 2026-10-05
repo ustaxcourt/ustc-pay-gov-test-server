@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "dev": "APP_ENV=local concurrently \"npx tsc --watch\" \"node --watch ./dist/server.js\"",
+    "dev": "npx tsc && APP_ENV=local concurrently \"npx tsc --watch\" \"node --watch ./dist/server.js\"",
     "copy-files": "aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive",
     "test": "jest ./src",
     "test:coverage": "jest --coverage ./src",
