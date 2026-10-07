@@ -1,6 +1,6 @@
 # USTC Pay.gov Test Server
 
-**Instructions here should only be updated through `AGENTS.md`. `copilot-instructions.md` and `CLAUDE.md` are symlinks to `AGENTS.md`**
+**Instructions here should only be updated through `AGENTS.md`. `.github/copilot-instructions.md` and `CLAUDE.md` are symlinks to `AGENTS.md`.**
 
 This is the USTC Pay.gov Test Server (`@ustaxcourt/ustc-pay-gov-test-server`). A mock of the Pay.gov SOAP API and hosted payment pages, used by the US Tax Court's development environments (primarily the USTC Payment Portal) in place of the real Pay.gov. It is published to npm and also deployed to AWS.
 
