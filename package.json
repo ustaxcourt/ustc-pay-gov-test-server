@@ -12,7 +12,7 @@
   },
   "scripts": {
     "build": "npx tsc",
-    "dev": "APP_ENV=local concurrently \"npx tsc --watch\" \"nodemon -q ./dist/server.js\"",
+    "dev": "npx tsc && APP_ENV=local concurrently \"npx tsc --watch\" \"node --watch ./dist/server.js\"",
     "copy-files": "aws s3 cp src/static s3://dev-ustc-pay-gov-test-server --recursive",
     "test": "jest ./src",
     "test:coverage": "jest --coverage ./src",
@@ -43,7 +43,6 @@
     "fast-xml-parser": "^5.11.0",
     "lodash": "^4.18.1",
     "luxon": "^3.7.2",
-    "nodemon": "^3.1.14",
     "soap": "^1.13.0",
     "typescript": "^6.0.3"
   },
