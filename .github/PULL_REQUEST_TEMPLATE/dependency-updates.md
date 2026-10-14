@@ -54,6 +54,7 @@ Verification of these is usually covered by CI (`npm test`, `npx tsc --noEmit`).
 - [ ] I have confirmed that integration tests pass for this PR (`npm run test:integration`).
 - [ ] I have run `npm audit --audit-level=high` and resolved or consciously accepted any findings.
 - [ ] `package-lock.json` reflects a clean `npm ci` install — no hand edits.
+- [ ] If any package moved between `dependencies` and `devDependencies`, the PR Validate `package` job passes. It installs the packed tarball the way a consumer would and runs `start-pay-gov-test-server`.
 - [ ] If a security advisory motivated this update, I've named the CVE/advisory above.
 - [ ] I have updated Terraform providers in our IaC code (`terraform/` and `terraform/bootstrap/`), and confirmed that `terraform plan` succeeds on the PR.
 - [ ] Any deferred updates have been listed in `docs/dependency-caveats.md`.
