@@ -20,12 +20,18 @@ enough context that the next person doesn't have to re-derive the decision.
   severity, why it can't be fixed now, and any mitigation.
 - If an upgrade is involved enough to warrant its own ticket, cut the ticket,
   notify the PO, and reference it here.
+- **Override or accept?** For a vulnerable transitive package the direct
+  dependency won't bump, add an override only when both hold: (a) a patched
+  version exists and the parent's use of it has been checked against that
+  version, and (b) the vulnerable code is reachable, or the finding is high or
+  critical. Otherwise accept it with a reachability note, and dismiss the
+  GitHub Dependabot alert as "vulnerable code is not actually used".
 
 ---
 
 ## Deferred upgrades
 
-### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-05)
+### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-14)
 
 - **Current:** `^6.0.3` (declared and resolved). **Available latest:** `7.0.2`.
 - **Reason:** blocked by `ts-jest`, not by appetite. The latest `ts-jest`
@@ -60,6 +66,15 @@ enough context that the next person doesn't have to re-derive the decision.
   `node -r dotenv/config` in seven `package.json` scripts. The same finding
   should apply, but re-verify there before bumping — do not carry this
   conclusion across on trust.
+
+### Terraform 1.16.x → 1.17 — not released (2026-10-14)
+
+- **Current:** `required_version = "~> 1.16.0"` in both stacks, and
+  `terraform_version: ~1.16.0` in `deploy.yml` and `pr-validate.yml`.
+- **Reason:** there is no 1.17 release yet. The latest is `1.16.5`, which both
+  constraints already pick up, so nothing needs to change.
+- **Plan:** when 1.17 ships, move `required_version` and both workflow pins
+  together, as was done for 1.15 → 1.16.
 
 <!-- Add further deferrals below as they are decided. -->
 
@@ -118,7 +133,39 @@ installs and widen the audit surface. Moving them is a packaging change with
 its own blast radius (it alters what consumers of the published package
 receive), so it belongs in its own ticket rather than in a dependency refresh.
 
+### Week of 2026-10-12 — 23 findings → 1 accepted (2026-10-14)
+
+`npm audit` went from 23 findings (3 critical, 20 moderate) to 20 moderate rows,
+all from the single `sprintf-js` advisory accepted below. Every finding was in
+dev-only tooling.
+
+- `handlebars` GHSA-xw65-4hp5-5hc7, GHSA-8r5x-fm3f-whwj, GHSA-p8wg-vrv2-v86f
+  (critical): fixed by `npm update` to `4.7.10` (via `ts-jest`).
+- `shell-quote` GHSA-pqg4-j6r4-53mv (critical): fixed by moving the exact pin
+  on `concurrently` from `10.0.5` to `10.0.6`. That gives a single deduped
+  `shell-quote@1.12.0`, shared with `@changesets/cli` → `launch-editor`.
+
 ### Accepted vulnerabilities
+
+### GHSA-hp3w-g68c-fv3c — sprintf-js@1.0.3 (moderate) — accepted (2026-10-14)
+
+- **Chain:** `ts-jest` → `@jest/transform` → `babel-plugin-istanbul` →
+  `@istanbuljs/load-nyc-config@1.1.0` → `js-yaml@3.15.2` → `argparse@1.0.10`
+  → `sprintf-js@1.0.3`. `npm audit` reports it as 20 moderate rows because it
+  also lists every parent.
+- **Reason it can't be fixed now:** the advisory covers every release
+  (`<=1.1.3`, and `1.1.3` is the latest), so there is no patched version to
+  move to.
+- **Why it isn't reachable:** `js-yaml@3` only requires `argparse` from its
+  `bin/js-yaml.js` CLI, never from the library code `load-nyc-config` calls
+  (`require('js-yaml').load(...)`, and only for a `.nycrc.yaml`, which this repo
+  doesn't have). Dev-only; nothing here ships to consumers.
+- **Not overridden:** overriding `js-yaml` to `^4` (whose `argparse@2` has no
+  `sprintf-js`) would clear it, but fails the override rule above. The Payment
+  Portal removed exactly that override for the same reason and noted
+  "do not re-add" in its own `docs/dependency-caveats.md`.
+- **Revisit:** when `sprintf-js` publishes a fix, or `@istanbuljs/load-nyc-config`
+  moves off `js-yaml@3`.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)
