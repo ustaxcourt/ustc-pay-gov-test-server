@@ -132,6 +132,8 @@ Still open from the previous round, and deliberately not changed here:
 installs and widen the audit surface. Moving them is a packaging change with
 its own blast radius (it alters what consumers of the published package
 receive), so it belongs in its own ticket rather than in a dependency refresh.
+**Resolved 2026-10-14 (PAY-494):** moved to `devDependencies` along with `soap`,
+once `start-pay-gov-test-server` stopped compiling with `tsc` at startup.
 
 ### Week of 2026-10-12 — 23 findings → 1 accepted (2026-10-14)
 
