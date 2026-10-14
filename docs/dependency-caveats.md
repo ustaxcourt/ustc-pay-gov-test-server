@@ -71,7 +71,7 @@ enough context that the next person doesn't have to re-derive the decision.
 
 - **Current:** `required_version = "~> 1.16.0"` in both stacks, and
   `terraform_version: ~1.16.0` in `deploy.yml` and `pr-validate.yml`.
-- **Reason:** there is no 1.17 release yet. The latest is `1.16.5`, which both
+- **Reason:** there is no 1.17 release yet. The latest is `1.16.6`, which both
   constraints already pick up, so nothing needs to change.
 - **Plan:** when 1.17 ships, move `required_version` and both workflow pins
   together, as was done for 1.15 → 1.16.
