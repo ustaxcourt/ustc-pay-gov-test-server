@@ -2,7 +2,7 @@
 "@ustaxcourt/ustc-pay-gov-test-server": patch
 ---
 
-Dependency updates for the week of 2026-10-12.
+PAY-494: dependency updates for the week of 2026-10-12.
 
 - Raise the runtime floors to the versions tested in this pass: `express`
   `^5.3.0` and `soap` `^1.14.0`. Refresh `package-lock.json` so every declared
