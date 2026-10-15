@@ -36,9 +36,8 @@ itself new permissions).
   manage IAM (at minimum: `iam:CreateRole`, `iam:UpdateAssumeRolePolicy`,
   `iam:PutRolePolicy`, `iam:GetRole*`). The SSO profile for this account is
   `ent-apps-pay-gov-workloads-dev`. The Payment Portal's
-  `ent-apps-payment-portal-workloads-dev` is a different account
-  (`723609007960`) and fails with a `403` on the state bucket. Check before
-  running Terraform:
+  `ent-apps-payment-portal-workloads-dev` is a different account and fails with
+  a `403` on the state bucket. Check before running Terraform:
 
   ```bash
   export AWS_PROFILE=ent-apps-pay-gov-workloads-dev

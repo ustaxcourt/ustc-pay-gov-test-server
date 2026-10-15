@@ -1,5 +1,5 @@
 ---
-"@ustaxcourt/ustc-pay-gov-test-server": patch
+"@ustaxcourt/ustc-pay-gov-test-server": minor
 ---
 
 PAY-494: fix the `start-pay-gov-test-server` command for consumers of the
