@@ -24,18 +24,22 @@ enough context that the next person doesn't have to re-derive the decision.
   dependency won't bump, add an override only when both hold: (a) a patched
   version exists and the parent's use of it has been checked against that
   version, and (b) the vulnerable code is reachable, or the finding is high or
-  critical. Otherwise accept it with a reachability note, and dismiss the
-  GitHub Dependabot alert as "vulnerable code is not actually used".
+  critical. Otherwise accept it here with its reachability, mitigation and a
+  revisit condition.
+- **Dismissing a Dependabot alert:** use "vulnerable code is not actually used"
+  only once the vulnerable code is confirmed unreachable. Leave a reachable
+  finding with no verified compatible fix open, so it stays tracked until it
+  is resolved.
 
 ---
 
 ## Deferred upgrades
 
-### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-14)
+### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-15)
 
 - **Current:** `^6.0.3` (declared and resolved). **Available latest:** `7.0.2`.
 - **Reason:** blocked by `ts-jest`, not by appetite. The latest `ts-jest`
-  (`29.4.14`) declares `"typescript": ">=4.3 <7"` as a peer dependency, so
+  (`29.4.15`) declares `"typescript": ">=4.3 <7"` as a peer dependency, so
   moving to TypeScript 7 puts the whole Jest suite on an unsupported peer
   combination. `ts-jest` has published no release that accepts TypeScript 7.
 - **History:** first deferred 2026-07-08 on the grounds that stacking a second
