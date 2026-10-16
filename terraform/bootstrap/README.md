@@ -27,14 +27,25 @@ Apply the bootstrap stack locally in these (rare) situations:
 The bootstrap stack **must not run in CI.** CI uses the deployer role itself,
 so applying bootstrap from CI would defeat the purpose (the role can't grant
 itself new permissions).
+
 ## How to apply
 
 ### Prerequisites
 
 - `aws sso login` to a profile in account `803663093283` with permission to
   manage IAM (at minimum: `iam:CreateRole`, `iam:UpdateAssumeRolePolicy`,
-  `iam:PutRolePolicy`, `iam:GetRole*`).
-- `terraform` >= 1.15 on PATH.
+  `iam:PutRolePolicy`, `iam:GetRole*`). The SSO profile for this account is
+  `ent-apps-pay-gov-workloads-dev`. The Payment Portal's
+  `ent-apps-payment-portal-workloads-dev` is a different account and fails with
+  a `403` on the state bucket. Check before running Terraform:
+
+  ```bash
+  export AWS_PROFILE=ent-apps-pay-gov-workloads-dev
+  aws sso login
+  aws sts get-caller-identity --query Account --output text   # must print 803663093283
+  ```
+
+- `terraform` 1.16.x on PATH (`required_version = "~> 1.16.0"` in `versions.tf`).
 
 ### One-time init
 
