@@ -110,6 +110,15 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
   copies remaining.
 - **Revisit:** once jest itself raises its Node floor past `20` and bumps
   these deps directly, this override can likely be dropped.
+- **Re-checked 2026-10-21 (PAY-499):** `glob` override dropped. Every package
+  that pulls `glob` (`@jest/reporters`, `jest-config` and `jest-runtime` at
+  `30.5.2`, and `test-exclude@8.0.0`) now asks for `^13.0.6` itself; the tree
+  and `package-lock.json` are unchanged without it (single deduped
+  `glob@13.0.6`, `minimatch@10.2.6`, `brace-expansion@5.0.12`). The other two
+  still do work: `babel-plugin-istanbul@8.0.2` depends on `test-exclude ^7.0.1`
+  (which pulls `glob ^10`), so `test-exclude` stays; and `babel-plugin-istanbul`'s
+  `latest` dist-tag is `8.0.0`, so dropping its override would let npm resolve
+  the older release.
 
 ### GHSA-rgw5-rvv9-x895 — brace-expansion (4.0.0–5.0.8) (high) — resolved by removing the nodemon dependency (2026-10-05)
 

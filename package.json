@@ -65,7 +65,6 @@
   },
   "overrides": {
     "babel-plugin-istanbul": "^8.0.2",
-    "test-exclude": "^8.0.0",
-    "glob": "^13.0.6"
+    "test-exclude": "^8.0.0"
   }
 }
