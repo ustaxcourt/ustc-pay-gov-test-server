@@ -35,7 +35,7 @@ enough context that the next person doesn't have to re-derive the decision.
 
 ## Deferred upgrades
 
-### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-15)
+### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-21)
 
 - **Current:** `^6.0.3` (declared and resolved). **Available latest:** `7.0.2`.
 - **Reason:** blocked by `ts-jest`, not by appetite. The latest `ts-jest`
@@ -71,14 +71,18 @@ enough context that the next person doesn't have to re-derive the decision.
   should apply, but re-verify there before bumping — do not carry this
   conclusion across on trust.
 
-### Terraform 1.16.x → 1.17 — not released (2026-10-14)
+### Terraform 1.16.x → 1.17 — released, not yet taken (2026-10-14, re-checked 2026-10-21)
 
 - **Current:** `required_version = "~> 1.16.0"` in both stacks, and
-  `terraform_version: ~1.16.0` in `deploy.yml` and `pr-validate.yml`.
-- **Reason:** there is no 1.17 release yet. The latest is `1.16.6`, which both
-  constraints already pick up, so nothing needs to change.
-- **Plan:** when 1.17 ships, move `required_version` and both workflow pins
-  together, as was done for 1.15 → 1.16.
+  `terraform_version: ~1.16.0` in `deploy.yml` and `pr-validate.yml`. Both pick
+  up `1.16.6`, the latest 1.16 patch.
+- **Reason:** `1.17.0` went GA on 2026-10-21, partway through the PAY-499 pass
+  (only `1.17.0-rc2` existed when that pass was planned). It was left out of
+  PAY-499 so the CLI minor gets its own review and `terraform plan` rather than
+  riding along with a lock refresh.
+- **Plan:** move `required_version` in both stacks and both workflow pins
+  together, as was done for 1.15 → 1.16, and confirm `terraform plan` shows no
+  changes for both stacks.
 
 <!-- Add further deferrals below as they are decided. -->
 
@@ -160,6 +164,28 @@ dev-only tooling.
   on `concurrently` from `10.0.5` to `10.0.6`. That gives a single deduped
   `shell-quote@1.12.0`, shared with `@changesets/cli` → `launch-editor`.
 
+### Week of 2026-10-19 — no new findings (2026-10-21)
+
+`npm audit` reported the same 20 moderate rows before and after this round,
+all from the accepted `sprintf-js` advisory below. No direct dependency
+carried a vulnerability, so nothing was fixed this round.
+
+- `npm update` plus floor raises: `@aws-sdk/client-s3` `3.1152.0` →
+  `3.1155.0`, `@types/lodash` `4.17.26` → `4.17.27`. `typescript` stays on 6.x
+  (see the deferral above).
+- `glob` override dropped; see the re-check note on the `brace-expansion`
+  override entry above.
+- Node: `.nvmrc` moved `24.20.0` → `24.22.1`, a security release (CVE-2026-105481,
+  -105482, -105483, -106069, -106073, -106074, -111497; OpenSSL 3.5.9). The
+  `engines` floor stays at `>=24.20.0` on purpose: the hard rule is only that the
+  `engines` floor must not sit above `.nvmrc` (or CI emits `EBADENGINE`). A
+  security-only Node patch moves `.nvmrc` alone, so consumers of the published
+  package — including the Payment Portal — are not forced to upgrade.
+- Terraform: AWS provider `6.69.0` → `6.69.1` in both lock files; `archive`
+  `2.8.1` and `random` `3.9.1` were already the latest. CLI unchanged (see the
+  Terraform 1.17 entry above).
+- GitHub Actions: every pinned major is the latest release; no change.
+
 ### Accepted vulnerabilities
 
 ### GHSA-hp3w-g68c-fv3c — sprintf-js@1.0.3 (moderate) — accepted (2026-10-14)
@@ -181,6 +207,11 @@ dev-only tooling.
   "do not re-add" in its own `docs/dependency-caveats.md`.
 - **Revisit:** when `sprintf-js` publishes a fix, or `@istanbuljs/load-nyc-config`
   moves off `js-yaml@3`.
+- **Re-checked 2026-10-21 (PAY-499):** `sprintf-js` latest is still `1.1.3`;
+  `@istanbuljs/load-nyc-config` latest is still `1.1.0` with
+  `js-yaml ^3.13.1`. `argparse` is still required only from
+  `node_modules/js-yaml/bin/js-yaml.js`, not from `index.js` or `lib/`, and the
+  repo still has no `.nycrc.yaml`. Still unreachable.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)
