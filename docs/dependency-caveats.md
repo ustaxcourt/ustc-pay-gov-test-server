@@ -100,7 +100,7 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
   deps are held back because `glob@11+`/`test-exclude@8` require Node `>=20`,
   and jest 30 still officially supports Node `18.14.0+`. Not a bug on jest's
   part, just a Node-floor jest can't be forced to drop, but doesn't apply to
-  us (`.nvmrc` pins `24.20.0`). That held-back chain
+  us (`.nvmrc` pins `24.22.1`). That held-back chain
   (`babel-plugin-istanbul` → `test-exclude` → `glob` → `minimatch` →
   `brace-expansion`) is what `npm audit` flags.
 - **Verified:** `npm audit` no longer reports the finding; `package-lock.json`
