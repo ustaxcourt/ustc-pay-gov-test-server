@@ -79,8 +79,9 @@ enough context that the next person doesn't have to re-derive the decision.
   `1.17.0` went GA on 2026-10-21, partway through the PAY-499 pass.
 - **Checked:** the 1.17.0 changelog lists no breaking changes. The behavior
   changes are to the `pow`/`log` functions and `terraform version -json`
-  output, neither of which this repo uses. Both stacks pass `init` and
-  `validate` on 1.17.0 with the lock files unchanged. 1.17.0 is also built with
+  output, neither of which this repo uses. Both stacks pass
+  `init -backend=false -lockfile=readonly` and `validate` on 1.17.0 against
+  the AWS `6.70.0` lock files (re-run 2026-10-22). 1.17.0 is also built with
   Go 1.26.10, which distrusts the compromised eMudhra intermediate CAs
   (CVE-2026-111943).
 - **Next:** when 1.18 ships, move all four pins and the two READMEs together.
@@ -99,8 +100,8 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 
 **From: Jest**
 
-- **Override:** `babel-plugin-istanbul@^8.0.2`, `test-exclude@^8.0.0`,
-  `glob@^13.0.6`.
+- **Override:** `babel-plugin-istanbul@^8.0.2`, `test-exclude@^8.0.0`.
+  (`glob@^13.0.6` was also overridden until 2026-10-21; see the re-check below.)
 - **Why an override was needed:** `jest`'s own `babel-plugin-istanbul`/`glob`
   deps are held back because `glob@11+`/`test-exclude@8` require Node `>=20`,
   and jest 30 still officially supports Node `18.14.0+`. Not a bug on jest's
@@ -280,8 +281,10 @@ production packages as well.
   `INIT_START` log lines) don't include the Node version.
 - **Revisit:** confirm the deployed patch level after the PAY-499 deploy, by
   checking `process.version` from a test invocation or AWS's runtime release
-  notes. If the Lambdas are not on `24.22.1` or later within two weeks, raise
-  it with the team.
+  notes. If the Lambdas are not on `24.22.1` or later by 2026-11-05, open a
+  follow-up ticket to evaluate pinning the runtime (see **Not taken** above)
+  and notify the PO. Whoever runs the next weekly dependency pass owns this
+  check.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)

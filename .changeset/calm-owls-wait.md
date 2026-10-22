@@ -16,7 +16,8 @@ PAY-499: dependency updates for the week of 2026-10-19.
 Refresh the lock file's in-range transitive updates, including `body-parser`
 `2.4.0` (high, GHSA-27r3-jxmh-p828) and `qs` `6.16.1` (moderate,
 GHSA-6pq8-jhm2-2vcw), both under `express`. Neither is reachable from this
-package's code, and consumers pick them up on their own next install. Update
+package's code. A fresh install resolves the fixed versions; consumers with a
+lock file keep the old ones until they refresh it (e.g. `npm update`). Update
 the dev-only `undici` (via `cheerio`) to `7.30.1` for the October undici
 advisories. The moderate `sprintf-js`
 advisory (GHSA-hp3w-g68c-fv3c) stays accepted. TypeScript stays on 6.x; see
