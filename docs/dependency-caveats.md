@@ -170,10 +170,12 @@ dev-only tooling.
 
 `npm audit` reported the same 20 moderate rows before and after this round,
 all from the accepted `sprintf-js` advisory below. It flagged none of the
-advisories fixed below. Most were published days before this pass, and
-`body-parser`'s on 2026-10-22 itself. A clean `npm audit` is not proof that
-the tree is patched: check `npm outdated --all` and the GitHub advisories for
-production packages as well.
+advisories fixed below. The `body-parser` and `qs` advisories were published
+only as repository advisories on their own GitHub repos, not yet reviewed into
+the global GitHub Advisory Database that `npm audit` reads, so audit had
+nothing to match. A clean `npm audit` is not proof that the tree is patched:
+check `npm outdated --all` and the GitHub advisories for production packages
+as well.
 
 - `body-parser` `2.3.0` → `2.4.0` (production, via `express`, which allows
   `^2.3.0`), fixing GHSA-27r3-jxmh-p828 / CVE-2026-111181 (high): a request

@@ -12,6 +12,8 @@ PAY-499: dependency updates for the week of 2026-10-19.
   so consumers are not required to upgrade Node.
 - Move Terraform to `~> 1.17.0` in both stacks and CI, and refresh the AWS
   provider lock to `6.70.0`.
+- Move the Lambda bundle esbuild `--target` from `node22` to `node24` to match
+  the `nodejs24.x` runtime. The bundles are byte-identical either way.
 
 Refresh the lock file's in-range transitive updates, including `body-parser`
 `2.4.0` (high, GHSA-27r3-jxmh-p828) and `qs` `6.16.1` (moderate,
