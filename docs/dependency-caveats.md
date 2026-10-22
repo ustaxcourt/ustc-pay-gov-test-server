@@ -165,12 +165,30 @@ dev-only tooling.
   on `concurrently` from `10.0.5` to `10.0.6`. That gives a single deduped
   `shell-quote@1.12.0`, shared with `@changesets/cli` → `launch-editor`.
 
-### Week of 2026-10-19 — undici fixed, Node runtime accepted (2026-10-22)
+### Week of 2026-10-19 — body-parser, qs and undici fixed, Node runtime accepted (2026-10-22)
 
 `npm audit` reported the same 20 moderate rows before and after this round,
-all from the accepted `sprintf-js` advisory below. It did not flag the undici
-advisories below; they were published on 2026-10-19 and had not reached the
-npm advisory feed when this pass ran.
+all from the accepted `sprintf-js` advisory below. It flagged none of the
+advisories fixed below. Most were published days before this pass, and
+`body-parser`'s on 2026-10-22 itself. A clean `npm audit` is not proof that
+the tree is patched: check `npm outdated --all` and the GitHub advisories for
+production packages as well.
+
+- `body-parser` `2.3.0` → `2.4.0` (production, via `express`, which allows
+  `^2.3.0`), fixing GHSA-27r3-jxmh-p828 / CVE-2026-111181 (high): a request
+  with a compressed body followed by trailing bytes crashes the process. Not
+  reachable here: nothing in `src/` mounts `express.json()`, `urlencoded()`,
+  `raw()` or `text()`, and `src/app.ts` reads the raw body itself. Our lock
+  file isn't published, so consumers pick up `2.4.0` on their own next install.
+- `qs` `6.16.0` → `6.16.1` (production, via `express` and `body-parser`), fixing
+  GHSA-6pq8-jhm2-2vcw (moderate, a `qs.stringify` DoS with `arrayFormat:
+  'comma'`). Not reachable: `express` only calls `qs.parse`. This fix was
+  released on 2026-10-14 and should have been picked up on 2026-10-21; it was
+  missed because that run raised the two floors and ran `npm install` without
+  a full `npm update`. The 2026-10-22 re-check ran `npm update` and caught it,
+  along with `on-finished` `2.4.1` → `2.4.2` and seven dev-only tooling
+  patches (`browserslist` and its data packages, `napi-postinstall`,
+  `@jest/react-is-19`).
 
 - `undici` `7.30.0` → `7.30.1` (dev-only, via `cheerio`, which allows
   `^7.19.0`), fixing CVE-2026-109383, -109829, -109841, -109869, -109924,
@@ -190,7 +208,8 @@ npm advisory feed when this pass ran.
   package — including the Payment Portal — are not forced to upgrade.
   `.nvmrc` covers local development and CI only; the deployed Lambdas are
   covered by the accepted Node.js 24.22.1 entry below.
-- Terraform: AWS provider `6.69.0` → `6.69.1` in both lock files; `archive`
+- Terraform: AWS provider `6.69.0` → `6.70.0` in both lock files (6.70.0 was
+  released between the 2026-10-21 run and the 2026-10-22 re-check); `archive`
   `2.8.1` and `random` `3.9.1` were already the latest. CLI moved to 1.17 (see
   the Terraform 1.17 entry above).
 - GitHub Actions: every pinned major is the latest release; no change.
@@ -251,11 +270,14 @@ npm advisory feed when this pass ran.
   bundled Node binary would let us pick the patch version, but we would then
   own Node patching for good, plus an image build and an ECR repository. That
   is not worth it for a lag measured in days; it would need its own ticket.
-- **Status at merge:** AWS updated the `nodejs24.x` source in
-  `aws/aws-lambda-base-images` on 2026-10-22, about 36 hours after Node
-  released `24.22.1`. That is very likely the patched runtime, but it is not
-  confirmed: AWS's runtime version ARNs (shown in `INIT_START` log lines)
-  don't include the Node version.
+- **Status at merge:** a version-check Lambda on `nodejs24.x` reported
+  `process.version` = `v24.21.0` on 2026-10-22 (OpenSSL `3.5.7`, undici
+  `7.29.1`). That is behind both `24.22.0` and `24.22.1`, so the deployed
+  runtime is a confirmed gap, not a theoretical one. AWS did update the
+  `nodejs24.x` source in `aws/aws-lambda-base-images` on 2026-10-22, but it
+  isn't confirmed whether that update is `24.22.1`, or whether the managed
+  runtime has been published to us yet. AWS's runtime version ARNs (shown in
+  `INIT_START` log lines) don't include the Node version.
 - **Revisit:** confirm the deployed patch level after the PAY-499 deploy, by
   checking `process.version` from a test invocation or AWS's runtime release
   notes. If the Lambdas are not on `24.22.1` or later within two weeks, raise
