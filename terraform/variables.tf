@@ -56,6 +56,7 @@ variable "app_env" {
 
 # Lambda Configuration
 variable "lambda_runtime" {
+  # Keep the esbuild --target in terraform/build.sh on the same Node major.
   description = "Runtime for Lambda functions"
   type        = string
   default     = "nodejs24.x"

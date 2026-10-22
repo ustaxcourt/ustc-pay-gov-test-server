@@ -13,10 +13,12 @@ do_esbuild() {
   local input_file="${1:?input file is required}"
   local output_file="${2:?output file is required}"
   echo "  📦 Bundling $input_file to $output_file..."
+  # --target must match the Lambda runtime's Node major (lambda_runtime in
+  # terraform/variables.tf); move them together.
   npx esbuild "$input_file" \
     --bundle \
     --platform=node \
-    --target=node22 \
+    --target=node24 \
     --format=cjs \
     --outfile="$output_file" \
     --external:aws-sdk
