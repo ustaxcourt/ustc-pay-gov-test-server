@@ -80,10 +80,10 @@ enough context that the next person doesn't have to re-derive the decision.
 - **Checked:** the 1.17.0 changelog lists no breaking changes. The behavior
   changes are to the `pow`/`log` functions and `terraform version -json`
   output, neither of which this repo uses. Both stacks pass
-  `init -backend=false -lockfile=readonly` and `validate` on 1.17.0 against
-  the AWS `6.70.0` lock files (re-run 2026-10-22). 1.17.0 is also built with
-  Go 1.26.10, which distrusts the compromised eMudhra intermediate CAs
-  (CVE-2026-111943).
+  `init -backend=false -lockfile=readonly`, `validate` and `fmt -check` on
+  1.17.0 against the AWS `6.70.0` lock files (re-run 2026-10-22). 1.17.0 is
+  also built with Go 1.26.10, which distrusts the compromised eMudhra
+  intermediate CAs (CVE-2026-111943).
 - **Next:** when 1.18 ships, move all four pins and the two READMEs together.
 
 <!-- Add further deferrals below as they are decided. -->
@@ -202,9 +202,9 @@ production packages as well.
 - `glob` override dropped; see the re-check note on the `brace-expansion`
   override entry above.
 - Node: `.nvmrc` moved `24.20.0` → `24.22.1`, a security release (CVE-2026-105481,
-  -105482, -105483, -106069, -106073, -106074, -111497; OpenSSL 3.5.9). The
-  `engines` floor stays at `>=24.20.0` on purpose: the hard rule is only that the
-  `engines` floor must not sit above `.nvmrc` (or CI emits `EBADENGINE`). A
+  -105482, -105483, -106069, -106072, -106073, -106074, -111497; OpenSSL
+  3.5.9). The `engines` floor stays at `>=24.20.0` on purpose: the hard rule is
+  only that the `engines` floor must not sit above `.nvmrc` (or CI emits `EBADENGINE`). A
   security-only Node patch moves `.nvmrc` alone, so consumers of the published
   package — including the Payment Portal — are not forced to upgrade.
   `.nvmrc` covers local development and CI only; the deployed Lambdas are
@@ -213,6 +213,10 @@ production packages as well.
   released between the 2026-10-21 run and the 2026-10-22 re-check); `archive`
   `2.8.1` and `random` `3.9.1` were already the latest. CLI moved to 1.17 (see
   the Terraform 1.17 entry above).
+- Lambda bundles: `terraform/build.sh` esbuild `--target` moved `node22` →
+  `node24` to match the `nodejs24.x` runtime; it had been left behind when the
+  runtime moved. All five bundles are byte-identical either way today, so this
+  only stops esbuild down-levelling newer syntax in future.
 - GitHub Actions: every pinned major is the latest release; no change.
 
 ### Accepted vulnerabilities
@@ -244,9 +248,9 @@ production packages as well.
 
 ### Node.js 24.22.1 security release — deployed Lambda runtime (accepted 2026-10-22)
 
-- **Advisories:** CVE-2026-105481 (http agent), -105482 (dns), -105483 and
-  -106069 (tls IP handling), -106073 (permission model), -106074 (crypto
-  snapshots), -111497 (brotli), plus the bundled undici fixes listed in the
+- **Advisories:** CVE-2026-105481 (http agent), -105482 (dns), -105483,
+  -106069 and -106072 (tls IP handling), -106073 (permission model), -106074
+  (crypto snapshots), -111497 (brotli), plus the bundled undici fixes listed in the
   week of 2026-10-19 section. All fixed in Node `24.22.1`.
 - **Reason it can't be fixed from this repo:** the Lambdas run the AWS-managed
   `nodejs24.x` runtime (`terraform/variables.tf`, `lambda_runtime`). AWS does
