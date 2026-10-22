@@ -177,7 +177,6 @@ npm advisory feed when this pass ran.
   -109932, -87018 and -87029. `cheerio` is only used to parse HTML in
   `src/useCases/showPayPage.test.ts` and never makes network calls, so none of
   these were reachable, but the fix was in range and free.
-
 - `npm update` plus floor raises: `@aws-sdk/client-s3` `3.1152.0` →
   `3.1155.0`, `@types/lodash` `4.17.26` → `4.17.27`. `typescript` stays on 6.x
   (see the deferral above).
@@ -233,8 +232,16 @@ npm advisory feed when this pass ran.
   `nodejs24.x` runtime (`terraform/variables.tf`, `lambda_runtime`). AWS does
   not let us choose the Node patch version, and we use its default automatic
   runtime updates (no `runtime_management_config`), so the deployed functions
-  pick up `24.22.1` when AWS rolls it out. A deploy from this repo does not
-  speed that up. `.nvmrc` is already on `24.22.1` for local development and CI.
+  pick up `24.22.1` when AWS rolls it out. AWS rolls out in two phases: once
+  it publishes a new runtime version, any function that is created or updated
+  (`UpdateFunctionCode`/`UpdateFunctionConfiguration`) gets it straight away,
+  and the rest are migrated later on a schedule AWS doesn't publish. A
+  `deploy.yml` run only updates a function whose bundle changed (Terraform
+  compares `source_code_hash`), and the PAY-499 `@aws-sdk/client-s3` bump changes
+  every bundle that imports it, since `build.sh` bundles the SDK. So a deploy
+  can't get ahead of AWS, but once AWS has published, a deploy that changes a
+  function picks the patch up sooner.
+  `.nvmrc` is already on `24.22.1` for local development and CI.
 - **Exposure:** the Lambdas don't use `fetch()`, WebSockets, EventSource, the
   permission model or startup snapshots, so the undici, -106073 and -106074
   fixes don't apply to them. They do make outbound HTTPS calls to S3 through
@@ -244,9 +251,15 @@ npm advisory feed when this pass ran.
   bundled Node binary would let us pick the patch version, but we would then
   own Node patching for good, plus an image build and an ECR repository. That
   is not worth it for a lag measured in days; it would need its own ticket.
-- **Revisit:** when the Lambdas' `INIT_START` log lines show a runtime
-  version that includes 24.22.1, or if AWS has not rolled it out within two
-  weeks.
+- **Status at merge:** AWS updated the `nodejs24.x` source in
+  `aws/aws-lambda-base-images` on 2026-10-22, about 36 hours after Node
+  released `24.22.1`. That is very likely the patched runtime, but it is not
+  confirmed: AWS's runtime version ARNs (shown in `INIT_START` log lines)
+  don't include the Node version.
+- **Revisit:** confirm the deployed patch level after the PAY-499 deploy, by
+  checking `process.version` from a test invocation or AWS's runtime release
+  notes. If the Lambdas are not on `24.22.1` or later within two weeks, raise
+  it with the team.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)
