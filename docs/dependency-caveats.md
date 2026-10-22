@@ -71,18 +71,19 @@ enough context that the next person doesn't have to re-derive the decision.
   should apply, but re-verify there before bumping — do not carry this
   conclusion across on trust.
 
-### Terraform 1.16.x → 1.17 — released, not yet taken (2026-10-14, re-checked 2026-10-21)
+### Terraform 1.16.x → 1.17 — taken (2026-10-21)
 
-- **Current:** `required_version = "~> 1.16.0"` in both stacks, and
-  `terraform_version: ~1.16.0` in `deploy.yml` and `pr-validate.yml`. Both pick
-  up `1.16.6`, the latest 1.16 patch.
-- **Reason:** `1.17.0` went GA on 2026-10-21, partway through the PAY-499 pass
-  (only `1.17.0-rc2` existed when that pass was planned). It was left out of
-  PAY-499 so the CLI minor gets its own review and `terraform plan` rather than
-  riding along with a lock refresh.
-- **Plan:** move `required_version` in both stacks and both workflow pins
-  together, as was done for 1.15 → 1.16, and confirm `terraform plan` shows no
-  changes for both stacks.
+- **Upgraded** `required_version` from `~> 1.16.0` to `~> 1.17.0` in both stacks,
+  and `terraform_version` from `~1.16.0` to `~1.17.0` in `deploy.yml` and
+  `pr-validate.yml`, together, as was done for 1.15 → 1.16. Recorded here because
+  `1.17.0` went GA on 2026-10-21, partway through the PAY-499 pass.
+- **Checked:** the 1.17.0 changelog lists no breaking changes. The behavior
+  changes are to the `pow`/`log` functions and `terraform version -json`
+  output, neither of which this repo uses. Both stacks pass `init` and
+  `validate` on 1.17.0 with the lock files unchanged. 1.17.0 is also built with
+  Go 1.26.10, which distrusts the compromised eMudhra intermediate CAs
+  (CVE-2026-111943).
+- **Next:** when 1.18 ships, move all four pins and the two READMEs together.
 
 <!-- Add further deferrals below as they are decided. -->
 
@@ -164,11 +165,18 @@ dev-only tooling.
   on `concurrently` from `10.0.5` to `10.0.6`. That gives a single deduped
   `shell-quote@1.12.0`, shared with `@changesets/cli` → `launch-editor`.
 
-### Week of 2026-10-19 — no new findings (2026-10-21)
+### Week of 2026-10-19 — undici fixed, Node runtime accepted (2026-10-22)
 
 `npm audit` reported the same 20 moderate rows before and after this round,
-all from the accepted `sprintf-js` advisory below. No direct dependency
-carried a vulnerability, so nothing was fixed this round.
+all from the accepted `sprintf-js` advisory below. It did not flag the undici
+advisories below; they were published on 2026-10-19 and had not reached the
+npm advisory feed when this pass ran.
+
+- `undici` `7.30.0` → `7.30.1` (dev-only, via `cheerio`, which allows
+  `^7.19.0`), fixing CVE-2026-109383, -109829, -109841, -109869, -109924,
+  -109932, -87018 and -87029. `cheerio` is only used to parse HTML in
+  `src/useCases/showPayPage.test.ts` and never makes network calls, so none of
+  these were reachable, but the fix was in range and free.
 
 - `npm update` plus floor raises: `@aws-sdk/client-s3` `3.1152.0` →
   `3.1155.0`, `@types/lodash` `4.17.26` → `4.17.27`. `typescript` stays on 6.x
@@ -181,9 +189,11 @@ carried a vulnerability, so nothing was fixed this round.
   `engines` floor must not sit above `.nvmrc` (or CI emits `EBADENGINE`). A
   security-only Node patch moves `.nvmrc` alone, so consumers of the published
   package — including the Payment Portal — are not forced to upgrade.
+  `.nvmrc` covers local development and CI only; the deployed Lambdas are
+  covered by the accepted Node.js 24.22.1 entry below.
 - Terraform: AWS provider `6.69.0` → `6.69.1` in both lock files; `archive`
-  `2.8.1` and `random` `3.9.1` were already the latest. CLI unchanged (see the
-  Terraform 1.17 entry above).
+  `2.8.1` and `random` `3.9.1` were already the latest. CLI moved to 1.17 (see
+  the Terraform 1.17 entry above).
 - GitHub Actions: every pinned major is the latest release; no change.
 
 ### Accepted vulnerabilities
@@ -212,6 +222,31 @@ carried a vulnerability, so nothing was fixed this round.
   `js-yaml ^3.13.1`. `argparse` is still required only from
   `node_modules/js-yaml/bin/js-yaml.js`, not from `index.js` or `lib/`, and the
   repo still has no `.nycrc.yaml`. Still unreachable.
+
+### Node.js 24.22.1 security release — deployed Lambda runtime (accepted 2026-10-22)
+
+- **Advisories:** CVE-2026-105481 (http agent), -105482 (dns), -105483 and
+  -106069 (tls IP handling), -106073 (permission model), -106074 (crypto
+  snapshots), -111497 (brotli), plus the bundled undici fixes listed in the
+  week of 2026-10-19 section. All fixed in Node `24.22.1`.
+- **Reason it can't be fixed from this repo:** the Lambdas run the AWS-managed
+  `nodejs24.x` runtime (`terraform/variables.tf`, `lambda_runtime`). AWS does
+  not let us choose the Node patch version, and we use its default automatic
+  runtime updates (no `runtime_management_config`), so the deployed functions
+  pick up `24.22.1` when AWS rolls it out. A deploy from this repo does not
+  speed that up. `.nvmrc` is already on `24.22.1` for local development and CI.
+- **Exposure:** the Lambdas don't use `fetch()`, WebSockets, EventSource, the
+  permission model or startup snapshots, so the undici, -106073 and -106074
+  fixes don't apply to them. They do make outbound HTTPS calls to S3 through
+  `@aws-sdk/client-s3`, which uses Node's `https` agent, so the http and tls
+  fixes are relevant until AWS rolls the runtime.
+- **Not taken:** moving to a container image or a custom runtime with a
+  bundled Node binary would let us pick the patch version, but we would then
+  own Node patching for good, plus an image build and an ECR repository. That
+  is not worth it for a lag measured in days; it would need its own ticket.
+- **Revisit:** when the Lambdas' `INIT_START` log lines show a runtime
+  version that includes 24.22.1, or if AWS has not rolled it out within two
+  weeks.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)
