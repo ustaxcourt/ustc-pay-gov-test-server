@@ -93,7 +93,7 @@ Once installed, the following command can be used to start the test server:
 npx @ustaxcourt/ustc-pay-gov-test-server
 ```
 
-When initially running the server with this command, you will be prompted to enter a port and access token for the test server to use. To update these variables, run the command with the following argument:
+When initially running the server with this command, you will be prompted to enter a port for the test server to use. It runs with `APP_ENV=local`, so no access token is needed. To change the port, run the command with the following argument:
 
 ```
 npx @ustaxcourt/ustc-pay-gov-test-server update-env
@@ -106,6 +106,9 @@ npx @ustaxcourt/ustc-pay-gov-test-server update-env
 - **PR validate workflow** (`.github/workflows/pr-validate.yml`):
   - Runs on every PR
   - Builds and tests the code
+  - Packs the npm tarball, checks its contents, and starts the published
+    command from an install the way a consumer would
+  - Plans the Terraform changes
 
 - **Publish workflow** (`.github/workflows/publish.yml`):
   - Triggered after CI passes and on push to `main`

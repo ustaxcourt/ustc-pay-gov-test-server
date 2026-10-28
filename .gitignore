@@ -4,6 +4,8 @@ config.*.yml
 temp/
 coverage/
 dist/
+# `npm pack` output
+*.tgz
 .env*
 !.env.example
 resources/

@@ -83,6 +83,115 @@ jobs:
             kill "$SERVER_PID" || true
           fi
 
+  package:
+    # Installs the packed tarball the way a consumer would and runs the
+    # published `start-pay-gov-test-server` command. Every other check runs
+    # from inside the repo, which is how 0.4.0 shipped a command that failed for
+    # consumers. Runs for Dependabot too: dependency moves change what ships.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    env:
+      PORT: 3377
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Cache Node modules
+        uses: actions/cache@v6
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Pack
+        run: |
+          TARBALL="$RUNNER_TEMP/$(npm pack --pack-destination "$RUNNER_TEMP" | tail -n 1)"
+          echo "TARBALL=$TARBALL" >> "$GITHUB_ENV"
+
+      - name: Check tarball contents
+        run: |
+          tar -tzf "$TARBALL" | sed 's#^package/##' | sort > contents.txt
+          FAIL=0
+          for required in \
+            bin/start-pay-gov-test-server.sh \
+            dist/server.js \
+            dist/index.js \
+            src/static/html/pay.html \
+            src/static/html/scripts/override-links.js \
+            src/static/wsdl/TCSOnlineService_3_1.wsdl \
+            src/static/wsdl/TCSOnlineService_3_1.xsd \
+            src/static/wsdl/tcs_common_types.xsd; do
+            if ! grep -qx "$required" contents.txt; then
+              echo "::error::Missing from package: $required"
+              FAIL=1
+            fi
+          done
+          # Only src/static ships from src/; dist/ must not carry test code.
+          UNWANTED=$( { grep -E '\.test\.|testAppContext|^terraform/|^test/' contents.txt; \
+            grep '^src/' contents.txt | grep -v '^src/static/'; } || true)
+          if [ -n "$UNWANTED" ]; then
+            echo "$UNWANTED"
+            echo "::error::Package contains files that should not ship (listed above)"
+            FAIL=1
+          fi
+          if [ "$FAIL" -eq 1 ]; then exit 1; fi
+          echo "Package contents OK ($(wc -l < contents.txt) files)"
+
+      - name: Install into a clean consumer project
+        working-directory: ${{ runner.temp }}
+        run: |
+          mkdir consumer && cd consumer
+          npm init -y > /dev/null
+          npm install "$TARBALL" --no-audit --no-fund
+
+      - name: Start server with the published command
+        working-directory: ${{ runner.temp }}/consumer
+        run: |
+          # The command prompts for a port on first run; answer it on stdin.
+          echo "$PORT" | npx start-pay-gov-test-server > "$RUNNER_TEMP/package-server.log" 2>&1 &
+
+      - name: Smoke test the running server
+        run: |
+          for i in $(seq 1 30); do
+            if curl -fsS "http://localhost:$PORT/wsdl" > wsdl.xml 2>/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          if [ ! -s wsdl.xml ]; then
+            echo "::error::Server did not respond on port $PORT within 30s"
+            exit 1
+          fi
+          # BASE_URL comes from the .env the command writes; without it the WSDL
+          # renders its schema imports as "undefined/wsdl/...".
+          grep -q "http://localhost:$PORT/wsdl/TCSOnlineService_3_1.xsd" wsdl.xml \
+            || { echo "::error::WSDL schema imports don't use BASE_URL"; cat wsdl.xml; exit 1; }
+          curl -fsS "http://localhost:$PORT/wsdl/tcs_common_types.xsd" > /dev/null
+          curl -fsS "http://localhost:$PORT/scripts/override-links.js" > /dev/null
+          echo "Published command serves WSDL, XSD and scripts"
+
+      - name: Show server log on failure
+        if: failure()
+        run: cat "$RUNNER_TEMP/package-server.log" || true
+
+      - name: Stop server
+        if: always()
+        run: pkill -f "dist/server.js" || true
+
   plan:
     # Skipped for Dependabot: dependency bumps don't change Lambda code or
     # Terraform state, so a plan would burn AWS API calls and hold the dev
@@ -156,7 +265,7 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v4
         with:
-          terraform_version: ~1.16.0
+          terraform_version: ~1.17.0
           terraform_wrapper: false
 
       - name: Cache Terraform

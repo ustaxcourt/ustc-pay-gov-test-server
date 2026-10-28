@@ -93,7 +93,7 @@ Once installed, use the following command to start the server:
 npx @ustaxcourt/ustc-pay-gov-test-server
 ```
 
-When initially running the server with this command, you will be prompted to enter a port and access token for the test server to use. To update these variables, run the command with the following argument:
+When initially running the server with this command, you will be prompted to enter a port for the test server to use. It runs with `APP_ENV=local`, so no access token is needed. To change the port, run the command with the following argument:
 
 ```
 npx @ustaxcourt/ustc-pay-gov-test-server update-env
