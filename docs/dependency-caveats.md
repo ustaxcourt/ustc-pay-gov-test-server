@@ -35,7 +35,7 @@ enough context that the next person doesn't have to re-derive the decision.
 
 ## Deferred upgrades
 
-### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-15)
+### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-21)
 
 - **Current:** `^6.0.3` (declared and resolved). **Available latest:** `7.0.2`.
 - **Reason:** blocked by `ts-jest`, not by appetite. The latest `ts-jest`
@@ -71,14 +71,20 @@ enough context that the next person doesn't have to re-derive the decision.
   should apply, but re-verify there before bumping — do not carry this
   conclusion across on trust.
 
-### Terraform 1.16.x → 1.17 — not released (2026-10-14)
+### Terraform 1.16.x → 1.17 — taken (2026-10-21)
 
-- **Current:** `required_version = "~> 1.16.0"` in both stacks, and
-  `terraform_version: ~1.16.0` in `deploy.yml` and `pr-validate.yml`.
-- **Reason:** there is no 1.17 release yet. The latest is `1.16.6`, which both
-  constraints already pick up, so nothing needs to change.
-- **Plan:** when 1.17 ships, move `required_version` and both workflow pins
-  together, as was done for 1.15 → 1.16.
+- **Upgraded** `required_version` from `~> 1.16.0` to `~> 1.17.0` in both stacks,
+  and `terraform_version` from `~1.16.0` to `~1.17.0` in `deploy.yml` and
+  `pr-validate.yml`, together, as was done for 1.15 → 1.16. Recorded here because
+  `1.17.0` went GA on 2026-10-21, partway through the PAY-499 pass.
+- **Checked:** the 1.17.0 changelog lists no breaking changes. The behavior
+  changes are to the `pow`/`log` functions and `terraform version -json`
+  output, neither of which this repo uses. Both stacks pass
+  `init -backend=false -lockfile=readonly`, `validate` and `fmt -check` on
+  1.17.0 against the AWS `6.70.0` lock files (re-run 2026-10-22). 1.17.0 is
+  also built with Go 1.26.10, which distrusts the compromised eMudhra
+  intermediate CAs (CVE-2026-111943).
+- **Next:** when 1.18 ships, move all four pins and the two READMEs together.
 
 <!-- Add further deferrals below as they are decided. -->
 
@@ -94,13 +100,13 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
 
 **From: Jest**
 
-- **Override:** `babel-plugin-istanbul@^8.0.2`, `test-exclude@^8.0.0`,
-  `glob@^13.0.6`.
+- **Override:** `babel-plugin-istanbul@^8.0.2`, `test-exclude@^8.0.0`.
+  (`glob@^13.0.6` was also overridden until 2026-10-21; see the re-check below.)
 - **Why an override was needed:** `jest`'s own `babel-plugin-istanbul`/`glob`
   deps are held back because `glob@11+`/`test-exclude@8` require Node `>=20`,
   and jest 30 still officially supports Node `18.14.0+`. Not a bug on jest's
   part, just a Node-floor jest can't be forced to drop, but doesn't apply to
-  us (`.nvmrc` pins `24.20.0`). That held-back chain
+  us (`.nvmrc` pins `24.22.1`). That held-back chain
   (`babel-plugin-istanbul` → `test-exclude` → `glob` → `minimatch` →
   `brace-expansion`) is what `npm audit` flags.
 - **Verified:** `npm audit` no longer reports the finding; `package-lock.json`
@@ -110,6 +116,15 @@ Be cautious about doing overrides — reserve them for cases where the dependenc
   copies remaining.
 - **Revisit:** once jest itself raises its Node floor past `20` and bumps
   these deps directly, this override can likely be dropped.
+- **Re-checked 2026-10-21 (PAY-499):** `glob` override dropped. Every package
+  that pulls `glob` (`@jest/reporters`, `jest-config` and `jest-runtime` at
+  `30.5.2`, and `test-exclude@8.0.0`) now asks for `^13.0.6` itself; the tree
+  and `package-lock.json` are unchanged without it (single deduped
+  `glob@13.0.6`, `minimatch@10.2.6`, `brace-expansion@5.0.12`). The other two
+  still do work: `babel-plugin-istanbul@8.0.2` depends on `test-exclude ^7.0.1`
+  (which pulls `glob ^10`), so `test-exclude` stays; and `babel-plugin-istanbul`'s
+  `latest` dist-tag is `8.0.0`, so dropping its override would let npm resolve
+  the older release.
 
 ### GHSA-rgw5-rvv9-x895 — brace-expansion (4.0.0–5.0.8) (high) — resolved by removing the nodemon dependency (2026-10-05)
 
@@ -151,6 +166,61 @@ dev-only tooling.
   on `concurrently` from `10.0.5` to `10.0.6`. That gives a single deduped
   `shell-quote@1.12.0`, shared with `@changesets/cli` → `launch-editor`.
 
+### Week of 2026-10-19 — body-parser, qs and undici fixed, Node runtime accepted (2026-10-22)
+
+`npm audit` reported the same 20 moderate rows before and after this round,
+all from the accepted `sprintf-js` advisory below. It flagged none of the
+advisories fixed below. The `body-parser` and `qs` advisories were published
+only as repository advisories on their own GitHub repos, not yet reviewed into
+the global GitHub Advisory Database that `npm audit` reads, so audit had
+nothing to match. A clean `npm audit` is not proof that the tree is patched:
+check `npm outdated --all` and the GitHub advisories for production packages
+as well.
+
+- `body-parser` `2.3.0` → `2.4.0` (production, via `express`, which allows
+  `^2.3.0`), fixing GHSA-27r3-jxmh-p828 / CVE-2026-111181 (high): a request
+  with a compressed body followed by trailing bytes crashes the process. Not
+  reachable here: nothing in `src/` mounts `express.json()`, `urlencoded()`,
+  `raw()` or `text()`, and `src/app.ts` reads the raw body itself. Our lock
+  file isn't published, so consumers pick up `2.4.0` on their own next install.
+- `qs` `6.16.0` → `6.16.1` (production, via `express` and `body-parser`), fixing
+  GHSA-6pq8-jhm2-2vcw (moderate, a `qs.stringify` DoS with `arrayFormat:
+  'comma'`). Not reachable: `express` only calls `qs.parse`. This fix was
+  released on 2026-10-14 and should have been picked up on 2026-10-21; it was
+  missed because that run raised the two floors and ran `npm install` without
+  a full `npm update`. The 2026-10-22 re-check ran `npm update` and caught it,
+  along with `on-finished` `2.4.1` → `2.4.2` and seven dev-only tooling
+  patches (`browserslist` and its data packages, `napi-postinstall`,
+  `@jest/react-is-19`).
+
+- `undici` `7.30.0` → `7.30.1` (dev-only, via `cheerio`, which allows
+  `^7.19.0`), fixing CVE-2026-109383, -109829, -109841, -109869, -109924,
+  -109932, -87018 and -87029. `cheerio` is only used to parse HTML in
+  `src/useCases/showPayPage.test.ts` and never makes network calls, so none of
+  these were reachable, but the fix was in range and free.
+- `npm update` plus floor raises: `@aws-sdk/client-s3` `3.1152.0` →
+  `3.1155.0`, `@types/lodash` `4.17.26` → `4.17.27`. `typescript` stays on 6.x
+  (see the deferral above).
+- `glob` override dropped; see the re-check note on the `brace-expansion`
+  override entry above.
+- Node: `.nvmrc` moved `24.20.0` → `24.22.1`, a security release (CVE-2026-105481,
+  -105482, -105483, -106069, -106072, -106073, -106074, -111497; OpenSSL
+  3.5.9). The `engines` floor stays at `>=24.20.0` on purpose: the hard rule is
+  only that the `engines` floor must not sit above `.nvmrc` (or CI emits `EBADENGINE`). A
+  security-only Node patch moves `.nvmrc` alone, so consumers of the published
+  package — including the Payment Portal — are not forced to upgrade.
+  `.nvmrc` covers local development and CI only; the deployed Lambdas are
+  covered by the accepted Node.js 24.22.1 entry below.
+- Terraform: AWS provider `6.69.0` → `6.70.0` in both lock files (6.70.0 was
+  released between the 2026-10-21 run and the 2026-10-22 re-check); `archive`
+  `2.8.1` and `random` `3.9.1` were already the latest. CLI moved to 1.17 (see
+  the Terraform 1.17 entry above).
+- Lambda bundles: `terraform/build.sh` esbuild `--target` moved `node22` →
+  `node24` to match the `nodejs24.x` runtime; it had been left behind when the
+  runtime moved. All five bundles are byte-identical either way today, so this
+  only stops esbuild down-levelling newer syntax in future.
+- GitHub Actions: every pinned major is the latest release; no change.
+
 ### Accepted vulnerabilities
 
 ### GHSA-hp3w-g68c-fv3c — sprintf-js@1.0.3 (moderate) — accepted (2026-10-14)
@@ -172,6 +242,55 @@ dev-only tooling.
   "do not re-add" in its own `docs/dependency-caveats.md`.
 - **Revisit:** when `sprintf-js` publishes a fix, or `@istanbuljs/load-nyc-config`
   moves off `js-yaml@3`.
+- **Re-checked 2026-10-21 (PAY-499):** `sprintf-js` latest is still `1.1.3`;
+  `@istanbuljs/load-nyc-config` latest is still `1.1.0` with
+  `js-yaml ^3.13.1`. `argparse` is still required only from
+  `node_modules/js-yaml/bin/js-yaml.js`, not from `index.js` or `lib/`, and the
+  repo still has no `.nycrc.yaml`. Still unreachable.
+
+### Node.js 24.22.1 security release — deployed Lambda runtime (accepted 2026-10-22)
+
+- **Advisories:** CVE-2026-105481 (http agent), -105482 (dns), -105483,
+  -106069 and -106072 (tls IP handling), -106073 (permission model), -106074
+  (crypto snapshots), -111497 (brotli), plus the bundled undici fixes listed in the
+  week of 2026-10-19 section. All fixed in Node `24.22.1`.
+- **Reason it can't be fixed from this repo:** the Lambdas run the AWS-managed
+  `nodejs24.x` runtime (`terraform/variables.tf`, `lambda_runtime`). AWS does
+  not let us choose the Node patch version, and we use its default automatic
+  runtime updates (no `runtime_management_config`), so the deployed functions
+  pick up `24.22.1` when AWS rolls it out. AWS rolls out in two phases: once
+  it publishes a new runtime version, any function that is created or updated
+  (`UpdateFunctionCode`/`UpdateFunctionConfiguration`) gets it straight away,
+  and the rest are migrated later on a schedule AWS doesn't publish. A
+  `deploy.yml` run only updates a function whose bundle changed (Terraform
+  compares `source_code_hash`), and the PAY-499 `@aws-sdk/client-s3` bump changes
+  every bundle that imports it, since `build.sh` bundles the SDK. So a deploy
+  can't get ahead of AWS, but once AWS has published, a deploy that changes a
+  function picks the patch up sooner.
+  `.nvmrc` is already on `24.22.1` for local development and CI.
+- **Exposure:** the Lambdas don't use `fetch()`, WebSockets, EventSource, the
+  permission model or startup snapshots, so the undici, -106073 and -106074
+  fixes don't apply to them. They do make outbound HTTPS calls to S3 through
+  `@aws-sdk/client-s3`, which uses Node's `https` agent, so the http and tls
+  fixes are relevant until AWS rolls the runtime.
+- **Not taken:** moving to a container image or a custom runtime with a
+  bundled Node binary would let us pick the patch version, but we would then
+  own Node patching for good, plus an image build and an ECR repository. That
+  is not worth it for a lag measured in days; it would need its own ticket.
+- **Status at merge:** a version-check Lambda on `nodejs24.x` reported
+  `process.version` = `v24.21.0` on 2026-10-22 (OpenSSL `3.5.7`, undici
+  `7.29.1`). That is behind both `24.22.0` and `24.22.1`, so the deployed
+  runtime is a confirmed gap, not a theoretical one. AWS did update the
+  `nodejs24.x` source in `aws/aws-lambda-base-images` on 2026-10-22, but it
+  isn't confirmed whether that update is `24.22.1`, or whether the managed
+  runtime has been published to us yet. AWS's runtime version ARNs (shown in
+  `INIT_START` log lines) don't include the Node version.
+- **Revisit:** confirm the deployed patch level after the PAY-499 deploy, by
+  checking `process.version` from a test invocation or AWS's runtime release
+  notes. If the Lambdas are not on `24.22.1` or later by 2026-11-05, open a
+  follow-up ticket to evaluate pinning the runtime (see **Not taken** above)
+  and notify the PO. Whoever runs the next weekly dependency pass owns this
+  check.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)

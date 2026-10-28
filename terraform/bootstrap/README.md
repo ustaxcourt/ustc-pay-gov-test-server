@@ -45,7 +45,7 @@ itself new permissions).
   aws sts get-caller-identity --query Account --output text   # must print 803663093283
   ```
 
-- `terraform` 1.16.x on PATH (`required_version = "~> 1.16.0"` in `versions.tf`).
+- `terraform` 1.17.x on PATH (`required_version = "~> 1.17.0"` in `versions.tf`).
 
 ### One-time init
 
