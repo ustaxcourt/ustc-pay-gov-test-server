@@ -1,5 +1,74 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.4.1
+
+### Patch Changes
+
+- c8c536e: PAY-494: dependency updates for the week of 2026-10-12.
+  
+  - Raise the runtime floors to the versions tested in this pass: `express`
+    `^5.3.0`, `@aws-sdk/client-s3` `^3.1152.0` and `dotenv` `^18.0.8`. Raise the
+    `@types/lodash` dev floor to `^4.17.26`.
+  - Fix the critical `handlebars` (GHSA-xw65-4hp5-5hc7, GHSA-8r5x-fm3f-whwj,
+    GHSA-p8wg-vrv2-v86f) and `shell-quote` (GHSA-pqg4-j6r4-53mv) advisories by
+    moving `ts-jest` to `^29.4.15` and `concurrently` to `10.0.6`. Both are dev
+    dependencies, so neither advisory reached consumers of this package.
+  - Accept the moderate `sprintf-js` advisory (GHSA-hp3w-g68c-fv3c), which has no
+    fixed release and isn't reachable here. See `docs/dependency-caveats.md`.
+  - Add a `~> 3.9` constraint for the `hashicorp/random` Terraform provider, which
+    was locked but unconstrained, and refresh the provider lock files.
+  
+  No `engines` change. TypeScript stays on 6.x and Terraform on 1.16.x; see
+  `docs/dependency-caveats.md` for both.
+- 81ffd99: PAY-499: dependency updates for the week of 2026-10-19.
+  
+  - Raise the `@aws-sdk/client-s3` runtime floor to `^3.1155.0` and the
+    `@types/lodash` dev floor to `^4.17.27`, the versions tested in this pass.
+  - Drop the `glob` override, which jest now satisfies on its own. The resolved
+    dependency tree is unchanged.
+  - Move `.nvmrc` to Node `24.22.1`, a security release. `engines` is unchanged,
+    so consumers are not required to upgrade Node.
+  - Move Terraform to `~> 1.17.0` in both stacks and CI, and refresh the AWS
+    provider lock to `6.70.0`.
+  - Move the Lambda bundle esbuild `--target` from `node22` to `node24` to match
+    the `nodejs24.x` runtime. The bundles are byte-identical either way.
+  
+  Refresh the lock file's in-range transitive updates, including `body-parser`
+  `2.4.0` (high, GHSA-27r3-jxmh-p828) and `qs` `6.16.1` (moderate,
+  GHSA-6pq8-jhm2-2vcw), both under `express`. Neither is reachable from this
+  package's code. A fresh install resolves the fixed versions; consumers with a
+  lock file keep the old ones until they refresh it (e.g. `npm update`). Update
+  the dev-only `undici` (via `cheerio`) to `7.30.1` for the October undici
+  advisories. The moderate `sprintf-js`
+  advisory (GHSA-hp3w-g68c-fv3c) stays accepted. TypeScript stays on 6.x; see
+  `docs/dependency-caveats.md`.
+- 46f0ef3: PAY-494: fix the `start-pay-gov-test-server` command for consumers of the
+  published package, and stop shipping build-only files and dependencies.
+  
+  - The command failed in 0.4.0. It ran `npm run dev`, which compiles with `tsc`
+    (the published `src/` includes test files importing dev-only packages such as
+    `@jest/globals` and `cheerio`), then needs `concurrently`, a dev dependency
+    that consumers never get. It now runs the prebuilt `dist/server.js` with
+    `APP_ENV=local`.
+  - The command now finds its package folder from its own location. It
+    previously used `npm root`, which broke when run from another directory, from
+    a global install, or through `npx` without installing first.
+  - Add a `files` list so the package ships only `bin/`, `dist/` (minus compiled
+    tests), `src/static/` and `CHANGELOG.md`, plus the `README.md`, `LICENSE.md`
+    and `package.json` npm always includes. It drops from about 1.1 MB to
+    78 KB unpacked; `terraform/`, the TypeScript sources and tests are no longer
+    published.
+  - Move `typescript`, `soap` and the `@types/*` packages to `devDependencies`.
+    None are used at runtime, and the package doesn't publish type declarations,
+    so consumers never received types from it. A consumer install drops from 189
+    to 103 packages. A consumer that relied on getting `typescript` or `@types/*`
+    through this package must now install them itself.
+  
+  Released as a patch because the package's supported surface is the
+  `start-pay-gov-test-server` command and `dist/`. This release fixes the command
+  and leaves `dist/` working the same way; nothing removed here was part of that
+  surface.
+
 ## 0.4.0
 
 ### Minor Changes
