@@ -34,11 +34,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Fails on high or critical findings only. Moderate and low findings
-      # without a fix are accepted in docs/dependency-caveats.md instead.
-      - name: Audit dependencies
-        run: npm audit --audit-level=high
-
       - name: Run unit tests
         run: npm test
 
@@ -87,6 +82,12 @@ jobs:
           if [ -n "${SERVER_PID:-}" ] && kill -0 "$SERVER_PID" 2>/dev/null; then
             kill "$SERVER_PID" || true
           fi
+
+      # Last, so a new upstream advisory can't hide test results. Fails on
+      # high/critical only; see docs/dependency-caveats.md for accepting a high
+      # that has no fix.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
 
   package:
     # Installs the packed tarball the way a consumer would and runs the

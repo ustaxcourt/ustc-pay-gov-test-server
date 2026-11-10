@@ -42,6 +42,13 @@ enough context that the next person doesn't have to re-derive the decision.
   consumers. CI's audit step only fails on high/critical, so moderate and low
   findings still need an entry here. A clean audit isn't proof on its own; see
   the week of 2026-10-19 below.
+- **A high/critical with no fix:** the PR Validate "Audit dependencies" step
+  fails every PR until it's resolved. First check for a patched version you can
+  reach with `npm update` or an override (see the override rule above). If
+  there is none and the code is unreachable, add an Accepted entry here, then
+  replace the step's `npm audit --audit-level=high` with a check that reads
+  `npm audit --json` and fails only on high/critical IDs missing from an
+  accepted-ID list kept next to it. Keep that list and this doc in step.
 
 ---
 
@@ -244,9 +251,6 @@ This entry was added a pass late; PAY-502 shipped without one.
   and `terraform/bootstrap/.terraform.lock.hcl`. `archive` `2.8.1` and `random`
   `3.9.1` were already the latest. No configuration or resource change.
 - npm: no dependency changes.
-- Its changeset (`fruity-showers-grow.md`) was removed in the week of
-  2026-11-09: `terraform/` isn't in the package's `files`, so it described
-  nothing a consumer receives.
 
 ### Week of 2026-11-09 — follow-redirects fixed, three dev-only advisories accepted (2026-11-10)
 
@@ -392,10 +396,12 @@ below for history.
   follow-up ticket to evaluate pinning the runtime (see **Not taken** above)
   and notify the PO. Whoever runs the next weekly dependency pass owns this
   check.
-- **2026-11-10 (week of 2026-11-09):** the 2026-11-05 checkpoint passed
-  without a check; PAY-502 didn't run it. It needs AWS access, so it is a
-  developer step after this pass deploys. Result: _pending: record
-  `process.version` and the date here_.
+- **2026-11-10 (PAY-507): checkpoint missed, follow-up triggered.** The
+  2026-11-05 deadline passed with the last reading still `v24.21.0`
+  (2026-10-22), and PAY-502 didn't re-check. Per the rule above, a follow-up
+  ticket to evaluate pinning the runtime was opened and the PO notified:
+  _ticket key to be added_. That ticket owns the `process.version` re-check
+  from here; record its result there and update this entry.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)
