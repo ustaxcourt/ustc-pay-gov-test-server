@@ -42,11 +42,11 @@ enough context that the next person doesn't have to re-derive the decision.
   consumers. CI's audit step only fails on high/critical, so moderate and low
   findings still need an entry here. A clean audit isn't proof on its own; see
   the week of 2026-10-19 below.
-- **A high/critical with no fix:** the PR Validate "Audit dependencies" step
-  fails every PR until it's resolved. First check for a patched version you can
+- **A high/critical with no fix:** the PR Validate `audit` job fails on every
+  PR until it's resolved. First check for a patched version you can
   reach with `npm update` or an override (see the override rule above). If
   there is none and the code is unreachable, add an Accepted entry here, then
-  replace the step's `npm audit --audit-level=high` with a check that reads
+  replace the job's `npm audit --audit-level=high` with a check that reads
   `npm audit --json` and fails only on high/critical IDs missing from an
   accepted-ID list kept next to it. Keep that list and this doc in step.
 
@@ -399,9 +399,10 @@ below for history.
 - **2026-11-10 (PAY-507): checkpoint missed, follow-up triggered.** The
   2026-11-05 deadline passed with the last reading still `v24.21.0`
   (2026-10-22), and PAY-502 didn't re-check. Per the rule above, a follow-up
-  ticket to evaluate pinning the runtime was opened and the PO notified:
-  _ticket key to be added_. That ticket owns the `process.version` re-check
-  from here; record its result there and update this entry.
+  ticket to evaluate pinning the runtime is to be opened and the PO notified
+  (_ticket key to be added_). Re-check `process.version` after the PAY-507
+  deploy: it updates every bundle, so each function picks up the newest
+  published runtime. Record the result in that ticket and update this entry.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)

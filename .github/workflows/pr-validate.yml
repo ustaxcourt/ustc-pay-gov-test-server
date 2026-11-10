@@ -83,11 +83,27 @@ jobs:
             kill "$SERVER_PID" || true
           fi
 
-      # Last, so a new upstream advisory can't hide test results. Fails on
-      # high/critical only; see docs/dependency-caveats.md for accepting a high
-      # that has no fix.
+  audit:
+    # Its own job so it reports even when tests fail, and a new upstream
+    # advisory shows up as a separate red check instead of failing `test`.
+    # Fails on high/critical only; see docs/dependency-caveats.md for
+    # accepting a high that has no fix.
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # Reads package-lock.json directly, so no install is needed.
       - name: Audit dependencies
-        run: npm audit --audit-level=high
+        run: npm audit --audit-level=high --package-lock-only
 
   package:
     # Installs the packed tarball the way a consumer would and runs the
