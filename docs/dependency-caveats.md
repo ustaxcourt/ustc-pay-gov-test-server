@@ -30,12 +30,24 @@ enough context that the next person doesn't have to re-derive the decision.
   only once the vulnerable code is confirmed unreachable. Leave a reachable
   finding with no verified compatible fix open, so it stays tracked until it
   is resolved.
+- **Runtime-dependency Dependabot PRs:** fold them into the weekly manual PR
+  instead of merging them on their own, and close each one with a comment
+  pointing to that PR. The PR Validate `plan` job skips Dependabot branches,
+  and a runtime bump (e.g. `@aws-sdk/client-s3`) changes the Lambda bundles,
+  so merging one directly would deploy a change nobody planned.
+- **Unreleased changesets:** on every pass, check whether the "Version
+  Packages" PR is still open, and say how many changesets it holds when you
+  flag the PO. A merged fix doesn't reach consumers until that PR is merged.
+- **Audit:** run `npm audit`, and `npm audit --omit=dev` to see what reaches
+  consumers. CI's audit step only fails on high/critical, so moderate and low
+  findings still need an entry here. A clean audit isn't proof on its own; see
+  the week of 2026-10-19 below.
 
 ---
 
 ## Deferred upgrades
 
-### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-10-21)
+### TypeScript 6.x → 7.x — deferred (2026-09-17, re-checked 2026-11-10)
 
 - **Current:** `^6.0.3` (declared and resolved). **Available latest:** `7.0.2`.
 - **Reason:** blocked by `ts-jest`, not by appetite. The latest `ts-jest`
@@ -50,6 +62,8 @@ enough context that the next person doesn't have to re-derive the decision.
   widened its peer range. When it does, the upgrade warrants its own ticket —
   it is a compiler major with a test-runner change riding along, not routine
   maintenance. Cut the ticket and flag the PO at that point.
+- **Re-checked 2026-11-10:** `ts-jest` latest is still `29.4.15` with peer
+  `typescript >=4.3 <7`. Still blocked.
 
 ### dotenv 17.x → 18.x — taken, with a caveat for the Payment Portal (2026-09-18)
 
@@ -214,16 +228,61 @@ as well.
 - Terraform: AWS provider `6.69.0` → `6.70.0` in both lock files (6.70.0 was
   released between the 2026-10-21 run and the 2026-10-22 re-check); `archive`
   `2.8.1` and `random` `3.9.1` were already the latest. CLI moved to 1.17 (see
-  the Terraform 1.17 entry above).
+  the Terraform 1.17 entry above). Moved again to `6.72.0` in the week of
+  2026-10-26 (PAY-502), below.
 - Lambda bundles: `terraform/build.sh` esbuild `--target` moved `node22` →
   `node24` to match the `nodejs24.x` runtime; it had been left behind when the
   runtime moved. All five bundles are byte-identical either way today, so this
   only stops esbuild down-levelling newer syntax in future.
 - GitHub Actions: every pinned major is the latest release; no change.
 
-### Accepted vulnerabilities
+### Week of 2026-10-26 (PAY-502) — Terraform locks only (backfilled 2026-11-10)
 
-### GHSA-hp3w-g68c-fv3c — sprintf-js@1.0.3 (moderate) — accepted (2026-10-14)
+This entry was added a pass late; PAY-502 shipped without one.
+
+- Terraform: AWS provider `6.70.0` → `6.72.0` in both `terraform/.terraform.lock.hcl`
+  and `terraform/bootstrap/.terraform.lock.hcl`. `archive` `2.8.1` and `random`
+  `3.9.1` were already the latest. No configuration or resource change.
+- npm: no dependency changes.
+- Its changeset (`fruity-showers-grow.md`) was removed in the week of
+  2026-11-09: `terraform/` isn't in the package's `files`, so it described
+  nothing a consumer receives.
+
+### Week of 2026-11-09 — follow-redirects fixed, three dev-only advisories accepted (2026-11-10)
+
+`npm audit` went from 21 findings (1 high, 16 moderate, 4 low) to 20
+(16 moderate, 4 low). Every remaining row comes from the three advisories
+accepted below. `npm audit --omit=dev` reports 0.
+
+- `follow-redirects` `1.16.1` → `1.16.3` (dev-only, via `soap` → `axios`),
+  fixing GHSA-mrwp-f3q8-3g9p (high). `soap` is only imported by
+  `test/integration/transaction-soap.test.ts`, so this never reached consumers.
+- Runtime floors raised to the versions tested in this pass: `@aws-sdk/client-s3`
+  `^3.1155.0` → `^3.1165.0`, `dotenv` `^18.0.8` → `^18.0.10`, `fast-xml-parser`
+  `^5.11.0` → `^5.12.0`. `concurrently` exact pin `10.0.6` → `10.0.7` (dev).
+  The SDK bump changes every Lambda bundle that imports it, so expect a real
+  apply on deploy.
+- Lock refresh: `unrs-resolver` `1.13.0` no longer ships the `wasm32-wasi`
+  binding, so `@emnapi/*`, `@napi-rs/wasm-runtime` and `@tybys/wasm-util`
+  dropped out of `package-lock.json`. This is a real upstream change, not the
+  npm-version desync seen in September; `npm ci` passes on Node `24.22.1` /
+  npm `11.19.1`, the versions CI uses.
+- Dependabot: #209 (`dotenv` 18.0.9), #214 (`@aws-sdk/client-s3` 3.1163.0) and
+  #215 (`fast-xml-parser` 5.12.0) are superseded by this pass, per the rule
+  in "How to use".
+- Terraform: CLI `1.17.1` is the latest and already satisfies `~> 1.17.0`
+  (`terraform/versions.tf`, `terraform/bootstrap/versions.tf`) and the
+  `~1.17.0` CI pins, so no pin moves. Provider locks are already on the latest
+  (`aws` `6.72.0`, `archive` `2.8.1`, `random` `3.9.1`).
+- Still deferred: TypeScript 7 (see above). The `babel-plugin-istanbul` and
+  `test-exclude` overrides stay: `babel-plugin-istanbul`'s `latest` dist-tag
+  is still `8.0.0`.
+
+### Removed: GHSA-hp3w-g68c-fv3c — sprintf-js@1.0.3 (moderate) — advisory withdrawn (2026-10-22)
+
+GitHub withdrew this advisory on 2026-10-22, so `npm audit` no longer reports
+it, though `sprintf-js@1.0.3` is still in the tree. The original entry is kept
+below for history.
 
 - **Chain:** `ts-jest` → `@jest/transform` → `babel-plugin-istanbul` →
   `@istanbuljs/load-nyc-config@1.1.0` → `js-yaml@3.15.2` → `argparse@1.0.10`
@@ -247,6 +306,48 @@ as well.
   `js-yaml ^3.13.1`. `argparse` is still required only from
   `node_modules/js-yaml/bin/js-yaml.js`, not from `index.js` or `lib/`, and the
   repo still has no `.nycrc.yaml`. Still unreachable.
+
+### Accepted vulnerabilities
+
+### GHSA-3g3m-2fjr-6pw4 — glob@13.0.7 (moderate) — accepted (2026-11-10)
+
+- **Advisory:** an `AbortSignal` passed to a glob walk doesn't stop it, so
+  traversal continues after the caller's timeout (`>=9.0.0 <=14.0.1`).
+- **Chain (dev-only):** `jest` → `@jest/core` → `@jest/reporters`,
+  `jest-config` and `jest-runtime`; and `ts-jest` → `@jest/transform` →
+  `babel-plugin-istanbul` → `test-exclude`. All resolve to one deduped
+  `glob@13.0.7`.
+- **Reason it can't be fixed now:** the fix is in `glob@14.0.2`+, but every
+  parent above asks for `^13.0.6`. Fixing it would mean overriding a major
+  under Jest, which fails the override rule above (moderate, not reachable).
+- **Why it isn't reachable:** none of the four callers
+  (`@jest/reporters/build/index.js`, `jest-config/build/index.js`,
+  `jest-runtime/build/index.js`, `test-exclude/index.js`) passes a `signal`
+  option. Checked with `grep -nE "signal"` over those files on 2026-11-10: no
+  matches. Their patterns come from repo config, not user input.
+- **Revisit:** when Jest (or `test-exclude`) moves to `glob@^14`.
+
+### GHSA-g3hv-75wg-m249 — minimatch@10.2.6 (moderate) — accepted (2026-11-10)
+
+- **Advisory:** a crafted pattern can blow up `globparts` expansion (DoS,
+  `>=7.0.0 <11.0.1`).
+- **Chain (dev-only):** `glob@13.0.7` and `test-exclude@8.0.0`, both above.
+- **Reason it can't be fixed now:** the fix is in `minimatch@11.0.1`+, and both
+  parents ask for `^10`. Same override reasoning as `glob`.
+- **Why it isn't reachable:** the patterns minimatch sees are Jest's
+  `testMatch`/coverage globs from this repo's own config, not untrusted input.
+- **Revisit:** together with `glob` above.
+
+### GHSA-gcqx-w48m-w2h4 — deepmerge@4.3.1 (low) — accepted (2026-11-10)
+
+- **Advisory:** `mergeObject()` allows prototype poisoning of the returned
+  object (`>=4.2.0 <=4.3.1`).
+- **Chain (dev-only):** `jest` → `@jest/core` → `jest-config`.
+- **Reason it can't be fixed now:** `4.3.1` is the latest release; there is no
+  fixed version.
+- **Why it isn't reachable:** `jest-config` only merges Jest's defaults with
+  this repo's own Jest config. No untrusted input reaches it.
+- **Revisit:** when `deepmerge` publishes a fix or `jest-config` drops it.
 
 ### Node.js 24.22.1 security release — deployed Lambda runtime (accepted 2026-10-22)
 
@@ -291,6 +392,10 @@ as well.
   follow-up ticket to evaluate pinning the runtime (see **Not taken** above)
   and notify the PO. Whoever runs the next weekly dependency pass owns this
   check.
+- **2026-11-10 (week of 2026-11-09):** the 2026-11-05 checkpoint passed
+  without a check; PAY-502 didn't run it. It needs AWS access, so it is a
+  developer step after this pass deploys. Result: _pending: record
+  `process.version` and the date here_.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)

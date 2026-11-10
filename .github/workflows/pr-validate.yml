@@ -34,6 +34,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Fails on high or critical findings only. Moderate and low findings
+      # without a fix are accepted in docs/dependency-caveats.md instead.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high
+
       - name: Run unit tests
         run: npm test
 
@@ -193,10 +198,16 @@ jobs:
         run: pkill -f "dist/server.js" || true
 
   plan:
-    # Skipped for Dependabot: dependency bumps don't change Lambda code or
-    # Terraform state, so a plan would burn AWS API calls and hold the dev
-    # state lock for no infra-relevant signal. Dependabot PRs still get unit
-    # and integration tests via the `test` job above.
+    # Skipped for Dependabot. Runs it triggers only receive Dependabot
+    # secrets, not Actions secrets, so `DEV_AWS_DEPLOYER_ROLE_ARN` below would
+    # be empty and the AWS login would fail. This does NOT mean the bump is
+    # infra-neutral: `terraform/build.sh` bundles runtime dependencies such as
+    # `@aws-sdk/client-s3` into the Lambdas, so a runtime bump changes their
+    # `source_code_hash` and deploys on merge. Fold runtime bumps into a
+    # human-authored PR to get a plan (see docs/dependency-caveats.md). The
+    # `head_ref` check also skips the plan when a person pushes to a
+    # `dependabot/` branch. Dependabot PRs still get the `test` and `package`
+    # jobs.
     if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
 
     runs-on: ubuntu-latest
