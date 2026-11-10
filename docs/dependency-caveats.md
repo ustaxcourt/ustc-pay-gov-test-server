@@ -48,7 +48,8 @@ enough context that the next person doesn't have to re-derive the decision.
   there is none and the code is unreachable, add an Accepted entry here, then
   replace the job's `npm audit --audit-level=high` with a check that reads
   `npm audit --json` and fails only on high/critical IDs missing from an
-  accepted-ID list kept next to it. Keep that list and this doc in step.
+  accepted-ID list kept next to it. Every ID in that list must have an
+  Accepted entry here, and removing an entry here means removing its ID there.
 
 ---
 
@@ -396,13 +397,16 @@ below for history.
   follow-up ticket to evaluate pinning the runtime (see **Not taken** above)
   and notify the PO. Whoever runs the next weekly dependency pass owns this
   check.
-- **2026-11-10 (PAY-507): checkpoint missed, follow-up triggered.** The
+- **2026-11-10 (PAY-507): checkpoint missed, follow-up pending.** The
   2026-11-05 deadline passed with the last reading still `v24.21.0`
-  (2026-10-22), and PAY-502 didn't re-check. Per the rule above, a follow-up
-  ticket to evaluate pinning the runtime is to be opened and the PO notified
-  (_ticket key to be added_). Re-check `process.version` after the PAY-507
-  deploy: it updates every bundle, so each function picks up the newest
-  published runtime. Record the result in that ticket and update this entry.
+  (2026-10-22), and PAY-502 didn't re-check. Per the rule above, this needs a
+  follow-up ticket to evaluate pinning the runtime, and the PO notified.
+  - **Status:** not opened yet.
+  - **Ticket:** _key to be added_ · **Owner:** _to be added_
+  - **Next step:** after the PAY-507 deploy, re-check `process.version`. That
+    deploy updates every bundle, so each function picks up the newest
+    published runtime. Record the result in the ticket, then update this
+    entry's status.
 
 <!-- Format:
 ### <advisory-id> — <package>@<version> (<severity>)

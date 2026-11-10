@@ -16,7 +16,12 @@ PAY-507: dependency updates for the week of 2026-11-09.
   vulnerable majors, and none is reachable here. See
   `docs/dependency-caveats.md`.
 
-Refresh the lock file's in-range transitive updates. Runtime ones include
-`qs` `6.17.1` and `encodeurl` `2.0.1` under `express`, `tslib` `2.9.1`, and the
-AWS SDK internals (`@aws-sdk/*`, `@smithy/*`, `bowser`, `is-unsafe`). `npm audit --omit=dev` reports no
-findings. TypeScript stays on 6.x; see `docs/dependency-caveats.md`.
+Refresh the lock file's in-range transitive updates. Runtime ones include:
+
+- `qs` `6.17.1` and `encodeurl` `2.0.1` under `express`
+- `tslib` `2.9.1`
+- AWS SDK internals: `@aws-sdk/*`, `@smithy/*`, `bowser`, `is-unsafe`
+
+`npm audit --omit=dev` reports no findings.
+
+TypeScript stays on 6.x; see `docs/dependency-caveats.md`.
