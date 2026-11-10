@@ -84,10 +84,8 @@ jobs:
           fi
 
   audit:
-    # Its own job so it reports even when tests fail, and a new upstream
-    # advisory shows up as a separate red check instead of failing `test`.
-    # Fails on high/critical only; see docs/dependency-caveats.md for
-    # accepting a high that has no fix.
+    # Separate job so it reports even when tests fail. High/critical only;
+    # docs/dependency-caveats.md covers accepting a high with no fix.
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -215,16 +213,8 @@ jobs:
         run: pkill -f "dist/server.js" || true
 
   plan:
-    # Skipped for Dependabot. Runs it triggers only receive Dependabot
-    # secrets, not Actions secrets, so `DEV_AWS_DEPLOYER_ROLE_ARN` below would
-    # be empty and the AWS login would fail. This does NOT mean the bump is
-    # infra-neutral: `terraform/build.sh` bundles runtime dependencies such as
-    # `@aws-sdk/client-s3` into the Lambdas, so a runtime bump changes their
-    # `source_code_hash` and deploys on merge. Fold runtime bumps into a
-    # human-authored PR to get a plan (see docs/dependency-caveats.md). The
-    # `head_ref` check also skips the plan when a person pushes to a
-    # `dependabot/` branch. Dependabot PRs still get the `test` and `package`
-    # jobs.
+    # Dependabot runs get no deployer secret, so no plan. Runtime bumps still change
+    # the Lambda bundles; fold them into a human PR (see docs/dependency-caveats.md).
     if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
 
     runs-on: ubuntu-latest
@@ -233,8 +223,9 @@ jobs:
       id-token: write
       contents: read
 
+    # Per-PR: a new push cancels only this PR's stale plan, never a deploy.
     concurrency:
-      group: terraform-dev-state
+      group: terraform-dev-plan-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
 
     env:
@@ -315,9 +306,11 @@ jobs:
         working-directory: terraform
         env:
           TF_CLI_ARGS: -no-color
+        # -lock=false: a read-only preview, so a cancelled plan can't orphan the
+        # lock or block a deploy. It may show changes an in-flight apply is making.
         run: |
           set +e
-          terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out
+          terraform plan -input=false -lock=false -detailed-exitcode | tee plan.out
           PLAN_EXIT=${PIPESTATUS[0]}
           set -e
           echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"
