@@ -46,11 +46,11 @@ changeset, and git history has the full write-ups of past entries.
 
 | Item | Kind | Revisit when | Last checked |
 | --- | --- | --- | --- |
-| TypeScript 6 → 7 | Deferred | `ts-jest` accepts TypeScript 7 | 2026-11-10 |
-| `babel-plugin-istanbul`, `test-exclude` | Override | Jest bumps them itself | 2026-11-10 |
-| `glob` GHSA-3g3m-2fjr-6pw4 (moderate) | Accepted | Jest moves to `glob@^14` | 2026-11-10 |
-| `minimatch` GHSA-g3hv-75wg-m249 (moderate) | Accepted | With `glob` | 2026-11-10 |
-| `deepmerge` GHSA-gcqx-w48m-w2h4 (low) | Accepted | A fix ships, or `jest-config` drops it | 2026-11-10 |
+| TypeScript 6 → 7 | Deferred | `ts-jest` accepts TypeScript 7 | 2026-11-12 |
+| `babel-plugin-istanbul`, `test-exclude` | Override | Jest bumps them itself | 2026-11-12 |
+| `glob` GHSA-3g3m-2fjr-6pw4 (moderate) | Accepted | Jest moves to `glob@^14` | 2026-11-12 |
+| `minimatch` GHSA-g3hv-75wg-m249 (moderate) | Accepted | With `glob` | 2026-11-12 |
+| `deepmerge` GHSA-gcqx-w48m-w2h4 (low) | Accepted | A fix ships, or `jest-config` drops it | 2026-11-12 |
 | Node 24.22.1 on the Lambda runtime | Accepted, **follow-up pending** | Deployed `process.version` ≥ 24.22.1 | 2026-10-22 |
 
 ---
@@ -190,7 +190,8 @@ One line per pass. See each pass's changeset and `CHANGELOG.md` for details.
   runtime floors raised (`@aws-sdk/client-s3`, `dotenv`, `fast-xml-parser`);
   glob, minimatch and deepmerge accepted; `sprintf-js` removed; added the
   PR Validate `audit` job; split the Terraform concurrency group so PR plans
-  can't cancel a deploy.
+  can't cancel a deploy; AWS provider 6.72.0 → 6.73.0 in both locks, now
+  hashed for the same five platforms as `archive` and `random`.
 - **Week of 2026-10-26 (PAY-502):** AWS provider 6.70.0 → 6.72.0 in both
   locks; no npm changes.
 - **Week of 2026-10-19 (PAY-499):** `body-parser` 2.4.0 (high) and `qs`
