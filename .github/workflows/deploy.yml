@@ -12,8 +12,7 @@ permissions:
   id-token: write
   contents: read
 
-# Never cancel a deploy: a mid-apply cancel orphans the state lock. PR plans
-# use their own groups and -lock=false, so they can't cancel or block this.
+# Never cancel a deploy: a mid-apply cancel orphans the Terraform state lock.
 concurrency:
   group: terraform-dev-deploy
   cancel-in-progress: false

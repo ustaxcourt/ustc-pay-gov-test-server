@@ -84,8 +84,6 @@ jobs:
           fi
 
   audit:
-    # Separate job so it reports even when tests fail. High/critical only;
-    # docs/dependency-caveats.md covers accepting a high with no fix.
     runs-on: ubuntu-latest
     permissions:
       contents: read
