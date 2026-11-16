@@ -83,6 +83,24 @@ jobs:
             kill "$SERVER_PID" || true
           fi
 
+  audit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version-file: .nvmrc
+
+      # Reads package-lock.json directly, so no install is needed.
+      - name: Audit dependencies
+        run: npm audit --audit-level=high --package-lock-only
+
   package:
     # Installs the packed tarball the way a consumer would and runs the
     # published `start-pay-gov-test-server` command. Every other check runs
@@ -193,10 +211,8 @@ jobs:
         run: pkill -f "dist/server.js" || true
 
   plan:
-    # Skipped for Dependabot: dependency bumps don't change Lambda code or
-    # Terraform state, so a plan would burn AWS API calls and hold the dev
-    # state lock for no infra-relevant signal. Dependabot PRs still get unit
-    # and integration tests via the `test` job above.
+    # Dependabot runs get no deployer secret, so no plan. Runtime bumps still change
+    # the Lambda bundles; fold them into a human PR (see docs/dependency-caveats.md).
     if: ${{ github.actor != 'dependabot[bot]' && !startsWith(github.head_ref, 'dependabot/') }}
 
     runs-on: ubuntu-latest
@@ -205,8 +221,9 @@ jobs:
       id-token: write
       contents: read
 
+    # Per-PR: a new push cancels only this PR's stale plan, never a deploy.
     concurrency:
-      group: terraform-dev-state
+      group: terraform-dev-plan-${{ github.head_ref || github.ref }}
       cancel-in-progress: true
 
     env:
@@ -287,9 +304,11 @@ jobs:
         working-directory: terraform
         env:
           TF_CLI_ARGS: -no-color
+        # -lock=false: a read-only preview, so a cancelled plan can't orphan the
+        # lock or block a deploy. It may show changes an in-flight apply is making.
         run: |
           set +e
-          terraform plan -input=false -lock-timeout=2m -detailed-exitcode | tee plan.out
+          terraform plan -input=false -lock=false -detailed-exitcode | tee plan.out
           PLAN_EXIT=${PIPESTATUS[0]}
           set -e
           echo "exitcode=$PLAN_EXIT" >> "$GITHUB_OUTPUT"

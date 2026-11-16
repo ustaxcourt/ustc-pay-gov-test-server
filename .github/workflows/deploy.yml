@@ -12,9 +12,10 @@ permissions:
   id-token: write
   contents: read
 
+# Never cancel a deploy: a mid-apply cancel orphans the Terraform state lock.
 concurrency:
-  group: terraform-dev-state
-  cancel-in-progress: true
+  group: terraform-dev-deploy
+  cancel-in-progress: false
 
 jobs:
   deploy:
