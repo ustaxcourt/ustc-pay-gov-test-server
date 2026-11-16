@@ -55,7 +55,7 @@
     "@types/lodash": "^4.17.27",
     "@types/luxon": "^3.7.5",
     "cheerio": "^1.2.0",
-    "concurrently": "10.0.6",
+    "concurrently": "10.0.7",
     "esbuild": "^0.28.1",
     "jest": "^30.5.2",
     "soap": "^1.14.0",
