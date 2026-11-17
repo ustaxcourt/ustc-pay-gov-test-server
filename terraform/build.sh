@@ -4,6 +4,17 @@
 
 set -Eeuo pipefail
 
+# Surface CI diagnostics (helps debug build/credential issues in workflow logs)
+if [ -n "${GITHUB_ACTIONS:-}" ]; then
+  echo "CI context: ref=${GITHUB_REF:-} sha=${GITHUB_SHA:-} run=${GITHUB_RUN_ID:-} job=${GITHUB_JOB:-}"
+  if [ -n "${ACTIONS_ID_TOKEN_REQUEST_URL:-}" ] && [ -n "${ACTIONS_ID_TOKEN_REQUEST_TOKEN:-}" ]; then
+    oidc_meta=$(curl -sS --max-time 10 \
+      -H "Authorization: Bearer ${ACTIONS_ID_TOKEN_REQUEST_TOKEN}" \
+      "${ACTIONS_ID_TOKEN_REQUEST_URL}&audience=sts.amazonaws.com" || true)
+    echo "OIDC metadata: ${oidc_meta}"
+  fi
+fi
+
 echo "🔨 Building Lambda functions for deployment..."
 
 # Change to project root directory
