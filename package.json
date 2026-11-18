@@ -63,6 +63,10 @@
     "ts-node": "^10.9.2",
     "typescript": "^6.0.3"
   },
+  "allowScripts": {
+    "esbuild": true,
+    "@parcel/watcher": false
+  },
   "overrides": {
     "babel-plugin-istanbul": "^8.0.2",
     "test-exclude": "^8.0.0"
