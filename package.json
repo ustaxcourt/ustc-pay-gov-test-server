@@ -64,8 +64,8 @@
     "typescript": "^6.0.3"
   },
   "allowScripts": {
-    "esbuild": true,
-    "@parcel/watcher": false
+    "@parcel/watcher": false,
+    "esbuild@0.28.2": true
   },
   "overrides": {
     "babel-plugin-istanbul": "^8.0.2",

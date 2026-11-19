@@ -17,7 +17,8 @@ PAY-508: dependency updates for the week of 2026-11-16.
   required to upgrade Node. The Lambdas run the AWS-managed runtime, so they
   get the fix only when AWS ships it.
 - Add an `allowScripts` policy to `package.json`: install scripts run for
-  `esbuild` and are recorded as denied (advisory until npm enforces it) for
+  `esbuild@0.28.2` (pinned, so a newer esbuild is reviewed before its script is
+  trusted) and are recorded as denied (advisory until npm enforces it) for
   `@parcel/watcher`. Neither affects consumers of the published package.
 - The AWS provider stays at `6.73.0` in both Terraform stacks, which is the
   latest release.

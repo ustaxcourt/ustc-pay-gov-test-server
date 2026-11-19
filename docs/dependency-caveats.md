@@ -51,7 +51,7 @@ changeset, and git history has the full write-ups of past entries.
 | `glob` GHSA-3g3m-2fjr-6pw4 (moderate) | Accepted | Jest moves to `glob@^14` | 2026-11-12 |
 | `minimatch` GHSA-g3hv-75wg-m249 (moderate) | Accepted | With `glob` | 2026-11-12 |
 | `deepmerge` GHSA-gcqx-w48m-w2h4 (low) | Accepted | A fix ships, or `jest-config` drops it | 2026-11-12 |
-| Node 24.22.3 on the Lambda runtime | Accepted | Deployed `process.version` ≥ 24.22.3 | 2026-11-19 |
+| Node 24.22.3 on the Lambda runtime (24.22.1 and 24.22.3 advisories) | Accepted, **follow-up pending** | Deployed `process.version` ≥ 24.22.3 | 2026-11-19 |
 
 ---
 
@@ -113,34 +113,35 @@ changeset, and git history has the full write-ups of past entries.
 - **Not reachable:** it only merges Jest's defaults with this repo's Jest
   config.
 
-### Node.js 24.22.3 — deployed Lambda runtime, accepted 2026-10-22, raised to 24.22.3 2026-11-19
+### Node.js 24.22.3 — deployed Lambda runtime, accepted 2026-10-22, raised 2026-11-19
 
-- **Advisories (24.22.1):** CVE-2026-105481 (http agent), -105482 (dns),
-  -105483, -106069 and -106072 (tls IP handling), -106073 (permission model),
-  -106074 (crypto snapshots), -111497 (brotli). Fixed in Node `24.22.1`.
-- **Advisories (24.22.3)**,
-  [Nov 2026 security release](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases)):
-  16 CVEs, all affecting 24.x. High: CVE-2026-123863, -123865, -123866 and -123874 (HTTP/2),
-  -123864 (HTTPS server, zero-length TLS write leaks heap into the response),
-  -126051 (TLS server handshake callbacks), -123872 (TLS 1.2 renegotiation
-  bypasses client-cert auth). Medium: -123828, -123868 and -123875 (HTTP/2),
-  -123867 (SNI mTLS), -123871 (proxy credentials in error messages), -123877
-  (`https.Agent` TLS session reuse skips certificate validation). Low:
-  -123829 and -106071 (permission model), -123862 (zlib). The release post
-  doesn't map CVEs to patch versions; 24.22.3 is the only 24.x version it
-  names. `.nvmrc` moved to `24.22.3` in PAY-508, covering local dev and CI.
+- **Advisories, fixed in 24.22.1:** CVE-2026-105481 (http agent), -105482
+  (dns), -105483, -106069 and -106072 (tls IP handling), -106073 (permission
+  model), -106074 (crypto snapshots), -111497 (brotli).
+- **Advisories, fixed in 24.22.3:** the
+  [November 2026 security release](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases)
+  lists 16 CVEs, all affecting 24.x. High: CVE-2026-123863, -123865, -123866
+  and -123874 (HTTP/2), -123864 (HTTPS server, zero-length TLS write leaks heap
+  into the response), -126051 (TLS server handshake callbacks), -123872 (TLS
+  1.2 renegotiation bypasses client-cert auth). Medium: -123828, -123868 and
+  -123875 (HTTP/2), -123867 (SNI mTLS), -123871 (proxy credentials in error
+  messages), -123877 (`https.Agent` TLS session reuse skips certificate
+  validation). Low: -123829 and -106071 (permission model), -123862 (zlib).
+  The post doesn't map CVEs to patch versions; 24.22.3 is the only 24.x
+  version it names.
+- **Local dev and CI:** `.nvmrc` covers both. It moved to `24.22.1` in PAY-499
+  and to `24.22.3` in PAY-508.
 - **Why not fixable here:** the Lambdas run AWS-managed `nodejs24.x`
   (`terraform/variables.tf`, `lambda_runtime`) in automatic update mode, so
   AWS picks the patch version. Once AWS publishes a runtime, any function a
   deploy updates gets it straight away; the rest migrate later. A deploy only
   updates functions whose bundle changed (`source_code_hash`).
 - **Exposure:** the http and tls fixes matter, because the Lambdas call S3 over
-  Node's `https` agent through `@aws-sdk/client-s3`; of the 24.22.3 set, that
-  makes `https.Agent` session reuse (-123877) the one to weigh. The HTTP/2 and
-  TLS-server CVEs look unreachable, since the Lambdas sit behind AWS's front
-  end and the local server is plain HTTP Express (not checked by code search).
-  The rest don't apply: no `fetch()`, WebSockets, permission model or
-  snapshots.
+  Node's `https` agent through `@aws-sdk/client-s3`; of the 24.22.3 set,
+  `https.Agent` session reuse (-123877) is the one to weigh. The HTTP/2 and
+  TLS-server CVEs look unreachable: the Lambdas sit behind AWS's front end and
+  the local server is plain HTTP Express (not checked by code search). The
+  rest don't apply: no `fetch()`, WebSockets, permission model or snapshots.
 - **Not taken:** a container image or custom runtime would let us pick the
   patch, but we'd own Node patching for good. That needs its own ticket.
 - **Last reading:** `v24.21.0` on 2026-10-22, from a temporary version-check
@@ -152,7 +153,8 @@ changeset, and git history has the full write-ups of past entries.
   - **Status:** not opened yet.
   - **Ticket:** _key to be added_ · **Owner:** _to be added_
   - **Next step:** after the PAY-507 deploy, which updates every bundle,
-    re-check `process.version`. Record it in the ticket and update this entry.
+    re-check `process.version`. Record it in the ticket and update this entry;
+    compare against `24.22.3`.
 
 ---
 
