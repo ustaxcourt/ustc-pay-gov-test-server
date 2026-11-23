@@ -152,7 +152,7 @@ changeset, and git history has the full write-ups of past entries.
   PO notified.
   - **Status:** not opened yet.
   - **Ticket:** _key to be added_ · **Owner:** _to be added_
-  - **Next step:** after the PAY-507 deploy, which updates every bundle,
+  - **Next step:** after the weekly dependency update deploy, which updates every bundle,
     re-check `process.version`. Record it in the ticket and update this entry;
     compare against `24.22.3`.
 
