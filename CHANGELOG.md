@@ -1,5 +1,124 @@
 # @ustaxcourt/ustc-pay-gov-test-server
 
+## 0.4.1
+
+### Patch Changes
+
+- c8c536e: PAY-494: dependency updates for the week of 2026-10-12.
+  
+  - Raise the runtime floors to the versions tested in this pass: `express`
+    `^5.3.0`, `@aws-sdk/client-s3` `^3.1152.0` and `dotenv` `^18.0.8`. Raise the
+    `@types/lodash` dev floor to `^4.17.26`.
+  - Fix the critical `handlebars` (GHSA-xw65-4hp5-5hc7, GHSA-8r5x-fm3f-whwj,
+    GHSA-p8wg-vrv2-v86f) and `shell-quote` (GHSA-pqg4-j6r4-53mv) advisories by
+    moving `ts-jest` to `^29.4.15` and `concurrently` to `10.0.6`. Both are dev
+    dependencies, so neither advisory reached consumers of this package.
+  - Accept the moderate `sprintf-js` advisory (GHSA-hp3w-g68c-fv3c), which has no
+    fixed release and isn't reachable here. See `docs/dependency-caveats.md`.
+  - Add a `~> 3.9` constraint for the `hashicorp/random` Terraform provider, which
+    was locked but unconstrained, and refresh the provider lock files.
+  
+  No `engines` change. TypeScript stays on 6.x and Terraform on 1.16.x; see
+  `docs/dependency-caveats.md` for both.
+- 81ffd99: PAY-499: dependency updates for the week of 2026-10-19.
+  
+  - Raise the `@aws-sdk/client-s3` runtime floor to `^3.1155.0` and the
+    `@types/lodash` dev floor to `^4.17.27`, the versions tested in this pass.
+  - Drop the `glob` override, which jest now satisfies on its own. The resolved
+    dependency tree is unchanged.
+  - Move `.nvmrc` to Node `24.22.1`, a security release. `engines` is unchanged,
+    so consumers are not required to upgrade Node.
+  - Move Terraform to `~> 1.17.0` in both stacks and CI, and refresh the AWS
+    provider lock to `6.70.0`.
+  - Move the Lambda bundle esbuild `--target` from `node22` to `node24` to match
+    the `nodejs24.x` runtime. The bundles are byte-identical either way.
+  
+  Refresh the lock file's in-range transitive updates, including `body-parser`
+  `2.4.0` (high, GHSA-27r3-jxmh-p828) and `qs` `6.16.1` (moderate,
+  GHSA-6pq8-jhm2-2vcw), both under `express`. Neither is reachable from this
+  package's code. A fresh install resolves the fixed versions; consumers with a
+  lock file keep the old ones until they refresh it (e.g. `npm update`). Update
+  the dev-only `undici` (via `cheerio`) to `7.30.1` for the October undici
+  advisories. The moderate `sprintf-js`
+  advisory (GHSA-hp3w-g68c-fv3c) stays accepted. TypeScript stays on 6.x; see
+  `docs/dependency-caveats.md`.
+- 03d6082: Refresh Terraform provider lock files.
+  
+  - Update locked provider metadata and checksums for:
+    - `hashicorp/aws` `6.70.0` → `6.72.0`
+    - `hashicorp/archive` `2.8.1`
+    - `hashicorp/random` `3.9.1`
+  - No Terraform configuration, infrastructure resources, or application behavior changed.
+- 46f0ef3: PAY-494: fix the `start-pay-gov-test-server` command for consumers of the
+  published package, and stop shipping build-only files and dependencies.
+  
+  - The command failed in 0.4.0. It ran `npm run dev`, which compiles with `tsc`
+    (the published `src/` includes test files importing dev-only packages such as
+    `@jest/globals` and `cheerio`), then needs `concurrently`, a dev dependency
+    that consumers never get. It now runs the prebuilt `dist/server.js` with
+    `APP_ENV=local`.
+  - The command now finds its package folder from its own location. It
+    previously used `npm root`, which broke when run from another directory, from
+    a global install, or through `npx` without installing first.
+  - Add a `files` list so the package ships only `bin/`, `dist/` (minus compiled
+    tests), `src/static/` and `CHANGELOG.md`, plus the `README.md`, `LICENSE.md`
+    and `package.json` npm always includes. It drops from about 1.1 MB to
+    78 KB unpacked; `terraform/`, the TypeScript sources and tests are no longer
+    published.
+  - Move `typescript`, `soap` and the `@types/*` packages to `devDependencies`.
+    None are used at runtime, and the package doesn't publish type declarations,
+    so consumers never received types from it. A consumer install drops from 189
+    to 103 packages. A consumer that relied on getting `typescript` or `@types/*`
+    through this package must now install them itself.
+  
+  Released as a patch because the package's supported surface is the
+  `start-pay-gov-test-server` command and `dist/`. This release fixes the command
+  and leaves `dist/` working the same way; nothing removed here was part of that
+  surface.
+- 9ab70e3: PAY-507: dependency updates for the week of 2026-11-09.
+  
+  - Raise the runtime floors to the versions tested in this pass:
+    `@aws-sdk/client-s3` `^3.1167.0`, `dotenv` `^18.0.10` and `fast-xml-parser`
+    `^5.12.0`. Move the dev-only `concurrently` exact pin to `10.0.7`.
+  - Fix the high `follow-redirects` advisory (GHSA-mrwp-f3q8-3g9p) by refreshing
+    it to `1.16.3`. It comes in only through the dev-only `soap` → `axios` chain
+    used by the integration tests, so it never reached consumers of this package.
+  - Accept the moderate `glob` (GHSA-3g3m-2fjr-6pw4) and `minimatch`
+    (GHSA-g3hv-75wg-m249) advisories and the low `deepmerge` advisory
+    (GHSA-gcqx-w48m-w2h4). All three are dev-only under Jest, jest pins the
+    vulnerable majors, and none is reachable here. See
+    `docs/dependency-caveats.md`.
+  
+  Refresh the lock file's in-range transitive updates. Runtime ones include:
+  
+  - `qs` `6.17.1` and `encodeurl` `2.0.2` under `express`
+  - `tslib` `2.9.1`
+  - AWS SDK internals: `@aws-sdk/*`, `@smithy/*`, `bowser`, `is-unsafe`
+  
+  `npm audit --omit=dev` reports no findings.
+  
+  TypeScript stays on 6.x; see `docs/dependency-caveats.md`.
+- 42ade48: PAY-508: dependency updates for the week of 2026-11-16.
+  
+  - Refresh the lock file's in-range updates, including `@aws-sdk/client-s3`
+    `3.1171.0` and `fast-xml-parser` `5.12.1`. A fresh install resolves these;
+    consumers with a lock file keep their current versions until they refresh it
+    (e.g. `npm update`).
+  - Runtime dependency updates pulled in transitively through `express`:
+    `router` `2.3.0` and `encodeurl` `2.0.3`. The same lock file caveat applies.
+  - Move `.nvmrc` to Node `24.22.3`, the
+    [November 2026 Node security release](https://nodejs.org/en/blog/vulnerability/november-2026-security-releases)
+    (16 CVEs, 7 high, mostly HTTP/2 and TLS server; see
+    `docs/dependency-caveats.md`). `engines` is unchanged, so consumers are not
+    required to upgrade Node. The Lambdas run the AWS-managed runtime, so they
+    get the fix only when AWS ships it.
+  - Add an `allowScripts` policy to `package.json`: install scripts run for
+    `esbuild@0.28.2` (pinned, so a newer esbuild is reviewed before its script is
+    trusted) and are recorded as denied (advisory until npm enforces it) for
+    `@parcel/watcher`. Neither affects consumers of the published package.
+  - The AWS provider stays at `6.73.0` in both Terraform stacks, which is the
+    latest release.
+
 ## 0.4.0
 
 ### Minor Changes
